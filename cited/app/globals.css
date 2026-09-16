@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+/* ============================================================
+   CITED — Design Tokens
+   Couleurs, typographie et espacement du système de design.
+   Réf : docs/03-direction-design.md §2
+   ============================================================ */
+
+@theme {
+  /* Couleurs */
+  --color-paper: #F2F4F3;
+  --color-ink: #12211E;
+  --color-cited: #0E6E5C;
+  --color-cited-light: #e6f5f1;
+  --color-rival: #7A2E4A;
+  --color-rival-light: #f5e6ed;
+  --color-muted: #8C9A96;
+  --color-signal: #C9A227;
+  --color-signal-light: #fdf6e3;
+
+  /* Typographie — polices importées dans layout.tsx via Google Fonts */
+  --font-heading: "Chivo", sans-serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+
+  /* Rayons */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+
+/* ============================================================
+   Composants communs
+   ============================================================ */
+
+/* Cellule de la grille de couverture : pleine (cité) */
+.cell-cited {
+  background-color: var(--color-cited);
+  border-radius: var(--radius-sm);
+  transition: transform 0.15s ease;
+}
+.cell-cited:hover {
+  transform: scale(1.08);
+}
+
+/* Cellule vide (absent) */
+.cell-absent {
+  background-color: transparent;
+  border: 1.5px solid color-mix(in srgb, var(--color-muted) 40%, transparent);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease;
+}
+.cell-absent:hover {
+  border-color: var(--color-muted);
+}
+
+/* Cellule concurrent */
+.cell-rival {
+  background-color: var(--color-rival);
+  border-radius: var(--radius-sm);
+}
+
+/* Bouton principal */
+.btn-primary {
+  background-color: var(--color-cited);
+  color: white;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.btn-primary:hover {
+  background-color: color-mix(in srgb, var(--color-cited) 85%, black);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Bouton secondaire */
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid color-mix(in srgb, var(--color-muted) 40%, transparent);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.btn-secondary:hover {
+  border-color: var(--color-ink);
+}
+
+/* Filet */
+.divider {
+  border: none;
+  height: 1px;
+  background-color: color-mix(in srgb, var(--color-muted) 40%, transparent);
+}
+
+/* Badge de score */
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.875rem;
+  min-width: 2.5rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}

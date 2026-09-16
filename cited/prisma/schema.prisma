@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id               String    @id @default(cuid())
+  name             String?
+  email            String    @unique
+  emailVerified    DateTime?
+  image            String?
+  plan             String    @default("FREE")
+  stripeCustomerId String?   @unique
+  stripeSubId      String?   @unique
+  currentPeriodEnd DateTime?
+  createdAt        DateTime  @default(now())
+
+  brands Brand[]
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  domain    String
+  brandName String
+  industry  String?
+  country   String    @default("FR")
+  language    String    @default("fr")
+  frequency   String    @default("WEEKLY")
+  isActive    Boolean   @default(true)
+  groundTruth String?
+  createdAt   DateTime  @default(now())
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  competitors Competitor[]
+  prompts     Prompt[]
+  campaigns   Campaign[]
+
+  @@index([userId])
+}
+
+model Competitor {
+  id        String  @id @default(cuid())
+  brandId   String
+  brandName String
+  domain    String?
+  brand     Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId])
+}
+
+model Prompt {
+  id       String       @id @default(cuid())
+  brandId  String
+  text     String
+  family   String
+  isActive Boolean      @default(true)
+  brand    Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  runs     Run[]
+
+  @@index([brandId, isActive])
+}
+
+model Campaign {
+  id              String           @id @default(cuid())
+  brandId         String
+  status          String           @default("QUEUED")
+  startedAt       DateTime         @default(now())
+  finishedAt      DateTime?
+  tasksTotal      Int              @default(0)
+  tasksDone       Int              @default(0)
+  tasksFailed     Int              @default(0)
+  visibilityScore Float?
+  shareOfVoice    Float?
+  totalCostUsd    Float            @default(0)
+
+  brand           Brand            @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  runs            Run[]
+  recommendations Recommendation[]
+  corrections     Correction[]
+
+  @@index([brandId, startedAt])
+}
+
+model Run {
+  id             String      @id @default(cuid())
+  campaignId     String
+  promptId       String
+  engine         String
+  status         String      @default("PENDING")
+  rawResponse    String?
+  brandMentioned Boolean     @default(false)
+  brandPosition  Int?
+  sentiment      String?
+  competitorsFound String?
+  snippet        String?
+  costUsd        Float       @default(0)
+  latencyMs      Int?
+  fromCache      Boolean     @default(false)
+  errorMessage   String?
+  attempts       Int         @default(0)
+  
+  // Advanced RAG Metrics
+  claimsGenerated Int?
+  claimsCorrect   Int?
+  hallucinations  Boolean?
+  positionScore   Float?
+  entitySalience  Float?
+  
+  createdAt      DateTime    @default(now())
+
+  campaign           Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  prompt             Prompt              @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  citations          Citation[]
+  competitorMentions CompetitorMention[]
+
+  @@unique([campaignId, promptId, engine])
+  @@index([campaignId, status])
+}
+
+model Citation {
+  id       String  @id @default(cuid())
+  runId    String
+  url      String
+  domain   String
+  title    String?
+  position Int
+  run      Run     @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([domain])
+}
+
+model CompetitorMention {
+  id           String @id @default(cuid())
+  runId        String
+  competitorId String
+  position     Int?
+  run          Run    @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model Recommendation {
+  id         String   @id @default(cuid())
+  campaignId String
+  title      String
+  finding    String
+  action     String
+  priority   String
+  effort     String
+  rank       Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+}
+
+model Correction {
+  id          String         @id @default(cuid())
+  campaignId  String
+  type        String
+  title       String
+  targetUrl   String?
+  targetQuery String?
+  content     String
+  priority    String
+  applied     Boolean        @default(false)
+  campaign    Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+}
+
+model EngineCache {
+  id          String   @id @default(cuid())
+  fingerprint String   @unique
+  engine      String
+  rawResponse String
+  citations   String   // JSON string
+  costUsd     Float
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([expiresAt])
+}
+
+model AuditLead {
+  id        String   @id @default(cuid())
+  email     String
+  domain    String
+  brandName String
+  score     Float?
+  createdAt DateTime @default(now())
+
+  @@unique([email, domain])
+}
+
+model UsageCounter {
+  id          String   @id @default(cuid())
+  userId      String
+  periodStart DateTime
+  periodEnd   DateTime
+  engineCalls Int      @default(0)
+  costUsd     Float    @default(0)
+
+  @@unique([userId, periodStart])
+}
+
+model ProcessedWebhook {
+  id          String   @id
+  processedAt DateTime @default(now())
+}
