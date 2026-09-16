@@ -2,6 +2,7 @@ import { inngest } from "../client";
 import { db } from "@/lib/db";
 import { runCoreScan } from "@/lib/scanner/core";
 import { sendRegressionAlert } from "@/lib/alerting/sendAlert";
+import { NonRetriableError } from "inngest";
 
 export const scanSiteJob = inngest.createFunction(
   { 
@@ -11,54 +12,60 @@ export const scanSiteJob = inngest.createFunction(
     }
   },
   { event: "app/scan.site" },
-  async ({ event }) => {
+  async ({ event, step }) => {
     const { siteId } = event.data;
 
-    const site = await db.monitoredSite.findUnique({
-      where: { id: siteId },
-      include: { user: true }
+    const site = await step.run("fetch-site", async () => {
+      return await db.monitoredSite.findUnique({
+        where: { id: siteId },
+        include: { user: true }
+      });
     });
 
     if (!site) {
-      throw new Error(`Site not found: ${siteId}`);
+      throw new NonRetriableError(`Site not found: ${siteId}`);
     }
 
-    // We use GPTBot for the daily scan check
-    const results = await runCoreScan(site.url, ["GPTBot"]);
-    const gptResult = results.find((r: any) => r.agent === "GPTBot") || results[0];
+    const gptResult = await step.run("run-scan", async () => {
+      const results = await runCoreScan(site.url, ["GPTBot"]);
+      const result = results.find((r: any) => r.agent === "GPTBot") || results[0];
+      return result;
+    });
+
     const newStatus = gptResult.simpleStatus;
     
-    // Log the result
-    await db.scanLog.create({
-      data: {
-        siteId: site.id,
-        httpStatus: gptResult.httpStatus,
-        payload: JSON.stringify(gptResult)
-      }
+    await step.run("log-scan", async () => {
+      await db.scanLog.create({
+        data: {
+          siteId: site.id,
+          httpStatus: gptResult.httpStatus,
+          payload: JSON.stringify(gptResult)
+        }
+      });
     });
 
     const oldStatus = site.status;
 
-    // If status changed, update and potentially alert
     if (oldStatus !== newStatus) {
-      await db.monitoredSite.update({
-        where: { id: site.id },
-        data: { status: newStatus }
+      await step.run("update-status-and-alert", async () => {
+        await db.monitoredSite.update({
+          where: { id: site.id },
+          data: { status: newStatus }
+        });
+
+        const isRegression = 
+          (oldStatus === "ACTIVE" || oldStatus === "OK") && 
+          (newStatus === "BLOQUÉ" || newStatus === "COQUILLE VIDE");
+
+        if (isRegression) {
+          await sendRegressionAlert(
+            site.user.email,
+            site.url,
+            oldStatus,
+            newStatus
+          );
+        }
       });
-
-      // Check for regression
-      const isRegression = 
-        (oldStatus === "ACTIVE" || oldStatus === "OK") && 
-        (newStatus === "BLOQUÉ" || newStatus === "COQUILLE VIDE");
-
-      if (isRegression) {
-        await sendRegressionAlert(
-          site.user.email,
-          site.url,
-          oldStatus,
-          newStatus
-        );
-      }
     }
 
     return { siteId, oldStatus, newStatus };
