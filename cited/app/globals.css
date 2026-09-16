@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "../../designsaas/ds/modernist.css";
+@import "../../designsaas/ds/cited-theme.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -24,6 +26,14 @@
   --color-signal: #b38318;
   --color-signal-light: #fbf1d3;
 
+  /* Mappage des variables Modernist / Cited-theme pour Tailwind v4 */
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-text: var(--color-text);
+  --color-accent: var(--color-accent);
+  --color-accent-2: var(--color-accent-2);
+  --color-divider: var(--color-divider);
+
   /* Typographie — polices importées dans layout.tsx via Google Fonts */
   --font-heading: "Space Grotesk", sans-serif;
   --font-body: "DM Sans", sans-serif;
@@ -45,10 +55,6 @@
   --duration-slow: 500ms;
   --easing: cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-/* ============================================================
-   Base
-   ============================================================ */
 
 body {
   font-family: var(--font-body);
