@@ -50,6 +50,24 @@ Manquantes : `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `INNGEST_SIGNING_KEY`, `STR
 
 **Sur le nom « Jauge » :** bon choix, court, instrument de mesure, cohérent avec la direction artistique. Réserve : l'anglais est prévu au mois 3 et « Jauge » ne voyage pas. Vérifier `jauge.fr` et un équivalent international avant de s'engager.
 
+### Vérification des faits, 16 septembre 2026
+
+Trois affirmations portantes de la v3 ont été vérifiées sur le web. La deuxième invalide une partie de la stratégie.
+
+**✅ Les robots IA n'exécutent pas le JavaScript — confirmé, et plus fortement que le document ne l'écrit.** La documentation des fournisseurs jusqu'au deuxième trimestre 2026 confirme que `GPTBot`, `OAI-SearchBot`, `ChatGPT-User`, `ClaudeBot`, `PerplexityBot`, `Bytespider` et `CCBot` n'exécutent aucun JavaScript. Une analyse Onely de février 2026 conclut que 42 % du contenu rendu en JavaScript n'est jamais indexé par les systèmes IA. La fondation technique du produit tient.
+
+*Nuance défavorable :* Google AI Overviews hérite du rendu de Googlebot et Copilot hérite de celui de Bing. Le document affirme que ChatGPT s'appuie sur l'index Bing « dont le rendu JavaScript est limité ». Si Bing rend le JavaScript, l'argument s'affaiblit précisément sur ChatGPT, qui est l'accroche commerciale. À vérifier avant le premier envoi d'emails froids.
+
+**🔴 Lovable n'est plus une cible : la plateforme livre elle-même le produit, gratuitement.** La documentation Lovable indique que les anciennes applications React + Vite bénéficient d'un pré-rendu à la demande, « servi uniquement aux robots vérifiés : Google, Bing, robots d'aperçu social, et moteurs IA comme ChatGPT, Perplexity, Claude et Gemini ». C'est exactement la brique n°2 de la v3. La même documentation précise que la revue SEO et IA est gratuite sur tous les plans.
+
+Le §2.2 du plan est donc faux : le rendu serveur natif ne couvre pas seulement les sites déployés après le 20 avril 2026. Les nouvelles applications passent en SSR TanStack Start depuis le 13 mai 2026, **et les anciennes reçoivent le pré-rendu destiné aux robots**. Les deux populations sont couvertes.
+
+**Conséquence sur la stratégie.** Le marché Lovable n'est pas en train de rétrécir, il est fermé, et c'était la première ligne de l'ICP. Restent Bubble, Bolt et les SPA maison, plus les trois problèmes qu'aucune plateforme ne corrige : un pare-feu ou un CDN qui bloque un robot, un `robots.txt` qui interdit `OAI-SearchBot` par copier-coller, un site absent de Bing — auxquels s'ajoutent les régressions après redéploiement. L'objection n°1 ci-dessus était juste mais trop prudente : **vendre la veille devient la seule voie, le pré-rendu est désormais une commodité offerte par les plateformes.** Retirer Lovable de l'échantillon de la semaine 2, sinon la validation mesurera un problème déjà résolu.
+
+**✅ Le quota gratuit Gemini est interdit dans l'EEE, la Suisse et le Royaume-Uni — confirmé.** Les conditions imposent les services payants dès lors que l'on met une application à disposition d'utilisateurs de ces zones. La première prémisse de la v3 est exacte.
+
+Sources : [Vercel/MERJ](https://vercel.com/blog/the-rise-of-the-ai-crawler) · [Lovable, SEO et AEO](https://docs.lovable.dev/features/seo-aeo) · [Gemini API, conditions additionnelles](https://ai.google.dev/gemini-api/terms)
+
 ---
 
 ## Décisions arrêtées
