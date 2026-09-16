@@ -40,7 +40,6 @@ export default async function LoginPage({
               className="flex w-full items-center justify-center gap-2 rounded bg-ink px-4 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink/90"
             >
               Continuer avec Google
-              Continuer avec Google
             </button>
           </form>
           <p className="mt-6 text-center text-xs text-muted">
