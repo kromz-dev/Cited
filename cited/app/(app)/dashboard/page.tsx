@@ -21,7 +21,7 @@ export default async function DashboardPage() {
     include: {
       campaigns: {
         orderBy: { startedAt: "desc" },
-        take: 1,
+        take: 2,
         include: {
           runs: true
         }
@@ -66,8 +66,13 @@ export default async function DashboardPage() {
             <tbody className="divide-y divide-line">
               {brands.map((brand) => {
                 const latestCampaign = brand.campaigns[0];
+                const previousCampaign = brand.campaigns[1];
                 const score = latestCampaign?.visibilityScore !== null ? latestCampaign?.visibilityScore : null;
-                const variation = "-";
+                const variation = score !== null && score !== undefined &&
+                  previousCampaign?.visibilityScore !== null &&
+                  previousCampaign?.visibilityScore !== undefined
+                  ? `${Math.round(score - previousCampaign.visibilityScore)} pts`
+                  : "-";
                 return (
                   <tr key={brand.id} className="group hover:bg-paper/70">
                     <td className="px-4 py-4">
@@ -80,7 +85,7 @@ export default async function DashboardPage() {
                       {score !== null && score !== undefined ? `${Math.round(score)}/100` : "En attente"}
                     </td>
                     <td className="px-4 py-4 text-muted">
-                      {variation === "-" ? <span aria-label="Variation indisponible">—</span> : variation}
+                      {variation === "-" ? <span title="Une seule campagne terminée ne permet pas de comparer la variation." aria-label="Variation indisponible : aucune campagne précédente">—</span> : variation}
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-1" aria-label={latestCampaign?.runs?.length ? `${latestCampaign.runs.filter((run) => run.brandMentioned).length} citations sur ${latestCampaign.runs.length}` : "Aucune mesure"}>

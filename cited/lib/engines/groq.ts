@@ -122,7 +122,7 @@ RÈGLES STRICTES :
           let domain = "";
           try {
             domain = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
-          } catch(e) {}
+          } catch {}
           return {
             url,
             domain,

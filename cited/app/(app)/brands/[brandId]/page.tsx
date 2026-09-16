@@ -57,7 +57,7 @@ export default async function BrandDetailPage(props: { params: Promise<{ brandId
             let competitors = [];
             try {
               if (run.competitorsFound) competitors = JSON.parse(run.competitorsFound);
-            } catch (e) {}
+            } catch {}
 
             return (
               <Panel key={run.id} className="flex flex-col overflow-hidden bg-paper p-5">
@@ -142,9 +142,24 @@ export default async function BrandDetailPage(props: { params: Promise<{ brandId
 
       <section className="pt-8">
          <h2 className="text-xl font-heading font-semibold mb-4">Évolution</h2>
-         <div className="h-64 border border-muted/40 rounded-lg flex items-center justify-center text-muted">
-            [Graphique d'évolution - Bientôt disponible]
-         </div>
+         <Panel className="p-6" role="status" aria-live="polite">
+           {brand.campaigns.length < 2 ? (
+             <>
+               <h3 className="font-heading text-lg font-semibold text-ink">Historique indisponible</h3>
+               <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
+                 Une évolution fiable sera affichée après au moins deux audits terminés. Les données actuelles restent visibles dans la matrice ci-dessus.
+               </p>
+               <p className="mt-4 text-sm font-medium text-cited">Lancez un nouvel audit pour commencer la comparaison.</p>
+             </>
+           ) : (
+             <>
+               <h3 className="font-heading text-lg font-semibold text-ink">Comparaison disponible</h3>
+               <p className="mt-2 text-sm leading-6 text-muted">
+                 Deux campagnes réelles sont disponibles. La visualisation détaillée de l’évolution sera ajoutée lorsque plusieurs points de mesure pourront être comparés.
+               </p>
+             </>
+           )}
+         </Panel>
       </section>
     </div>
   );
