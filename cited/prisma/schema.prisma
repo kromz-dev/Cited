@@ -19,10 +19,11 @@ model User {
   emailVerified DateTime?
   image         String?
 
-  plan             String    @default("FREE")
-  stripeCustomerId String?   @unique
-  stripeSubId      String?   @unique
-  currentPeriodEnd DateTime?
+  plan                   String    @default("FREE")
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?   @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
 
   // Cycle de vie RGPD : la purge est calculable, pas implicite.
   cancelledAt    DateTime?

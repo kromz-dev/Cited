@@ -48,6 +48,16 @@ export async function POST(req: Request) {
   }
 
   try {
+    let fetchedSubscription: Stripe.Subscription | null = null;
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as any;
+      if (session.subscription) {
+        fetchedSubscription = await stripe.subscriptions.retrieve(
+          session.subscription as string,
+        );
+      }
+    }
+
     // Le marqueur d'idempotence et l'écriture métier sont dans la même
     // transaction. Séparés, deux livraisons simultanées passent toutes les
     // deux, et un échec métier après marquage perd l'événement.
@@ -56,18 +66,15 @@ export async function POST(req: Request) {
 
       switch (event.type) {
         case "checkout.session.completed": {
-          const session = event.data.object;
+          const session = event.data.object as any;
           const userId = session.client_reference_id;
-          if (!userId || !session.subscription) break;
+          if (!userId || !fetchedSubscription) break;
 
-          const subscription = await stripe.subscriptions.retrieve(
-            session.subscription as string,
-          );
-          const plan = planOf(subscription);
+          const plan = planOf(fetchedSubscription);
           if (!plan) {
             // Un tarif inconnu ne doit jamais accorder un plan par défaut.
             console.error(
-              `Tarif Stripe non répertorié sur l'abonnement ${subscription.id}. Aucun plan accordé.`,
+              `Tarif Stripe non répertorié sur l'abonnement ${fetchedSubscription.id}. Aucun plan accordé.`,
             );
             break;
           }
@@ -76,9 +83,10 @@ export async function POST(req: Request) {
             where: { id: userId },
             data: {
               stripeCustomerId: session.customer as string,
-              stripeSubId: subscription.id,
+              stripeSubscriptionId: fetchedSubscription.id,
+              stripePriceId: fetchedSubscription.items?.data?.[0]?.price?.id,
               plan,
-              currentPeriodEnd: periodEndOf(subscription),
+              stripeCurrentPeriodEnd: periodEndOf(fetchedSubscription),
               cancelledAt: null,
               purgeAt: null,
             },
@@ -101,8 +109,9 @@ export async function POST(req: Request) {
           await tx.user.update({
             where: { id: user.id },
             data: {
-              stripeSubId: subscription.id,
-              currentPeriodEnd: periodEndOf(subscription),
+              stripeSubscriptionId: subscription.id,
+              stripePriceId: subscription.items?.data?.[0]?.price?.id,
+              stripeCurrentPeriodEnd: periodEndOf(subscription),
               // Un changement de tarif doit se refléter dans les deux sens :
               // conserver l'ancien plan rendait toute rétrogradation sans effet.
               plan: active && plan ? plan : "FREE",
@@ -127,7 +136,7 @@ export async function POST(req: Request) {
             where: { id: user.id },
             data: {
               plan: "FREE",
-              currentPeriodEnd: null,
+              stripeCurrentPeriodEnd: null,
               cancelledAt: now,
               purgeAt,
             },

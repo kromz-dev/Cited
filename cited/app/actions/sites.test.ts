@@ -7,6 +7,9 @@ vi.mock('@/auth', () => ({
 
 vi.mock('@/lib/db', () => ({
   db: {
+    user: {
+      findUnique: vi.fn(),
+    },
     monitoredSite: {
       findMany: vi.fn(),
       create: vi.fn(),
@@ -55,8 +58,42 @@ describe('sites actions', () => {
       expect(res).toEqual({ error: 'Unauthorized' });
     });
 
-    it('creates a site and revalidates path', async () => {
+    it('returns error if user has no active subscription', async () => {
       vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'FREE', stripeCurrentPeriodEnd: null } as any);
+      
+      const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });
+      expect(res).toEqual({ error: 'Abonnement requis' });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+    });
+
+    it('returns error if user subscription is expired', async () => {
+      vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'PRO', stripeCurrentPeriodEnd: pastDate } as any);
+      
+      const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });
+      expect(res).toEqual({ error: 'Abonnement requis' });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+    });
+
+    it('returns error if user plan is FREE despite future period end date', async () => {
+      vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'FREE', stripeCurrentPeriodEnd: futureDate } as any);
+      
+      const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });
+      expect(res).toEqual({ error: 'Abonnement requis' });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+    });
+
+    it('creates a site and revalidates path if subscription is active and plan is not FREE', async () => {
+      vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'PRO', stripeCurrentPeriodEnd: futureDate } as any);
       vi.mocked(db.monitoredSite.create).mockResolvedValueOnce({ id: 'site-1', name: 'Test' } as any);
 
       const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });

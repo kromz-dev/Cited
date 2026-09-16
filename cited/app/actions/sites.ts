@@ -33,6 +33,20 @@ export async function addMonitoredSite(data: { name: string; url: string }) {
       return { error: "Name and URL are required" };
     }
 
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { stripeCurrentPeriodEnd: true, plan: true },
+    });
+
+    if (
+      !user ||
+      user.plan === "FREE" ||
+      !user.stripeCurrentPeriodEnd ||
+      user.stripeCurrentPeriodEnd.getTime() < Date.now()
+    ) {
+      return { error: "Abonnement requis" };
+    }
+
     const site = await db.monitoredSite.create({
       data: {
         name: data.name,
