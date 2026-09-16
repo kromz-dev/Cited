@@ -1,99 +1,145 @@
-# Cited — feuille de route et journal
+# Cited — état du projet et reprise
 
-Suivi du développement. Mis à jour après chaque sous-tâche validée.
+Ce document est la source de vérité. Il doit suffire à reprendre le projet sans rien d'autre.
 
-**Dépôt :** https://github.com/kromz-dev/Cited (privé)
+**Dépôt :** https://github.com/kromz-dev/Cited (privé) · branche `main`
 **Stack :** Next.js 16 · React 19 · TypeScript strict · Prisma 5 · PostgreSQL 17 · Tailwind 4 · NextAuth v5 · Stripe · Inngest
-**Base de dev :** PostgreSQL 17.11 natif dans WSL (`postgresql://cited@localhost:5432/cited`). Cible production : Neon, même version majeure.
+**Dernière session :** 16 septembre 2026
 
 ---
 
-## Décisions structurantes
+## Reprendre en 5 commandes
 
-| # | Décision | Statut |
+```bash
+cd /mnt/c/Users/kkace/Desktop/saas/SAAS_1/cited
+sudo service postgresql start          # PostgreSQL 17 natif WSL, base `cited`, rôle `cited`
+npx prisma generate
+npx tsc --noEmit                       # doit rendre 0 erreur — c'est l'oracle actuel
+npm run dev
+```
+
+Variables d'environnement : voir `.env.example`, toutes documentées.
+Présentes et vérifiées : `DATABASE_URL`, `AUTH_SECRET`, `GEMINI_API_KEY` (testée, HTTP 200), `GROQ_API_KEY`.
+Manquantes : `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `INNGEST_SIGNING_KEY`, `STRIPE_*`, `RESEND_API_KEY`, `ENGINE_CACHE_SECRET`.
+
+---
+
+## Décisions arrêtées
+
+| # | Décision | Pourquoi |
 |---|---|---|
-| D1 | Modèle de tenant : `User → Brand`. Vente directe à la marque, self-serve, funnel d'audit gratuit. La marque blanche pour agences du cahier des charges est écartée. | ✅ Arrêtée |
-| D2 | Dépôt unique à la racine du projet : le code, les spécifications et les connecteurs de référence partagent une seule histoire. | ✅ Arrêtée |
-| D3 | Dépôt privé — `docs/` contient le plan business et la grille tarifaire. | ✅ Arrêtée |
-| D4 | PostgreSQL dès le développement, pas SQLite : les enums, les tableaux et le type `Json` ne survivent pas à une migration tardive. | ✅ Arrêtée |
-| D5 | Un couple requête/moteur est interrogé N fois par campagne (défaut : 3) et le score est publié avec sa marge d'erreur. | ✅ Arrêtée |
-| D6 | Nom du produit. `Cited` reste un nom de code. | ⏳ Ouvert |
-| D7 | Moteur de mesure : `GROQ` n'a pas d'accès web. Voir « Risque R1 ». | 🔴 À trancher |
+| D1 | Tenant = `User → Brand`. Vente directe à la marque, self-serve, funnel d'audit gratuit. | Pivot assumé. La marque blanche pour agences du cahier des charges est écartée. `docs/02` décrit un autre produit sur ce point. |
+| D2 | Dépôt unique à la racine : code, spécifications et connecteurs partagent une histoire. | Le projet survit au départ de n'importe qui. |
+| D3 | Dépôt privé. | `docs/` contient le plan business et la grille tarifaire. |
+| D4 | PostgreSQL dès le développement, jamais SQLite. | Les enums, tableaux et `Json` ne survivent pas à une migration tardive. Parité avec Neon, même version majeure. |
+| D5 | N appels par couple requête/moteur (défaut 3), score publié avec sa marge d'erreur à 95 %. | Les moteurs ne sont pas déterministes. Un appel unique mesure du bruit. |
+| D6 | Seul un moteur **ancré** peut mesurer. `GEMINI` mesure, `GROQ` juge et génère. | Voir R1 ci-dessous. |
+| D7 | Nom du produit. `Cited` reste un nom de code. | ⏳ Ouvert. Ne bloque rien : le rapport client ne doit porter aucune trace du produit. |
 
 ---
 
 ## Risques ouverts
 
-**R1 — Le moteur actuel ne mesure pas ce que le produit prétend mesurer.**
-`lib/engines/groq.ts` interroge `llama-3.3-70b-versatile`, un modèle sans accès web. Son message système lui demande de se comporter « comme si » il disposait d'une base RAG temps réel et de citer « des URLs réelles (ou très probables) ». Les citations produites sont donc générées de mémoire paramétrique, pas relevées sur le web. Elles alimentent la table `Citation`, puis l'écran des sources les plus citées vendu au client. Tant que ce point n'est pas corrigé, le produit fabrique une partie de sa donnée.
-Correction : réserver `GROQ` au rôle de juge et de générateur, et mesurer avec un moteur réellement ancré (`GEMINI` avec Google Search, déjà écrit dans `lib/engines/gemini.ts`, gratuit à 500 requêtes ancrées/jour).
+**R1 — Moteur de mesure. RÉSOLU au niveau du code, à vérifier en conditions réelles.**
+`GROQ` (`llama-3.3-70b-versatile`) n'a aucun accès web. Son message système lui demandait de se comporter comme s'il disposait d'une base RAG temps réel et de citer « des URLs réelles (ou très probables) ». Ces citations inventées partaient en base puis à l'écran comme des sources relevées. Le registre `lib/engines/index.ts` classe désormais chaque moteur en `GROUNDED` / `UNGROUNDED`, et `getMeasurementEngine()` refuse un moteur non ancré. Campagnes et audit public passent par `GEMINI`. **Reste à faire : lancer une vraie campagne et vérifier que les citations Gemini correspondent à des pages existantes.**
 
-**R2 — Suite de tests inexécutable.** `vitest` échoue sur un binaire natif absent (bug npm sur les dépendances optionnelles, `node_modules` résolu pour Windows). Aucun oracle exécutable tant que ce n'est pas réglé.
+**R2 — Aucun test exécutable.** `vitest` échoue sur un binaire natif absent : `Cannot find native binding` (bug npm sur les dépendances optionnelles, `node_modules` résolu pour Windows alors qu'on exécute sous Linux). Les 33 tests de `mention-detector.test.ts` n'ont jamais tourné dans leur lanceur. Trois sorties possibles : installer `@rolldown/binding-linux-x64-gnu` à la version de `rolldown` ; supprimer `package-lock.json` et `node_modules` puis `npm i` ; ou basculer sur `node --test`, natif et sans installation — **option recommandée, validée en pratique pendant la session**.
+
+**R3 — Coût réel non mesuré.** `ApiCall` journalise chaque appel, mais `costUsd` vaut 0 pour Gemini et Groq tant qu'on est sous les offres gratuites. Le critère « le coût réel par appel est mesurable » n'est donc pas encore satisfait en conditions payantes.
 
 ---
 
-## Jalons
+## Ce qui est fait
 
-### Lot 0 — Socle ✅
-- [x] Dépôt Git à la racine, poussé sur GitHub en privé
-- [x] PostgreSQL 17 local, rôle et base créés
-- [x] Schéma Prisma migré de SQLite vers PostgreSQL, enums et types natifs
-- [x] Modèles NextAuth (`Account`, `Session`, `VerificationToken`) ajoutés — sans eux la connexion Google échouait
-- [x] `lib/db.ts` correctement typé : les `@ts-ignore` masquaient toutes les erreurs de schéma
-- [x] Migration initiale versionnée
-- [x] `tsc --noEmit` vert
+- Dépôt Git à la racine, poussé sur GitHub en privé, branche `main` à jour.
+- PostgreSQL 17.11 local, base et rôle créés, migration initiale versionnée.
+- Schéma Prisma complet en PostgreSQL avec enums, tableaux et `Json` natifs.
+- Modèles NextAuth `Account`, `Session`, `VerificationToken` — sans eux la connexion Google échouait silencieusement.
+- `lib/db.ts` correctement typé. Les `@ts-ignore` précédents rendaient le typage inopérant et masquaient quatre erreurs réelles.
+- Répétitions par couple requête/moteur, contrainte unique élargie, marge d'erreur à 95 % calculée.
+- Idempotence de campagne sur le créneau planifié, reprise après incident sans doublon.
+- Texte et version de requête figés sur le run ; suppression logique des prompts.
+- Panier de moteurs figé sur la campagne.
+- Runs en échec exclus du score : une panne moteur ne se lit plus comme une perte de visibilité.
+- Journal `ApiCall` par appel, avec objet et coût.
+- Compteurs d'usage séparant runs vendus et appels réellement payés.
+- Détection de mention : frontières Unicode, position calculée dans le bloc de liste, `null` hors liste, alias, repliage d'accents préservant les index. 33 cas de test écrits.
+- Juge LLM : injection de prompt colmatée, données non fiables sorties du message système, validation par schéma Zod, arbitrage contre la détection lexicale.
+- Registre de moteurs ancrés / non ancrés, mesure refusée sur un moteur non ancré.
+- Cinq bloquants de sécurité corrigés (voir ci-dessous).
 
-### Lot 1 — Moteur de campagne 🔄
-- [x] Répétitions par couple requête/moteur, contrainte unique élargie
-- [x] Idempotence de campagne sur le créneau planifié
-- [x] Reprise après incident : un run abouti n'est jamais rejoué
-- [x] Texte et version de requête figés sur le run
-- [x] Panier de moteurs figé sur la campagne
-- [x] Score publié avec sa marge d'erreur à 95 %
-- [x] Journal `ApiCall` par appel, avec son objet et son coût réel
-- [x] Correctifs déclenchés sur les absences constantes, plus sur un tirage isolé
-- [ ] Connecteur de mesure réellement ancré (voir R1)
-- [ ] Cache moteur : empreinte avec version de modèle, exclusion de la marque demandeuse
-- [ ] Débit et réessais avec bail sur les colonnes déjà prévues
+### Sécurité — bloquants corrigés
 
-### Lot 2 — Détection et score
-- [ ] `mention-detector` : frontières de mot pour les marques multi-mots, position robuste
-- [ ] `llm-judge` : délimiteurs d'échappement sur le texte injecté
-- [ ] Tests unitaires : marque absente, position 1, réponse sans liste, marque au nom commun
+| Trouvaille | Correction |
+|---|---|
+| `AUTH_SECRET` était un texte de remplacement. En session JWT, cela permettait de forger le jeton de n'importe quel compte et annulait tous les filtres `userId`. | Remplacé par 44 caractères aléatoires. |
+| `launchAuditCampaign` s'exécutait sans `auth()`, sur un `brandId` reçu du client. Une Server Action est un point d'entrée public ; le middleware ne la protège jamais. | Session vérifiée, marque résolue via `userId`, marque d'autrui indiscernable d'une marque inexistante. |
+| `/api/inngest` acceptait tout POST anonyme et déclenchait une campagne sur n'importe quelle marque. Le `matcher` du middleware exclut `/api`. | Clé de signature portée par le client, refus de démarrage en production sans elle. |
+| `/api/audit`, public, sans validation ni plafond. | Schéma Zod strict sur le domaine, plafond horaire par appelant adossé à PostgreSQL — un compteur en mémoire est multiplié par le nombre d'instances. |
+| Paiement : le client transmettait un identifiant de tarif Stripe libre, et le webhook écrivait `plan: "PRO"` en dur. On payait le tarif le plus bas et on recevait PRO. | Le client transmet un nom de plan, le serveur détient la table des tarifs, le webhook déduit le plan du prix que Stripe confirme et n'accorde rien sur un tarif inconnu. |
 
-### Lot 3 — Interface
-- [ ] Matrice de couverture comme objet principal, score en second
-- [ ] Affichage de la marge d'erreur sur toute variation
+Idempotence Stripe rendue transactionnelle, rejeu traité en succès, fin de période lue sur la ligne d'abonnement là où Stripe l'a déplacée, rétrogradation effective, `cancelledAt` et `purgeAt` renseignés à la résiliation.
 
-### Lot 4 — Facturation et quotas
-- [x] Table blanche des tarifs côté serveur : le plan se déduit de ce que Stripe confirme avoir facturé
-- [x] Idempotence des webhooks Stripe rendue transactionnelle, rejeu traité en succès
-- [x] Rétrogradation de plan effective, fin de période lue au bon endroit de l'API Stripe
-- [ ] Quotas durs sur les runs, blocage avant l'action
+---
 
-### Sécurité — bloquants traités
-- [x] `AUTH_SECRET` était un texte de remplacement : en session JWT, cela permettait de forger le jeton de n'importe quel compte
-- [x] `launchAuditCampaign` s'exécutait sans authentification, sur un `brandId` reçu du client
-- [x] `/api/inngest` acceptait tout POST anonyme, `INNGEST_SIGNING_KEY` absente
-- [x] `/api/audit` sans validation ni limitation de débit — Zod + plafond horaire adossé à la base
-- [x] Élévation de plan : on pouvait payer le tarif le plus bas et recevoir PRO
-- [ ] Validation et quotas sur `createBrand` et `detectBrand`
-- [ ] Échappement HTML et limitation de débit sur `captureLead` et l'envoi Resend
-- [ ] Middleware en refus par défaut
-- [ ] Export et suppression de compte (RGPD)
+## Défauts du système d'analyse et de notation
 
-### Lot 5 — Mise en production
-- [ ] Audit de sécurité
-- [ ] Intégration continue
-- [ ] Bascule sur Neon
+Diagnostic complet, non corrigé. C'est le travail le plus rentable qui reste.
+
+**Analyse**
+
+1. **Le sentiment n'entre pas dans le score.** « Cette marque est à éviter » compte comme une citation réussie. Le champ existe et dort.
+2. **Références implicites perdues.** L'arbitre est lexical : « la plateforme leader de prise de rendez-vous médicaux » ne compte pas. Sous-comptage systématique.
+3. **Trois signaux de proéminence, un seul utilisé.** `brandPosition` alimente le score ; `positionScore` et `entitySalience` coûtent un appel de juge et ne servent à rien.
+4. **Le juge est juge et partie.** Un seul appel Groq produit 10 champs à température 0,1 : ils se corrèlent. Apparence de mesures indépendantes issues d'un jugement unique.
+5. **`hallucinations` vaut faux par construction.** Sans `groundTruth`, l'instruction impose `claimsCorrect = claimsGenerated`. Métrique qui semble mesurée et ne l'est pas.
+6. **Les concurrents n'ont pas d'alias.** Correspondance exacte en minuscules : « Doctolib », « doctolib.fr » et « Doctolib SAS » sont trois entités. On rate des mentions concurrentes, donc **on gonfle sa propre part de voix**. Le biais va dans le sens flatteur.
+
+**Notation**
+
+7. **Défaut principal — le score fusionne deux faits opposés.** Avec la pondération 100/80/60/40/20 : marque citée 100 % du temps au rang 5 → 20 ; marque citée 20 % du temps au rang 1 → 20. Situations inverses, actions inverses, même chiffre. **Séparer en taux de citation et rang moyen quand cité.**
+8. **L'échelle de position est une convention, pas une mesure.** Linéaire alors que l'attention ne l'est pas. À assumer comme convention affichée.
+9. **`scoreMarginOfError` est calculé et jamais montré.** Sans lui, le travail sur les répétitions est perdu. Ne pas tracer de tendance avant 6 campagnes.
+10. **La part de voix contredit le score.** Elle compte des mentions brutes quand le score pondère par position, et écrase tous les concurrents dans un seul seau — impossible de dire lequel gagne, alors que c'est l'information la plus actionnable. Le schéma sait le faire, le code l'aplatit.
+11. **Le panier de requêtes n'est pas figé entre campagnes.** Le texte est figé sur le run, mais l'ensemble peut changer. Régénérer les prompts déplace le score sans qu'aucune visibilité n'ait bougé. Il faut un identifiant de panier sur la campagne, et refuser de tracer une courbe entre deux paniers différents.
+12. **Un score absolu ne veut rien dire.** « 34/100 » n'est actionnable pour personne. Le chiffre de tête devrait être le rang parmi les marques suivies ou l'écart au leader.
+
+---
+
+## Prochaines étapes, par rentabilité
+
+1. **Séparer taux de citation et rang moyen** (défaut 7). Change ce qui est vendu, pas seulement le code.
+2. **Alias de concurrents** (défaut 6). Biais flatteur, corruption silencieuse de la part de voix.
+3. **Intégrer le sentiment au score** (défaut 1). Une mention négative n'est pas un succès.
+4. **Figer le panier de requêtes** (défaut 11). Sans cela aucune courbe n'est comparable.
+5. **Basculer sur `node --test`** (R2). Rend les 33 tests existants exécutables, sans installation.
+6. **Lancer une campagne réelle sur Gemini** et vérifier que les citations pointent vers des pages existantes (R1).
+7. **Afficher la marge d'erreur** dans la matrice de couverture (défaut 9).
+8. Nettoyer ou justifier les métriques RAG (défauts 3, 4, 5).
+
+### Sécurité, points sérieux restants
+
+- Validation et quotas sur `createBrand` et `detectBrand` — appels LLM déclenchables sans contrôle.
+- Échappement HTML et limitation de débit sur `captureLead` et l'envoi Resend : `domain` est interpolé dans un `href` sans échappement, ce qui permet d'envoyer un courriel d'hameçonnage depuis le domaine du produit.
+- Middleware en refus par défaut avec liste blanche publique.
+- Export et suppression de compte. `cancelledAt`, `purgeAt` et `dataExportedAt` existent au schéma et ne sont lus nulle part.
+- Épingler la version d'API Stripe et retirer le repli `sk_test_dummy` qui masque une mauvaise configuration.
+
+### Module prévu, non écrit
+
+`lib/cache/engine-cache.ts` — le modèle `EngineCache` existe au schéma, le module a été spécifié puis interrompu. Contraintes retenues : empreinte en HMAC avec secret serveur et séparateurs explicites, version de modèle incluse, durée de vie par famille de requête (`PROBLEM` 14 j, `DISCOVERY` et `SOLUTION` et `COMPARISON` 7 j, `BRAND` 48 h), **durée de vie intra-marque nulle** pour qu'une marque ne se voie jamais servir sa propre réponse précédente, un seul mécanisme d'expiration et non un seau calendaire doublé d'un `expiresAt`, et `fromCache` jamais exposé à l'utilisateur car il révèle qu'un autre compte suit le même prompt.
 
 ---
 
 ## Journal
 
 ### 2026-09-16
-- Dépôt restructuré à la racine du projet, poussé sur GitHub en privé.
-- PostgreSQL 17.11 installé localement, base `cited` créée.
-- Schéma migré vers PostgreSQL. Correctifs d'intégrité : modèles NextAuth manquants, répétitions de run, gel du texte de requête, clés étrangères composites, relation `CompetitorMention` vers `Competitor`, unicité `(runId, url)` sur les citations, colonnes de bail pour l'exécution durable, tables `ApiCall` et compteurs d'usage séparant runs vendus et appels payés.
-- `lib/db.ts` retypé : les `@ts-ignore` rendaient le typage inopérant et masquaient quatre erreurs réelles.
-- Moteur de campagne réécrit sur le nouveau schéma.
+- Dépôt restructuré à la racine, poussé sur GitHub en privé.
+- PostgreSQL 17.11 installé localement, base `cited` créée, migration initiale versionnée.
+- Schéma migré de SQLite vers PostgreSQL avec correctifs d'intégrité : modèles NextAuth manquants, répétitions de run, gel du texte de requête, clés étrangères composites, relation `CompetitorMention` vers `Competitor`, unicité `(runId, url)` sur les citations, colonnes de bail pour l'exécution durable, tables `ApiCall` et `RateLimit`, compteurs séparant runs vendus et appels payés.
+- Moteur de campagne réécrit : répétitions, idempotence sur créneau, reprise sans doublon, marge d'erreur.
+- Détection de mention corrigée et couverte de 33 cas.
+- Juge LLM durci contre l'injection de prompt, validation Zod, arbitrage du verdict.
+- Séparation des moteurs ancrés et non ancrés ; mesure routée vers Gemini.
+- Cinq bloquants de sécurité corrigés.
+- Travail livré en cinq branches puis fusionné dans `main`. `tsc --noEmit` rend 0 erreur.
