@@ -1,6 +1,6 @@
 import { inngest } from "./client";
 import { db } from "@/lib/db";
-import { getEngine } from "@/lib/engines";
+import { getMeasurementEngine, DEFAULT_MEASUREMENT_ENGINE } from "@/lib/engines";
 import { evaluateBrandMention } from "@/lib/analysis/llm-judge";
 import { scoreWithConfidence, type RunData } from "@/lib/scoring/visibility";
 import { calculateShareOfVoice } from "@/lib/scoring/share-of-voice";
@@ -9,7 +9,10 @@ import type { EngineId } from "@prisma/client";
 
 /** Répétitions par défaut d'un même couple requête/moteur. */
 const DEFAULT_REPETITIONS = 3;
-const DEFAULT_ENGINES: EngineId[] = ["GROQ"];
+// La mesure passe par un moteur réellement ancré sur le web. Un moteur qui
+// répond de mémoire produirait des citations inventées, stockées puis
+// présentées au client comme des sources relevées.
+const DEFAULT_ENGINES: EngineId[] = [DEFAULT_MEASUREMENT_ENGINE];
 
 /**
  * Arrondit une date au début de son heure.
@@ -116,7 +119,8 @@ export const runCampaign = inngest.createFunction(
               }));
 
             try {
-              const engine = getEngine(engineId);
+              // Refuse un moteur non ancré plutôt que de fabriquer la donnée.
+              const engine = getMeasurementEngine(engineId);
               const response = await engine.query({
                 prompt: prompt.text,
                 country: brand.country,

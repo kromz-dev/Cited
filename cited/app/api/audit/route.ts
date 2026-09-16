@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getEngine } from "@/lib/engines";
+import { getMeasurementEngine } from "@/lib/engines";
 import { generateSmartPrompts } from "@/lib/prompts/query-generator";
 import { evaluateBrandMention } from "@/lib/analysis/llm-judge";
 import { calculateVisibilityScore } from "@/lib/scoring/visibility";
@@ -59,7 +59,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const engine = getEngine("GROQ");
+    // Audit public : même exigence que les campagnes payantes. Le score montré
+    // au prospect doit venir d'un moteur qui interroge vraiment le web.
+    const engine = getMeasurementEngine();
 
     // 0. Découverte intelligente du secteur, des concurrents et génération des requêtes (Funnel d'achat)
     console.log(`\n🔍 [DÉCOUVERTE] Analyse du domaine ${domain} pour la marque ${brandName}...`);
@@ -123,7 +125,7 @@ export async function POST(req: Request) {
     const runs = results.map(r => r.status === "fulfilled" ? r.value : null).filter(Boolean) as any[];
     
     const runDataForScore = runs.map(r => ({
-      engineId: "GROQ",
+      engineId: engine.id,
       isMentioned: r.mention.isMentioned,
       position: r.mention.position,
       family: r.family
