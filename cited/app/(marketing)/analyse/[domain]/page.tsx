@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { AuditFormWrapper } from "./AuditFormWrapper";
+import { MarketingHeader } from "@/components/MarketingHeader";
 
 interface PageProps {
   params: Promise<{
@@ -30,17 +31,7 @@ export default async function AnalyseDomainPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-[var(--color-paper)] flex flex-col">
-      <header className="p-6 border-b border-gray-200 bg-white">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="font-heading font-bold text-2xl tracking-tight text-[var(--color-ink)]">
-            <a href="/">Cited<span className="text-[var(--color-cited)]">.</span></a>
-          </div>
-          <nav className="text-sm font-medium flex gap-4">
-            <a href="/pricing" className="text-gray-600 hover:text-[var(--color-cited)] transition-colors">Tarifs</a>
-            <a href="/dashboard" className="text-gray-600 hover:text-[var(--color-cited)] transition-colors">Connexion</a>
-          </nav>
-        </div>
-      </header>
+      <MarketingHeader />
 
       <div className="flex-grow py-12 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center mb-12">
@@ -48,7 +39,7 @@ export default async function AnalyseDomainPage({ params }: PageProps) {
             Est-ce que <span className="text-[var(--color-cited)]">{decodedDomain}</span> est recommandé par ChatGPT ?
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Obtenez instantanément votre grille de visibilité IA. Si votre marque n'apparaît pas, vos concurrents prendront votre place.
+            Obtenez une première mesure de visibilité IA sur un échantillon de requêtes. Le résultat sert de point de départ pour votre suivi.
           </p>
         </div>
 

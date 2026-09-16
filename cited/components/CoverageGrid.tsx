@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { captureLead } from "@/app/actions/lead";
+import Link from "next/link";
 
 interface RunData {
   prompt: string;
@@ -25,9 +26,11 @@ export function CoverageGrid({ data }: CoverageGridProps) {
   const { brandName, domain, score, runs } = data;
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmitLead(formData: FormData) {
     setLoading(true);
+    setError("");
     const mentionsCount = runs.filter(r => r.isMentioned).length;
     
     // Process competitor counts simply:
@@ -42,11 +45,18 @@ export function CoverageGrid({ data }: CoverageGridProps) {
       competitorMentions: []
     });
 
-    const res = await captureLead(formData, leadDataPayload);
-    if (res.success) {
-      setSubmitted(true);
+    try {
+      const res = await captureLead(formData, leadDataPayload);
+      if (res.success) {
+        setSubmitted(true);
+      } else {
+        setError(res.error || "Le rapport n’a pas pu être envoyé. Réessayez.");
+      }
+    } catch {
+      setError("Le rapport n’a pas pu être envoyé. Réessayez.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
@@ -86,7 +96,7 @@ export function CoverageGrid({ data }: CoverageGridProps) {
               <div className="flex-grow">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-semibold px-2 py-1 bg-gray-200 text-gray-600 rounded-sm uppercase">{run.family}</span>
-                  <span className="text-gray-900 font-medium">"{run.prompt}"</span>
+                  <span className="text-gray-900 font-medium">« {run.prompt} »</span>
                 </div>
                 
                 {/* BLURRED SECTION */}
@@ -94,16 +104,16 @@ export function CoverageGrid({ data }: CoverageGridProps) {
                   <div className="blur-sm opacity-60 pointer-events-none">
                     {run.isMentioned ? (
                       <div>
-                        <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Ce que dit l'IA de vous :</div>
+                        <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Ce que dit l’IA de vous :</div>
                         <div className="p-3 bg-white border border-[var(--color-cited-light)] rounded text-sm italic text-gray-700">
-                          « {run.snippet || `Votre marque ${brandName} est citée dans la réponse de l'IA comme l'une des meilleures solutions du marché, recommandée pour sa fiabilité.`} »
+                          « {run.snippet || `Votre marque ${brandName} est citée dans la réponse de l’IA comme l’une des meilleures solutions du marché, recommandée pour sa fiabilité.`} »
                         </div>
                       </div>
                     ) : (
                       <div>
                         <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Comment corriger le tir :</div>
                         <div className="p-3 bg-red-50 border border-red-100 rounded text-sm text-gray-700">
-                          <strong>Action requise :</strong> Générer un schéma JSON-LD de type `Organization` et optimiser la sémantique de la page d'accueil avec les entités "Meilleure alternative à...".
+                          <strong>Action requise :</strong> Générer un schéma JSON-LD de type Organization et optimiser la sémantique de la page d’accueil autour des requêtes pertinentes.
                         </div>
                       </div>
                     )}
@@ -128,12 +138,14 @@ export function CoverageGrid({ data }: CoverageGridProps) {
           ))}
         </div>
 
-        {/* OVERLAY CTA */}
-        <div className="absolute inset-0 top-16 bg-white/20 backdrop-blur-[2px] flex items-center justify-center p-4">
+        <p className="sr-only">
+          Le détail des extraits est masqué dans l’audit public. Le rapport est envoyé par email après saisie de votre adresse.
+        </p>
+        <div className="absolute inset-0 top-16 flex items-center justify-center bg-white/20 p-4 backdrop-blur-[2px]">
           <div className="bg-[var(--color-ink)] text-white p-8 rounded-xl shadow-2xl text-center max-w-lg w-full transform transition-transform hover:scale-[1.02] border border-gray-700">
-            <h3 className="text-2xl font-heading mb-3">Débloquez l'analyse détaillée</h3>
-            <p className="text-gray-300 mb-6 text-sm">
-              Découvrez exactement ce que l'IA dit de vous et obtenez les correctifs exacts (contenu, JSON-LD, llms.txt) pour forcer les moteurs à vous recommander.
+            <h3 className="mb-3 text-2xl font-heading">Recevez le détail de votre audit</h3>
+            <p className="mb-6 text-sm text-gray-300">
+              Retrouvez les extraits et les pistes d’action par email, puis créez un compte si vous souhaitez suivre votre marque dans le temps.
             </p>
             
             {submitted ? (
@@ -142,26 +154,34 @@ export function CoverageGrid({ data }: CoverageGridProps) {
               </div>
             ) : (
               <form action={handleSubmitLead} className="flex flex-col gap-3">
-                <input 
+                <label htmlFor="audit-email" className="sr-only">Adresse email</label>
+                <input
+                  id="audit-email"
                   type="email" 
                   name="email"
                   required 
                   placeholder="votre@email.com" 
                   className="px-4 py-3 bg-white rounded-md w-full text-gray-900 border-0 focus:ring-2 focus:ring-[var(--color-cited)] outline-none font-medium"
                 />
+                {error && <div role="alert" className="rounded-md border border-red-300/30 bg-red-500/20 p-3 text-left text-sm text-red-100">{error}</div>}
                 <button 
                   type="submit" 
                   disabled={loading}
                   className="btn-primary bg-white text-[var(--color-ink)] hover:bg-gray-100 disabled:opacity-50 font-bold w-full py-3 text-lg"
                 >
-                  {loading ? "Génération en cours..." : "Recevoir mon plan d'action"}
+                  {loading ? "Envoi en cours…" : "Recevoir le rapport par email"}
                 </button>
-                <div className="text-xs text-gray-400 mt-2 font-medium">100% gratuit. Analyse envoyée par email.</div>
+                <div aria-live="polite" className="mt-2 text-xs font-medium text-gray-400">Rapport gratuit. Votre adresse sert uniquement à l’envoi du rapport.</div>
               </form>
             )}
           </div>
         </div>
 
+      </div>
+
+      <div className="mt-8 flex flex-col items-center justify-center gap-3 text-center sm:flex-row">
+          <Link href="/pricing" className="btn-primary">Voir les plans de suivi</Link>
+          <Link href="/api/auth/signin?callbackUrl=%2Fdashboard" className="btn-secondary">Créer un compte / se connecter</Link>
       </div>
 
     </div>

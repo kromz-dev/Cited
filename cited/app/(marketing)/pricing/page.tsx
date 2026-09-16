@@ -1,6 +1,7 @@
 
 import { Check } from "lucide-react";
 import { createCheckoutSession } from "@/lib/billing/actions";
+import Link from "next/link";
 
 const tiers = [
   {
@@ -71,12 +72,15 @@ export default function PricingPage() {
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-base font-semibold leading-7 text-indigo-600">Tarifs</h2>
           <p className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-            Choisissez le plan adapté à votre visibilité IA
+            Choisissez votre rythme de suivi
           </p>
         </div>
         <p className="mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-gray-600">
-          Obtenez des correctifs concrets pour améliorer votre classement sur ChatGPT, Perplexity et Gemini.
+          Commencez par un audit public, puis choisissez les fonctionnalités de suivi dont votre équipe a besoin.
         </p>
+        <div className="mx-auto mt-8 max-w-2xl rounded-lg border border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-600">
+          Vous avez déjà réalisé un audit ? <Link href="/" className="font-semibold text-[var(--color-cited)] hover:underline">Retourner à l’accueil</Link> ou <Link href="/api/auth/signin?callbackUrl=%2Fdashboard" className="font-semibold text-[var(--color-cited)] hover:underline">créer un compte</Link> pour retrouver votre tableau de bord.
+        </div>
         <div className="isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-y-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-4 lg:gap-x-8 lg:gap-y-0">
           {tiers.map((tier) => (
             <div
@@ -127,17 +131,26 @@ export default function PricingPage() {
                 }}
                 className="mt-6"
               >
-                <button
-                  type="submit"
-                  disabled={!tier.priceId && tier.name !== "FREE"}
-                  className={`w-full py-2 px-4 rounded-md font-semibold text-sm transition-colors ${
+                {tier.name === "FREE" ? (
+                  <Link
+                    href="/api/auth/signin?callbackUrl=%2Fdashboard"
+                    className="block w-full rounded-md bg-[var(--color-cited)] px-4 py-2 text-center text-sm font-semibold text-white transition-colors hover:bg-blue-600"
+                  >
+                    {tier.action}
+                  </Link>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={!tier.priceId}
+                    className={`w-full rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                     tier.mostPopular
                       ? "bg-white text-gray-900 hover:bg-gray-100"
                       : "bg-[var(--color-cited)] text-white hover:bg-blue-600"
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {tier.action}
-                </button>
+                  >
+                    {tier.action}
+                  </button>
+                )}
               </form>
               <ul
                 role="list"

@@ -26,6 +26,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <Settings className="w-4 h-4" />
             Réglages
           </Link>
+          <Link href="/pricing" className="flex items-center gap-2 px-3 py-2 rounded text-muted hover:bg-muted/10 hover:text-ink transition-colors font-medium">
+            Voir les plans
+          </Link>
         </nav>
         <div className="pt-4 border-t border-muted/40 text-sm flex items-center gap-2 justify-between">
           <span className="truncate">{session.user?.name || session.user?.email}</span>

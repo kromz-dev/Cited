@@ -32,7 +32,7 @@ export default async function DashboardPage() {
       <header className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-title font-semibold">Mes marques</h1>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-muted">{brands.length}/3 marques (Plan Pro)</span>
+          <span className="text-sm text-muted">{brands.length} marque{brands.length > 1 ? "s" : ""} suivie{brands.length > 1 ? "s" : ""}</span>
           <Link 
             href="/brands/new"
             className="flex items-center gap-2 bg-ink text-paper px-4 py-2 rounded text-sm font-medium hover:bg-ink/90 transition-colors"
@@ -56,6 +56,7 @@ export default async function DashboardPage() {
       ) : (
         <div className="border border-muted/40 rounded-lg overflow-hidden">
           <table className="w-full text-left text-sm">
+            <caption className="sr-only">Marques suivies et dernières mesures</caption>
             <thead className="bg-muted/10 border-b border-muted/40 text-muted">
               <tr>
                 <th className="px-4 py-3 font-medium">Marque</th>
@@ -66,7 +67,7 @@ export default async function DashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-muted/40">
-              {brands.map((brand: any) => {
+              {brands.map((brand) => {
                 const latestCampaign = brand.campaigns[0];
                 const score = latestCampaign?.visibilityScore !== null ? latestCampaign?.visibilityScore : null;
                 // mock variation for now
