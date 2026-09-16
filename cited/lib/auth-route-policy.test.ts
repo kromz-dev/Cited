@@ -4,7 +4,7 @@ import { isProtectedPath, safeCallbackUrl } from "./auth-route-policy";
 describe("auth route policy", () => {
   it("protects every application surface", () => {
     expect(isProtectedPath("/dashboard")).toBe(true);
-    expect(isProtectedPath("/brands/new")).toBe(true);
+    expect(isProtectedPath("/sites/new")).toBe(true);
     expect(isProtectedPath("/sources")).toBe(true);
     expect(isProtectedPath("/settings/profile")).toBe(true);
   });

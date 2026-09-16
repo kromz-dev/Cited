@@ -1,4 +1,4 @@
-const protectedPrefixes = ["/dashboard", "/brands", "/sources", "/settings"] as const;
+const protectedPrefixes = ["/dashboard", "/sites", "/sources", "/settings"] as const;
 
 export function isProtectedPath(pathname: string): boolean {
   return protectedPrefixes.some(

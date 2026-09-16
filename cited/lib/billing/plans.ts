@@ -1,4 +1,4 @@
-import type { Plan } from "@prisma/client";
+export type Plan = "FREE" | "SOLO" | "PRO" | "SCALE";
 
 /**
  * Correspondance entre les tarifs Stripe et les plans du produit.

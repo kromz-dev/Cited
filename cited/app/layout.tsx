@@ -1,24 +1,32 @@
 import type { Metadata } from "next";
-import { Chivo, IBM_Plex_Sans } from "next/font/google";
+import { Space_Grotesk, DM_Sans, Geist } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
-const chivo = Chivo({
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["600"],
+  weight: ["500", "700"],
   variable: "--font-heading",
   display: "swap",
 });
 
-const ibmPlexSans = IBM_Plex_Sans({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "700"],
   variable: "--font-body",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Cited - Mesurez votre visibilité IA",
-  description: "L'outil qui mesure et corrige votre visibilité dans les moteurs de réponse IA.",
+  title: "Cited | Rendez votre site lisible par ChatGPT & Claude",
+  description: "80% des sites React & SPA apparaissent vides aux LLMs. Cited est un scanner technique et un proxy géré qui permet aux sites modernes d'être lus et cités par l'IA.",
+  keywords: ["LLM optimization", "AEO", "SEO pour IA", "ChatGPT lisibilité", "Perplexity bot", "Claude bot", "React SEO"],
+  openGraph: {
+    title: "Cited | Rendez votre site lisible par ChatGPT & Claude",
+    description: "Cited est un scanner technique et un proxy géré qui permet aux sites modernes d'être lus et cités par l'IA.",
+  },
 };
 
 export default function RootLayout({
@@ -27,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${chivo.variable} ${ibmPlexSans.variable}`}>
+    <html lang="fr" className={cn(spaceGrotesk.variable, dmSans.variable, "font-sans", geist.variable)}>
       <body className="antialiased min-h-screen">
         {children}
       </body>

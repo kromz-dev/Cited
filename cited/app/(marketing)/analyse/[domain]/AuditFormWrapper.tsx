@@ -6,7 +6,7 @@ import type { AuditResult } from "@/components/AuditForm";
 import { CoverageGrid } from "@/components/CoverageGrid";
 import Link from "next/link";
 
-export function AuditFormWrapper({ initialDomain, initialBrandName }: { initialDomain: string, initialBrandName: string }) {
+export function AuditFormWrapper({ initialDomain }: { initialDomain: string }) {
   const [auditData, setAuditData] = useState<AuditResult | null>(null);
 
   return (
@@ -15,7 +15,6 @@ export function AuditFormWrapper({ initialDomain, initialBrandName }: { initialD
         <AuditForm 
           onAuditComplete={setAuditData} 
           initialDomain={initialDomain} 
-          initialBrandName={initialBrandName} 
         />
       ) : (
         <div>

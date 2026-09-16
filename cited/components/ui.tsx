@@ -20,14 +20,14 @@ export function Button({ children, className = "", variant = "primary", ...props
   return <button className={`inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 font-heading text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${styles[variant]} ${className}`} {...props}>{children}</button>;
 }
 
-export function Badge({ children, tone = "default" }: { children: ReactNode; tone?: Tone }) {
+export function Badge({ children, tone = "default", className = "", ...props }: HTMLAttributes<HTMLSpanElement> & { children: ReactNode; tone?: Tone }) {
   const styles = {
     default: "bg-paper-deep text-muted",
     cited: "bg-cited-light text-cited",
     rival: "bg-rival-light text-rival",
     signal: "bg-signal-light text-signal",
   };
-  return <span className={`inline-flex items-center rounded-sm px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${styles[tone]}`}>{children}</span>;
+  return <span className={`inline-flex items-center rounded-sm px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${styles[tone]} ${className}`} {...props}>{children}</span>;
 }
 
 export function PageHeader({ eyebrow, title, description, action }: { eyebrow?: string; title: string; description?: string; action?: ReactNode }) {
