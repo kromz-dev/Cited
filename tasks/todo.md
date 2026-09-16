@@ -1,15 +1,16 @@
 # Task List
 
-- [ ] Task 1: Update Prisma Schema for Scanner
-- [ ] Task 2: Core Scanner Logic
-- [ ] Checkpoint: Foundation
-- [ ] Task 3: Public API Endpoint for Instant Scan
-- [ ] Task 4: Landing Page UI (Scan Form)
-- [ ] Checkpoint: Acquisition
-- [ ] Task 5: API/Actions for Monitored Sites
-- [ ] Task 6: Dashboard UI
-- [ ] Checkpoint: Agency Dashboard
-- [ ] Task 7: Inngest Cron Job
-- [ ] Task 8: Alerting Service
-- [ ] Task 9: Stripe Integration
-- [ ] Checkpoint: Complete
+- [x] Task 1: Update Prisma Schema for Scanner
+- [x] Task 2: Core Scanner Logic
+- [x] Checkpoint: Foundation
+- [x] Task 3: Public API Endpoint for Instant Scan
+- [x] Task 4: Landing Page UI (Scan Form)
+- [x] Checkpoint: Acquisition
+- [x] Task 5: API/Actions for Monitored Sites
+- [x] Task 6: Dashboard UI
+- [x] Checkpoint: Agency Dashboard
+- [x] Task 7: Inngest Cron Job
+- [x] Task 8: Alerting Service
+- [x] Task 9: Stripe Integration
+- [x] Task 10: Paywall (Block adding sites if not subscribed)
+- [x] Checkpoint: Complete
