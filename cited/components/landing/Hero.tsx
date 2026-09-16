@@ -1,14 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { AuditForm } from "@/components/AuditForm";
-import { CoverageGrid } from "@/components/CoverageGrid";
-import type { AuditData } from "@/components/CoverageGrid";
+import { ScanForm } from "@/components/landing/ScanForm";
 import { Badge } from "@/components/ui/badge";
 
 export function Hero() {
-  const [auditData, setAuditData] = useState<AuditData | null>(null);
-
   return (
     <section className="relative overflow-hidden px-6 pb-24 pt-20 sm:pt-32">
       {/* Background Glow */}
@@ -66,13 +61,9 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Audit Form (Primary Interactive CTA) */}
-        <div className="relative z-10 w-full rounded-2xl border border-line bg-white p-6 shadow-glass animate-fade-in" style={{ animationDelay: "700ms" }}>
-          {!auditData ? (
-            <AuditForm onAuditComplete={setAuditData} />
-          ) : (
-            <CoverageGrid data={auditData} />
-          )}
+        {/* Scan Form (Primary Interactive CTA) */}
+        <div className="relative z-10 w-full animate-fade-in" style={{ animationDelay: "700ms" }}>
+          <ScanForm />
         </div>
       </div>
     </section>
