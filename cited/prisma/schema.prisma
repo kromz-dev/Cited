@@ -480,7 +480,7 @@ enum Effort {
 
 enum CorrectionType {
   CONTENT
-  SCHEMA
+  JSONLD
   LLMS_TXT
   BACKLINK
   LISTING

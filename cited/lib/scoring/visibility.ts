@@ -42,6 +42,41 @@ function calculateScoreForRuns(runs: RunData[]): number | null {
   return Math.round(score * 10) / 10;
 }
 
+/**
+ * Score et demi-intervalle de confiance à 95 %.
+ *
+ * Les moteurs de réponse IA ne sont pas déterministes : deux appels identiques
+ * ne donnent pas la même réponse. Un score issu d'un seul appel par requête
+ * mesure donc surtout du bruit. En interrogeant N fois la même requête, la
+ * dispersion des résultats devient mesurable, et toute variation inférieure à
+ * la marge ci-dessous ne doit pas être présentée comme une tendance.
+ */
+export function scoreWithConfidence(runs: RunData[]): {
+  score: number;
+  marginOfError: number;
+} {
+  if (!runs || runs.length === 0) return { score: 0, marginOfError: 0 };
+
+  const weights = runs.map((r) =>
+    r.isMentioned ? getPositionWeight(r.position) : 0,
+  );
+  const mean = weights.reduce((a, b) => a + b, 0) / weights.length;
+
+  if (weights.length < 2) {
+    return { score: Math.round(mean * 10) / 10, marginOfError: 0 };
+  }
+
+  // Écart-type d'échantillon, puis erreur-type de la moyenne.
+  const variance =
+    weights.reduce((acc, w) => acc + (w - mean) ** 2, 0) / (weights.length - 1);
+  const standardError = Math.sqrt(variance) / Math.sqrt(weights.length);
+
+  return {
+    score: Math.round(mean * 10) / 10,
+    marginOfError: Math.round(1.96 * standardError * 10) / 10,
+  };
+}
+
 export function calculateVisibilityScore(runs: RunData[]): VisibilityReport {
   if (!runs || runs.length === 0) {
     return { globalScore: 0, problemScore: null, solutionScore: null, comparisonScore: null };
