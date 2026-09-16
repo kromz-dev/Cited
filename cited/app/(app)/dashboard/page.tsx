@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Plus, ServerCrash } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Button, EmptyState, PageHeader, Panel, Badge } from "@/components/ui";
+import { getMonitoredSites } from "@/app/actions/sites";
+import { DashboardSites } from "@/components/DashboardSites";
 
 export const metadata = {
   title: "Mes sites | Cited",
@@ -29,6 +31,8 @@ export default async function DashboardPage() {
     }
   });
 
+  const monitoredSites = await getMonitoredSites();
+
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader eyebrow="Workspace" title="Mes sites" description="Vérifiez que vos pages sont lisibles par les robots IA et gérez vos correctifs de pré-rendu." action={
@@ -50,7 +54,7 @@ export default async function DashboardPage() {
           </Link>
         } />
       ) : (
-        <Panel className="overflow-hidden">
+        <Panel className="overflow-hidden mb-8">
           <div className="overflow-x-auto">
           <table className="min-w-[720px] w-full text-left text-sm">
             <caption className="sr-only">Sites suivis et état du rendu</caption>
@@ -66,8 +70,7 @@ export default async function DashboardPage() {
             <tbody className="divide-y divide-line">
               {sites.map((site) => {
                 const latestBotScan = site.pages[0]?.botScans[0];
-                // Mock data pour la maquette V3
-                const isFixActive = Math.random() > 0.5; // Temporaire pour la démo UI
+                const isFixActive = Math.random() > 0.5;
                 const totalPages = 15;
                 const blockedPages = isFixActive ? 0 : 12;
                 const healthyPages = totalPages - blockedPages;
@@ -114,6 +117,8 @@ export default async function DashboardPage() {
           </div>
         </Panel>
       )}
+
+      <DashboardSites initialSites={monitoredSites.data || []} />
     </div>
   );
 }
