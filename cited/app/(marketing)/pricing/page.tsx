@@ -119,8 +119,10 @@ export default function PricingPage() {
               <form
                 action={async () => {
                   "use server";
-                  if (tier.priceId) {
-                    await createCheckoutSession(tier.priceId);
+                  // On transmet le nom du plan, jamais l'identifiant de tarif :
+                  // c'est le serveur qui décide du prix correspondant.
+                  if (tier.name !== "FREE") {
+                    await createCheckoutSession(tier.name);
                   }
                 }}
                 className="mt-6"

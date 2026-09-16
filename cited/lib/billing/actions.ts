@@ -1,15 +1,28 @@
 "use server";
 
 import { stripe } from "./stripe";
+import { isPurchasablePlan, priceIdForPlan } from "./plans";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 
-export async function createCheckoutSession(priceId: string) {
+/**
+ * Ouvre un paiement Stripe pour un plan.
+ *
+ * L'argument est un nom de plan, jamais un identifiant de tarif : un tarif
+ * transmis par le client permettrait de payer le montant le plus bas du
+ * compte Stripe et d'obtenir le plan le plus élevé.
+ */
+export async function createCheckoutSession(plan: string) {
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
   }
+
+  if (!isPurchasablePlan(plan)) {
+    throw new Error(`Plan inconnu : ${plan}`);
+  }
+  const priceId = priceIdForPlan(plan);
 
   const user = await db.user.findUnique({
     where: { id: session.user.id }
