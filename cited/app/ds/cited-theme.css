@@ -1,0 +1,46 @@
+/* Cited — surcouche du design system Modernist : polices douces, angles arrondis */
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap");
+
+:root {
+  --font-heading: "Nunito", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, sans-serif;
+  --font-heading-weight: 800;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --cited-shell: 1240px;
+}
+
+body { font-family: var(--font-body); color: var(--color-text); background: var(--color-bg); }
+
+.lbl { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.shell { width: 100%; max-width: var(--cited-shell); margin: 0 auto; padding-inline: 24px; box-sizing: border-box; }
+
+/* Barre de navigation sombre */
+.topbar { background: var(--color-text); color: var(--color-bg); }
+.topbar .shell { display: flex; align-items: center; gap: 26px; padding-block: 14px; flex-wrap: wrap; }
+.topbar a { color: var(--color-bg); text-decoration: none; font-size: 14px; opacity: 0.72; }
+.topbar a:hover { opacity: 1; }
+.topbar a.on { opacity: 1; border-bottom: 2px solid var(--color-accent); padding-bottom: 2px; }
+
+/* Marque */
+.brand { display: inline-flex; align-items: center; gap: 0; font-family: var(--font-heading); font-weight: 800; font-size: 19px; letter-spacing: -0.02em; text-decoration: none; }
+.brand svg { display: block; margin-right: 9px; }
+
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--color-accent); color: var(--color-bg); display: grid; place-items: center; font-family: var(--font-heading); font-weight: 800; font-size: 12px; flex: none; }
+
+/* Cellules de grille séparées par les filets du système */
+.grid-rule { display: grid; gap: 1px; background: var(--color-divider); }
+.grid-rule > * { background: var(--color-bg); }
+
+.statnum { font-family: var(--font-heading); font-weight: 800; font-size: 38px; line-height: 1.1; }
+.sect { border-bottom: 2px solid var(--color-divider); }
+.table { border-radius: var(--radius-md); overflow: hidden; }
+.dot-on { width: 16px; height: 16px; border-radius: 5px; background: var(--color-accent); flex: none; }
+.dot-off { width: 16px; height: 16px; border-radius: 5px; border: 2px solid var(--color-text); flex: none; }
+
+/* Les liens d'interface restent à l'encre ; l'accent est réservé aux liens dans le texte courant. */
+a { color: var(--color-text); }
+p a, li a { color: var(--color-accent-700); }
+a:hover { color: var(--color-accent); }

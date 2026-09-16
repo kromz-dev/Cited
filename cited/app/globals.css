@@ -227,3 +227,38 @@ h1, h2, h3, h4, h5, h6 {
     @apply font-sans;
   }
 }
+/* Force Shadcn to use designer variables */
+:root {
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+  --card: var(--color-bg);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-bg);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-accent);
+  --primary-foreground: var(--color-bg);
+  --secondary: var(--color-surface);
+  --secondary-foreground: var(--color-text);
+  --muted: var(--color-surface);
+  --muted-foreground: var(--color-muted);
+  --border: var(--color-divider);
+  --input: var(--color-divider);
+  --ring: var(--color-accent);
+}
+.dark {
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+  --card: var(--color-bg);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-bg);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-accent);
+  --primary-foreground: var(--color-bg);
+  --secondary: var(--color-surface);
+  --secondary-foreground: var(--color-text);
+  --muted: var(--color-surface);
+  --muted-foreground: var(--color-muted);
+  --border: var(--color-divider);
+  --input: var(--color-divider);
+  --ring: var(--color-accent);
+}
