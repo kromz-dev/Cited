@@ -8,8 +8,10 @@ if (!process.env.INNGEST_SIGNING_KEY && process.env.NODE_ENV === "production") {
   );
 }
 
+import { functions } from "@/inngest/functions";
+
 // Inngest functions will be added back for V3 scans
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [],
+  functions,
 });

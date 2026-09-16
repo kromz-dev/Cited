@@ -1,4 +1,7 @@
-import { inngest } from "./client";
+import { dailyScanJob } from "./functions/daily-scan";
+import { scanSiteJob } from "./functions/scan-site";
 
-// Placeholder for V3 scanner functions
-export const functions = [];
+export const functions = [
+  dailyScanJob,
+  scanSiteJob
+];
