@@ -1,72 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { AuditForm, type AuditResult } from "@/components/AuditForm";
+import { BarChart3, Check, ShieldCheck } from "lucide-react";
+import { AuditForm } from "@/components/AuditForm";
 import { CoverageGrid } from "@/components/CoverageGrid";
-import { MarketingHeader } from "@/components/MarketingHeader";
+import type { AuditData } from "@/components/CoverageGrid";
+import Link from "next/link";
+import { Badge, Panel } from "@/components/ui";
 
 export default function Home() {
-  const [auditData, setAuditData] = useState<AuditResult | null>(null);
-
-  return (
-    <main className="min-h-screen bg-[var(--color-paper)] flex flex-col">
-      <MarketingHeader />
-
-      {/* Contenu */}
-      <div className="flex-grow py-12 px-4 sm:px-6">
-        <div className="mx-auto mb-12 max-w-4xl text-center">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-cited)]">Visibilité dans les réponses IA</p>
-          <h1 className="mb-6 font-heading text-5xl font-bold text-[var(--color-ink)] md:text-6xl">
-            Comprenez où votre marque apparaît
-          </h1>
-          <p className="mx-auto max-w-2xl text-xl leading-relaxed text-gray-600">
-            Lancez un audit public sur un échantillon de requêtes et identifiez les sujets où votre marque est citée ou absente.
-          </p>
-        </div>
-
-        {!auditData ? (
-          <AuditForm onAuditComplete={setAuditData} />
-        ) : (
-          <div>
-            <div className="text-center mb-4">
-              <button 
-                onClick={() => setAuditData(null)} 
-                className="text-sm text-[var(--color-cited)] hover:underline"
-              >
-                ← Refaire un test
-              </button>
-            </div>
-            <CoverageGrid data={auditData} />
-          </div>
-        )}
+  const [auditData, setAuditData] = useState<AuditData | null>(null);
+  return <main className="min-h-screen bg-paper text-ink">
+    <header className="border-b border-line bg-paper/90 px-6 py-5 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between">
+        <Link href="/" className="font-heading text-xl font-semibold tracking-tight">Cited<span className="text-cited">.</span></Link>
+        <nav className="flex items-center gap-5 text-sm font-medium text-muted"><Link href="/pricing" className="hover:text-ink">Tarifs</Link><Link href="/dashboard" className="hover:text-ink">Connexion</Link></nav>
       </div>
-
-      <section id="fonctionnement" className="border-t border-gray-200 bg-white px-6 py-16">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-10 max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-wider text-[var(--color-cited)]">Un parcours en trois étapes</p>
-            <h2 className="mt-2 text-3xl font-heading font-bold text-[var(--color-ink)]">Du premier signal au suivi</h2>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {[
-              ["01", "Testez", "Renseignez votre marque et votre domaine pour lancer un audit public."],
-              ["02", "Recevez", "Consultez le score et les requêtes échantillonnées, puis recevez le détail par email."],
-              ["03", "Suivez", "Créez votre compte pour retrouver vos marques et choisir un plan de suivi adapté."],
-            ].map(([number, title, description]) => (
-              <div key={number} className="rounded-lg border border-gray-200 p-6">
-                <span className="text-sm font-semibold text-[var(--color-cited)]">{number}</span>
-                <h3 className="mt-4 text-xl font-heading font-semibold">{title}</h3>
-                <p className="mt-2 leading-relaxed text-gray-600">{description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-8 text-center text-sm text-gray-500">
-        © 2026 Cited. Tous droits réservés.
-      </footer>
-    </main>
-  );
+    </header>
+    <section className="relative overflow-hidden px-6 pb-20 pt-20 sm:pt-28">
+      <div className="pointer-events-none absolute left-1/2 top-[-220px] h-[520px] w-[720px] -translate-x-1/2 rounded-full bg-cited-light/70 blur-3xl" />
+      <div className="relative mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
+        <div><Badge tone="cited">GEO / visibilité des marques</Badge><h1 className="mt-6 max-w-3xl text-5xl leading-[1.03] sm:text-7xl">La couverture de votre marque, <span className="text-cited">réponse par réponse.</span></h1><p className="mt-6 max-w-xl text-lg leading-8 text-muted">Cited mesure si les moteurs de réponse recommandent votre marque — et transforme chaque manque en action claire.</p><div className="mt-8 flex flex-wrap items-center gap-5 text-sm text-muted"><span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-cited" /> Mesure transparente</span><span className="inline-flex items-center gap-2"><BarChart3 className="h-4 w-4 text-cited" /> Données exploitables</span></div></div>
+        {!auditData ? <AuditForm onAuditComplete={setAuditData} /> : <CoverageGrid data={auditData} />}
+      </div>
+    </section>
+    <section className="border-y border-line bg-white px-6 py-12"><div className="mx-auto grid max-w-6xl gap-4 md:grid-cols-3">{["Requêtes métier", "Moteurs de réponse", "Signal de citation"].map((item, index) => <Panel key={item} className="p-5"><div className="mb-4 flex h-8 w-8 items-center justify-center rounded-full bg-cited-light text-cited"><Check className="h-4 w-4" /></div><h2 className="text-lg">{item}</h2><p className="mt-2 text-sm leading-6 text-muted">{["Testez les formulations que vos clients utilisent vraiment.", "Comparez votre présence sur les réponses génératives.", "Comprenez les sources qui font apparaître votre marque."][index]}</p></Panel>)}</div></section>
+    <footer className="px-6 py-8 text-center text-sm text-muted">© 2026 Cited · Mesure de visibilité IA</footer>
+  </main>;
 }

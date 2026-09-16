@@ -2,6 +2,8 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
 import LaunchCampaignButton from "./LaunchCampaignButton";
+import { CoverageMatrix } from "@/components/geo/CoverageMatrix";
+import { Badge, EmptyState, Panel, PageHeader } from "@/components/ui";
 
 export default async function BrandDetailPage(props: { params: Promise<{ brandId: string }> }) {
   const session = await auth();
@@ -33,67 +35,22 @@ export default async function BrandDetailPage(props: { params: Promise<{ brandId
   const engines = ["GROQ", "GEMINI", "CHATGPT", "PERPLEXITY", "GOOGLE_AIO"];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      <header className="flex justify-between items-end border-b border-muted/40 pb-4">
-        <div>
-          <h1 className="text-3xl font-title font-semibold">{brand.name}</h1>
-          <p className="text-muted">{brand.domain}</p>
-        </div>
-        <div className="text-right flex items-center space-x-6">
+    <div className="mx-auto max-w-6xl space-y-10">
+      <PageHeader eyebrow={`Marque · ${brand.domain}`} title={brand.name} description="Une lecture consolidée de la couverture, des signaux sémantiques et des correctifs générés." action={
+        <div className="flex items-center gap-5">
           <LaunchCampaignButton brandId={brand.id} isRunning={isRunning} />
-          <div>
-            <div className="text-sm text-muted mb-1">Dernier score</div>
-            <div className="text-4xl font-title font-bold text-ink">
-              {latestCampaign?.visibilityScore !== null && latestCampaign?.visibilityScore !== undefined ? Math.round(latestCampaign.visibilityScore) : "-"}
-            </div>
-          </div>
+          <div className="text-right"><div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Score</div><div className="font-heading text-4xl text-cited">{latestCampaign?.visibilityScore !== null && latestCampaign?.visibilityScore !== undefined ? Math.round(latestCampaign.visibilityScore) : "—"}</div></div>
         </div>
-      </header>
+      } />
 
       {/* Matrice de couverture */}
       <section>
-        <h2 className="text-xl font-title font-semibold mb-4">Matrice de couverture</h2>
-        <div className="overflow-x-auto border border-muted/40 rounded-lg">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-muted/10 border-b border-muted/40 text-muted">
-              <tr>
-                <th className="px-4 py-3 font-medium">Requête</th>
-                {engines.map(eng => (
-                  <th key={eng} className="px-4 py-3 font-medium text-center">{eng}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-muted/40">
-              {brand.prompts.map((prompt: any) => (
-                <tr key={prompt.id} className="hover:bg-muted/5 transition-colors">
-                  <td className="px-4 py-3 font-medium text-ink max-w-sm truncate" title={prompt.text}>
-                    {prompt.text}
-                  </td>
-                  {engines.map(eng => {
-                    const run = runs.find((r: any) => r.promptId === prompt.id && r.engine === eng);
-                    return (
-                      <td key={eng} className="px-4 py-3 text-center">
-                        {run ? (
-                          run.brandMentioned ? (
-                            <div className="w-5 h-5 mx-auto bg-cited rounded-sm" title="Cité" />
-                          ) : (
-                            <div className="w-5 h-5 mx-auto border border-muted/40 bg-paper rounded-sm" title="Absent" />
-                          )
-                        ) : (
-                          <div className="w-5 h-5 mx-auto border border-muted/40 border-dashed rounded-sm" title="En attente" />
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-heading font-semibold">Matrice de couverture</h2><Badge tone={runs.length ? "cited" : "default"}>{runs.length ? `${runs.length} mesures` : "En attente"}</Badge></div>
+        {brand.prompts.length ? <CoverageMatrix columns={engines} rows={brand.prompts.map((prompt: any) => ({ label: prompt.text, cells: engines.map((eng) => { const run = runs.find((r: any) => r.promptId === prompt.id && r.engine === eng); return !run ? "pending" : run.brandMentioned ? "cited" : "absent"; }) }))} /> : <EmptyState title="Aucune requête configurée" description="Ajoutez des requêtes à cette marque pour alimenter la matrice." />}
       </section>
       {/* Détails de l'Analyse (L'Electrochoc) */}
       <section className="pt-8">
-        <h2 className="text-xl font-title font-semibold mb-4">Analyse Sémantique & Évaluation RAG</h2>
+        <h2 className="text-xl font-heading font-semibold mb-4">Analyse Sémantique & Évaluation RAG</h2>
         <div className="grid gap-4 md:grid-cols-2">
           {runs.filter((r: any) => r.status === "DONE").map((run: any) => {
             let competitors = [];
@@ -102,7 +59,7 @@ export default async function BrandDetailPage(props: { params: Promise<{ brandId
             } catch (e) {}
 
             return (
-              <div key={run.id} className="border border-muted/40 rounded-lg p-5 bg-paper flex flex-col relative overflow-hidden">
+              <Panel key={run.id} className="flex flex-col overflow-hidden bg-paper p-5">
                 <div className="flex justify-between items-start mb-2">
                   <div className="text-sm font-semibold text-ink">{run.engine}</div>
                   <div className={`text-xs px-2 py-1 rounded font-medium ${
@@ -113,7 +70,7 @@ export default async function BrandDetailPage(props: { params: Promise<{ brandId
                     {run.sentiment || "NEUTRAL"}
                   </div>
                 </div>
-                
+
                 <div className="text-sm text-muted mb-4 line-clamp-2">
                   "{brand.prompts.find((p: any) => p.id === run.promptId)?.text}"
                 </div>
@@ -154,7 +111,7 @@ export default async function BrandDetailPage(props: { params: Promise<{ brandId
                     </div>
                   </div>
                 )}
-              </div>
+              </Panel>
             );
           })}
           {runs.filter((r: any) => r.status === "DONE").length === 0 && (
@@ -167,12 +124,12 @@ export default async function BrandDetailPage(props: { params: Promise<{ brandId
 
       {corrections.length > 0 && (
         <section className="pt-8">
-          <h2 className="text-2xl font-title font-semibold mb-6">Correctifs générés</h2>
+          <h2 className="text-2xl font-heading font-semibold mb-6">Correctifs générés</h2>
           <div className="grid gap-6 md:grid-cols-3">
             {corrections.map((corr: any) => (
               <div key={corr.id} className="border border-muted/40 rounded-lg p-5 bg-paper flex flex-col">
                 <div className="text-xs font-semibold uppercase tracking-wider text-cited mb-2">{corr.type}</div>
-                <h3 className="font-title font-medium text-lg mb-4">{corr.title}</h3>
+                <h3 className="font-heading font-medium text-lg mb-4">{corr.title}</h3>
                 <div className="bg-muted/5 border border-muted/20 rounded p-3 text-sm flex-1 font-mono text-muted whitespace-pre-wrap overflow-y-auto max-h-64">
                   {corr.content}
                 </div>
@@ -183,7 +140,7 @@ export default async function BrandDetailPage(props: { params: Promise<{ brandId
       )}
 
       <section className="pt-8">
-         <h2 className="text-xl font-title font-semibold mb-4">Évolution</h2>
+         <h2 className="text-xl font-heading font-semibold mb-4">Évolution</h2>
          <div className="h-64 border border-muted/40 rounded-lg flex items-center justify-center text-muted">
             [Graphique d'évolution - Bientôt disponible]
          </div>

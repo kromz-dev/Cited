@@ -45,7 +45,7 @@ export default function NewBrandPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-8">
-      <h1 className="text-2xl font-title font-semibold mb-8">Ajouter une marque</h1>
+      <h1 className="text-2xl font-heading font-semibold mb-8">Ajouter une marque</h1>
       
       {step === 1 && (
         <form onSubmit={handleDetect} className="space-y-4">

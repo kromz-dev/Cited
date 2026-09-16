@@ -2,7 +2,8 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { redirect } from "next/navigation";
+import { Button, EmptyState, PageHeader, Panel } from "@/components/ui";
+import { CoverageCell } from "@/components/geo/CoverageCell";
 
 export const metadata = {
   title: "Mes marques | Cited",
@@ -12,7 +13,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id;
   
-  if (!userId) redirect("/login");
+  if (!userId) return null;
 
   const brands = await db.brand.findMany({
     where: { userId },
@@ -28,36 +29,29 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <header className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-title font-semibold">Mes marques</h1>
+    <div className="mx-auto max-w-6xl">
+      <PageHeader eyebrow="Workspace" title="Mes marques" description="Suivez la couverture réelle de vos marques dans les moteurs de réponse." action={
         <div className="flex items-center gap-4">
-          <span className="text-sm text-muted">{brands.length} marque{brands.length > 1 ? "s" : ""} suivie{brands.length > 1 ? "s" : ""}</span>
-          <Link 
-            href="/brands/new"
-            className="flex items-center gap-2 bg-ink text-paper px-4 py-2 rounded text-sm font-medium hover:bg-ink/90 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Ajouter une marque
+          <span className="hidden text-sm text-muted sm:inline">{brands.length}/3 marques</span>
+          <Link href="/brands/new">
+            <Button><Plus className="h-4 w-4" /> Ajouter une marque</Button>
           </Link>
         </div>
-      </header>
+      } />
 
       {brands.length === 0 ? (
-        <div className="border border-muted/40 rounded-lg p-12 text-center">
-          <p className="text-muted mb-4">Vous ne suivez aucune marque pour le moment.</p>
+        <EmptyState title="Aucune marque suivie" description="Ajoutez une marque pour commencer à mesurer sa couverture dans les réponses IA." action={
           <Link 
             href="/brands/new"
-            className="inline-flex items-center gap-2 bg-cited text-paper px-4 py-2 rounded text-sm font-medium hover:bg-cited/90 transition-colors"
+            className="inline-flex rounded-md bg-cited px-4 py-2.5 font-heading text-sm font-semibold text-white hover:bg-ink"
           >
             Commencer le suivi
           </Link>
-        </div>
+        } />
       ) : (
-        <div className="border border-muted/40 rounded-lg overflow-hidden">
+        <Panel className="overflow-hidden">
           <table className="w-full text-left text-sm">
-            <caption className="sr-only">Marques suivies et dernières mesures</caption>
-            <thead className="bg-muted/10 border-b border-muted/40 text-muted">
+            <thead className="border-b border-line bg-paper text-muted">
               <tr>
                 <th className="px-4 py-3 font-medium">Marque</th>
                 <th className="px-4 py-3 font-medium">Score</th>
@@ -66,14 +60,13 @@ export default async function DashboardPage() {
                 <th className="px-4 py-3 font-medium text-right">Dernière mesure</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-muted/40">
-              {brands.map((brand) => {
+            <tbody className="divide-y divide-line">
+              {brands.map((brand: any) => {
                 const latestCampaign = brand.campaigns[0];
                 const score = latestCampaign?.visibilityScore !== null ? latestCampaign?.visibilityScore : null;
-                // mock variation for now
-                const variation = score !== null ? "+2%" : "-";
+                const variation = "-";
                 return (
-                  <tr key={brand.id} className="hover:bg-muted/5 transition-colors group">
+                  <tr key={brand.id} className="group hover:bg-paper/70">
                     <td className="px-4 py-4">
                       <Link href={`/brands/${brand.id}`} className="block">
                         <div className="font-semibold text-ink">{brand.name}</div>
@@ -83,18 +76,12 @@ export default async function DashboardPage() {
                     <td className="px-4 py-4 font-medium">
                       {score !== null && score !== undefined ? `${Math.round(score)}/100` : "En attente"}
                     </td>
-                    <td className="px-4 py-4 text-signal">
-                      {variation}
+                    <td className="px-4 py-4 text-muted">
+                      {variation === "-" ? <span aria-label="Variation indisponible">—</span> : variation}
                     </td>
                     <td className="px-4 py-4">
-                      <div className="grid grid-cols-4 gap-[2px] w-[60px]">
-                        {/* Mock 12-cells mini grid */}
-                        {Array.from({ length: 12 }).map((_, i) => (
-                          <div 
-                            key={i} 
-                            className={`w-3 h-3 ${i % 3 === 0 ? 'bg-cited' : 'bg-paper border border-muted/40'}`}
-                          />
-                        ))}
+                      <div className="flex items-center gap-1" aria-label={latestCampaign?.runs?.length ? `${latestCampaign.runs.filter((run: any) => run.brandMentioned).length} citations sur ${latestCampaign.runs.length}` : "Aucune mesure"}>
+                        {latestCampaign?.runs?.slice(0, 8).map((run: any) => <CoverageCell key={run.id} state={run.status === "COMPLETED" ? (run.brandMentioned ? "cited" : "absent") : "pending"} label={run.promptText} />) || <span className="text-xs text-muted">—</span>}
                       </div>
                     </td>
                     <td className="px-4 py-4 text-right text-muted">
@@ -105,7 +92,7 @@ export default async function DashboardPage() {
               })}
             </tbody>
           </table>
-        </div>
+        </Panel>
       )}
     </div>
   );
