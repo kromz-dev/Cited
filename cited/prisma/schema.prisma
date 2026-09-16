@@ -409,13 +409,25 @@ model ProcessedWebhook {
   processedAt DateTime @default(now())
 }
 
+/// Limitation de débit à fenêtre fixe. La base est la seule ressource
+/// partagée entre instances en exécution sans serveur.
+model RateLimit {
+  id     String   @id @default(cuid())
+  key    String
+  window DateTime
+  count  Int      @default(1)
+
+  @@unique([key, window])
+  @@index([window])
+}
+
 // ---------------------------------------------------------------------------
 // Énumérations
 // ---------------------------------------------------------------------------
 
 enum Plan {
   FREE
-  STARTER
+  SOLO
   PRO
   SCALE
 }

@@ -66,8 +66,21 @@ Correction : réserver `GROQ` au rôle de juge et de générateur, et mesurer av
 - [ ] Affichage de la marge d'erreur sur toute variation
 
 ### Lot 4 — Facturation et quotas
+- [x] Table blanche des tarifs côté serveur : le plan se déduit de ce que Stripe confirme avoir facturé
+- [x] Idempotence des webhooks Stripe rendue transactionnelle, rejeu traité en succès
+- [x] Rétrogradation de plan effective, fin de période lue au bon endroit de l'API Stripe
 - [ ] Quotas durs sur les runs, blocage avant l'action
-- [ ] Idempotence des webhooks Stripe
+
+### Sécurité — bloquants traités
+- [x] `AUTH_SECRET` était un texte de remplacement : en session JWT, cela permettait de forger le jeton de n'importe quel compte
+- [x] `launchAuditCampaign` s'exécutait sans authentification, sur un `brandId` reçu du client
+- [x] `/api/inngest` acceptait tout POST anonyme, `INNGEST_SIGNING_KEY` absente
+- [x] `/api/audit` sans validation ni limitation de débit — Zod + plafond horaire adossé à la base
+- [x] Élévation de plan : on pouvait payer le tarif le plus bas et recevoir PRO
+- [ ] Validation et quotas sur `createBrand` et `detectBrand`
+- [ ] Échappement HTML et limitation de débit sur `captureLead` et l'envoi Resend
+- [ ] Middleware en refus par défaut
+- [ ] Export et suppression de compte (RGPD)
 
 ### Lot 5 — Mise en production
 - [ ] Audit de sécurité

@@ -3,19 +3,60 @@ import { getEngine } from "@/lib/engines";
 import { generateSmartPrompts } from "@/lib/prompts/query-generator";
 import { evaluateBrandMention } from "@/lib/analysis/llm-judge";
 import { calculateVisibilityScore } from "@/lib/scoring/visibility";
-import { db } from "@/lib/db";
+import { rateLimit, callerKey } from "@/lib/rate-limit";
+import { z } from "zod";
 
 // Force Node.js runtime car Prisma n'est pas compatible Edge sans configuration spécifique
 export const runtime = "nodejs";
 export const maxDuration = 60; // Autoriser jusqu'à 60s pour l'API Gemini
 
+/**
+ * Un audit consomme une dizaine d'appels de moteur et de juge. La route est
+ * publique : sans plafond, une boucle anonyme épuise le quota d'API et met
+ * hors service les comptes payants.
+ */
+const AUDIT_LIMIT_PER_HOUR = 3;
+const ONE_HOUR_MS = 60 * 60 * 1000;
+
+const AuditInput = z.object({
+  // Nom de domaine, sans schéma ni chemin.
+  domain: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(4)
+    .max(253)
+    .regex(
+      /^(?!-)[a-z0-9-]{1,63}(?<!-)(\.(?!-)[a-z0-9-]{1,63}(?<!-))+$/,
+      "Domaine invalide.",
+    ),
+  brandName: z.string().trim().min(1).max(100),
+});
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { domain, brandName } = body;
+    const parsed = AuditInput.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Requête invalide", details: parsed.error.issues },
+        { status: 400 },
+      );
+    }
+    const { domain, brandName } = parsed.data;
 
-    if (!domain || !brandName) {
-      return NextResponse.json({ error: "Champs requis manquants" }, { status: 400 });
+    const quota = await rateLimit(
+      callerKey(req, "audit"),
+      AUDIT_LIMIT_PER_HOUR,
+      ONE_HOUR_MS,
+    );
+    if (!quota.allowed) {
+      return NextResponse.json(
+        { error: "Trop d'audits demandés. Réessaie plus tard." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.ceil((quota.resetAt.getTime() - Date.now()) / 1000)) },
+        },
+      );
     }
 
     const engine = getEngine("GROQ");

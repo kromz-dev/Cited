@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Plan" AS ENUM ('FREE', 'STARTER', 'PRO', 'SCALE');
+CREATE TYPE "Plan" AS ENUM ('FREE', 'SOLO', 'PRO', 'SCALE');
 
 -- CreateEnum
 CREATE TYPE "Frequency" AS ENUM ('WEEKLY', 'TWICE_WEEKLY', 'DAILY');
@@ -310,6 +310,16 @@ CREATE TABLE "ProcessedWebhook" (
     CONSTRAINT "ProcessedWebhook_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "RateLimit" (
+    "id" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
+    "window" TIMESTAMP(3) NOT NULL,
+    "count" INTEGER NOT NULL DEFAULT 1,
+
+    CONSTRAINT "RateLimit_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -435,6 +445,12 @@ CREATE INDEX "AuditLead_createdAt_idx" ON "AuditLead"("createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "AuditLead_email_domain_key" ON "AuditLead"("email", "domain");
+
+-- CreateIndex
+CREATE INDEX "RateLimit_window_idx" ON "RateLimit"("window");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RateLimit_key_window_key" ON "RateLimit"("key", "window");
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
