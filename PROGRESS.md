@@ -24,6 +24,34 @@ Manquantes : `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `INNGEST_SIGNING_KEY`, `STR
 
 ---
 
+## ⚠️ Décision en attente : stratégie v3
+
+`docs/01-plan-business.md` a été réécrit en **v3** le 16 septembre 2026. Le produit y change de nature : il ne vend plus une mesure de visibilité, il vend un **correctif technique vérifiable** — les robots des IA n'exécutent pas le JavaScript, donc ils reçoivent une page vide, et le produit corrige ça puis surveille que ça le reste.
+
+**Tant que cette v3 n'est pas validée ou rejetée, les priorités ci-dessous sont incertaines.** Si elle est retenue, le moteur de campagne, le score et la matrice de couverture ne sont plus le produit : ils deviennent la preuve que le correctif fonctionne. Le travail reste utile, mais les défauts de notation listés plus bas perdent en priorité.
+
+### Critique de la v3 — huit points, par impact
+
+1. **Le marché rétrécit par construction.** L'ICP est Lovable / Bolt / Bubble / SPA. Lovable livre déjà le rendu serveur natif pour les sites déployés après le 20 avril 2026. Le marché adressable est donc un stock qui diminue chaque mois. Ce qui survit aux correctifs de plateforme : un pare-feu qui bloque `ClaudeBot`, un redéploiement qui casse le rendu, un `robots.txt` modifié par erreur. **Conséquence : vendre la veille, offrir le correctif à l'installation.** La feuille de route fait actuellement l'inverse.
+
+2. **La fonctionnalité manquante qui vaut le plus cher : les journaux de passage des robots.** Le scanner vérifie ce que le robot reçoit, jamais s'il est venu. Dès que le proxy de pré-rendu est installé, chaque visite de `GPTBot`, `ClaudeBot`, `PerplexityBot` et `OAI-SearchBot` est visible. Cela donne d'un coup la preuve de valeur (« ChatGPT a lu 34 pages ce mois-ci, contre 0 avant »), une donnée propriétaire que personne d'autre ne possède, et un verrou — six mois d'historique ne se remplacent pas. Absent du document.
+
+3. **Pré-rendu réservé aux robots = question de cloaking inutile.** La parade retenue (servir le même contenu rendu) est la bonne, mais Google a déprécié le rendu dynamique en 2022, et OpenAI comme Anthropic vérifient leurs robots par plages d'IP : un robot arrivant avec un agent utilisateur banal reçoit la page vide et le client se croit corrigé. **Servir le HTML pré-rendu à tout le monde** supprime la question entièrement et profite aux visiteurs humains. Le cache rend l'argument du coût sans objet.
+
+4. **La rétention n'a pas de réponse.** Le produit prouve que le robot reçoit une page vide, et refuse à raison de promettre une citation. Au mois 2, la seule raison de continuer à payer est la peur, qui convertit une fois mais ne retient pas. La réponse réelle est la veille plus le point 2 : les mettre au centre du prix, pas le correctif qui est un travail ponctuel.
+
+5. **Le seuil de décision de la semaine 2 s'auto-valide.** « Moins de 15 % des sites scannés ont un problème réel » ne veut rien dire sans base de sondage définie. Scanner la vitrine Lovable donnera plus de 80 % sans rien apprendre. Et un taux élevé doit l'être chez des gens qui paieraient.
+
+6. **La garantie ne coûte rien, donc elle ne vaut rien.** La grille passe au vert par construction puisque le pré-rendu est maîtrisé. Porter la garantie sur ce qui n'est pas totalement maîtrisé : le délai d'alerte en cas de régression.
+
+7. **Prix et ICP se contredisent.** Facturation au site et à la page, ICP fondateur solo avec un site : il reste en Solo à 29 € pour toujours, aucune expansion. Le plan Agence à 149 € est traité en cible secondaire alors que les agences no-code ont le stock de sites touchés **et** le flux des nouveaux.
+
+8. **« Coût de l'échec : ~6 semaines et < 50 € »** — le montant est exact et trompeur. La ressource rare n'a jamais été l'argent. Écrire « 6 semaines » seul, sinon le seuil d'arrêt paraît indolore et sera franchi.
+
+**Sur le nom « Jauge » :** bon choix, court, instrument de mesure, cohérent avec la direction artistique. Réserve : l'anglais est prévu au mois 3 et « Jauge » ne voyage pas. Vérifier `jauge.fr` et un équivalent international avant de s'engager.
+
+---
+
 ## Décisions arrêtées
 
 | # | Décision | Pourquoi |
