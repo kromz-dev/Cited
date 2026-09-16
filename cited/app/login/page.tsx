@@ -1,7 +1,7 @@
 import { signIn } from "@/auth";
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { safeCallbackUrl } from "@/lib/auth-route-policy";
+import { LoginForm } from "./LoginForm";
 
 export const metadata = {
   title: "Connexion | Cited",
@@ -10,9 +10,9 @@ export const metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; registered?: string }>;
 }) {
-  const { callbackUrl } = await searchParams;
+  const { callbackUrl, registered } = await searchParams;
   const destination = safeCallbackUrl(callbackUrl);
 
   return (
@@ -26,23 +26,25 @@ export default async function LoginPage({
           <p className="mt-2 text-sm leading-6 text-muted">
             Connectez-vous pour suivre la visibilité de vos marques dans les moteurs IA.
           </p>
+          {registered === "1" && <p role="status" className="mt-4 rounded-md border border-cited/30 bg-cited-light p-3 text-sm text-cited">Compte créé. Vous pouvez maintenant vous connecter.</p>}
+          <LoginForm callbackUrl={destination} />
           <form
             action={async () => {
               "use server";
               await signIn("google", { redirectTo: destination });
             }}
-            className="mt-8"
+            className="mt-5 border-t border-line pt-5"
           >
             <button
               type="submit"
               className="flex w-full items-center justify-center gap-2 rounded bg-ink px-4 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink/90"
             >
               Continuer avec Google
-              <ArrowRight className="h-4 w-4" />
+              Continuer avec Google
             </button>
           </form>
           <p className="mt-6 text-center text-xs text-muted">
-            L’accès utilise Google OAuth, sans mot de passe à gérer.
+            Google OAuth reste disponible pour les comptes qui le préfèrent.
           </p>
         </section>
       </div>
