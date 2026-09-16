@@ -2,164 +2,165 @@ import { ScanForm } from "./ScanForm";
 
 export function Hero() {
   return (
-    <div className="relative overflow-hidden bg-[#0A0D14] text-white">
-      {/* Grille de fond subtile */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_20%,transparent_100%)]"></div>
+    <div className="relative overflow-hidden bg-[#FAFAF9] text-[#1A1916] pb-24">
+      {/* Background pattern */}
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay"></div>
       
-      {/* Lignes de connexion lumineuses (Les "Flèches") */}
-      <svg viewBox="0 0 1440 760" preserveAspectRatio="xMidYMid slice" fill="none" className="absolute inset-0 w-full h-full pointer-events-none">
-        <defs>
-          <linearGradient id="glow-line-1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#147866" stopOpacity="0" />
-            <stop offset="50%" stopColor="#147866" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#147866" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="glow-line-2" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#b38318" stopOpacity="0" />
-            <stop offset="50%" stopColor="#b38318" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#b38318" stopOpacity="0" />
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-
-        {/* Lignes principales */}
-        <g strokeWidth="1.5" opacity="0.4">
-          <path d="M100 120 C320 180, 520 280, 680 340" stroke="url(#glow-line-1)" strokeDasharray="4 8" className="animate-[pulse_3s_ease-in-out_infinite]" />
-          <path d="M80 380 C320 380, 520 380, 680 380" stroke="url(#glow-line-1)" strokeDasharray="4 8" className="animate-[pulse_4s_ease-in-out_infinite]" />
-          <path d="M100 640 C320 580, 520 480, 680 420" stroke="url(#glow-line-1)" strokeDasharray="4 8" className="animate-[pulse_3.5s_ease-in-out_infinite]" />
+      <div className="relative pt-20 sm:pt-28 lg:pt-32 pb-12">
+        <div className="mx-auto w-full max-w-7xl px-6 sm:px-8 lg:px-12">
           
-          <path d="M1340 120 C1120 180, 920 280, 760 340" stroke="url(#glow-line-2)" strokeDasharray="4 8" className="animate-[pulse_3s_ease-in-out_infinite]" />
-          <path d="M1360 380 C1120 380, 920 380, 760 380" stroke="url(#glow-line-2)" strokeDasharray="4 8" className="animate-[pulse_2.5s_ease-in-out_infinite]" />
-          <path d="M1340 640 C1120 580, 920 480, 760 420" stroke="url(#glow-line-2)" strokeDasharray="4 8" className="animate-[pulse_4.5s_ease-in-out_infinite]" />
-        </g>
+          {/* Header Section */}
+          <div className="mx-auto flex max-w-[940px] flex-col items-center text-center">
+            <div className="mb-6 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider bg-white text-gray-600 border border-gray-200 rounded-full px-4 py-1.5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              L'analytics des LLMs pour votre SaaS
+            </div>
+            
+            <h1 className="mt-5 text-balance text-[2.5rem] font-bold leading-[1.05] tracking-tight text-gray-900 sm:text-[3.2rem] lg:text-[4rem]">
+              Découvrez exactement comment <br className="hidden sm:block" />
+              <span className="text-[#147866]">l'IA lit vos sites.</span>
+            </h1>
+            
+            <p className="mt-6 max-w-[650px] text-pretty text-base leading-relaxed text-gray-500 sm:text-lg">
+              Funnels, métriques et logs de requêtes liés directement à vos domaines. Voyez quels bots IA vous bloquent (403), et lesquels vous citent.
+            </p>
+            
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-xl mx-auto bg-white p-2 rounded-2xl shadow-xl border border-gray-100">
+              <ScanForm />
+            </div>
+            <p className="mt-4 text-xs font-medium text-gray-400">Scan gratuit · Sans carte bancaire · Résultat en 10 secondes</p>
+          </div>
+          
+          {/* Dashboard UI Mockup */}
+          <div className="mt-16 sm:mt-20 mx-auto w-full max-w-5xl">
+            <div className="relative rounded-xl border border-gray-200 bg-white shadow-2xl shadow-gray-200/50 overflow-hidden transform transition-transform hover:scale-[1.01] duration-500">
+              
+              {/* Window Header */}
+              <div className="flex h-12 items-center border-b border-gray-100 bg-[#FCFCFB] px-4">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <div className="flex items-center gap-4 text-xs font-medium text-gray-500">
+                    <span className="text-gray-900 bg-white shadow-sm border border-gray-100 rounded-md px-3 py-1">Dashboard</span>
+                    <span className="hover:text-gray-900 cursor-pointer">Logs IA</span>
+                    <span className="hover:text-gray-900 cursor-pointer">A/B Testing SEO</span>
+                  </div>
+                </div>
+              </div>
 
-        {/* Cercles orbitaux centraux */}
-        <g stroke="rgba(255,255,255,0.1)" fill="none">
-          <circle cx="720" cy="380" r="180" strokeWidth="1"></circle>
-          <circle cx="720" cy="380" r="280" strokeWidth="1" strokeDasharray="4 12" className="animate-[spin_40s_linear_infinite] origin-[720px_380px]"></circle>
-          <circle cx="720" cy="380" r="420" strokeWidth="1" opacity="0.5"></circle>
-        </g>
-      </svg>
-      
-      {/* Logos aux extrémités des flèches */}
-      <div className="hidden lg:block absolute left-[5%] top-[12%] z-10 animate-[cited-float_7s_ease-in-out_infinite_0s]">
-        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/10 text-white rounded-xl px-4 py-3 shadow-[0_0_20px_rgba(20,120,102,0.3)] text-sm font-bold">
-          <div className="w-8 h-8 rounded-full bg-[#10a37f] flex items-center justify-center">
-            {/* OpenAI Logo simple */}
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.28 15.55c.44-1.27.44-2.65 0-3.92-.81-2.48-2.9-4.27-5.46-4.7V6.52c0-2.84-2.31-5.15-5.15-5.15-1.9 0-3.61 1.05-4.5 2.7-.9-1.65-2.6-2.7-4.5-2.7C1.42 1.37.1 2.69.1 4.22c0 .41.09.81.26 1.18.23.51.57.96 1 1.3 1.25.98 2.89 1.27 4.37.77.34-.11.66-.27.95-.47v.94c0 2.84 2.31 5.15 5.15 5.15 1.9 0 3.61-1.05 4.5-2.7.9 1.65 2.6 2.7 4.5 2.7 1.25 0 2.45-.48 3.35-1.35.9-.88 1.4-2.07 1.4-3.32 0-.25-.02-.5-.07-.75-.3-1.48-1.25-2.72-2.58-3.35.34-.23.65-.5.91-.81.44-.54.72-1.2.79-1.9.06-.69-.04-1.39-.3-2.02z" />
-            </svg>
+              {/* Dashboard Layout */}
+              <div className="flex h-[450px] sm:h-[550px] bg-white">
+                
+                {/* Sidebar (Hidden on mobile) */}
+                <div className="hidden sm:flex w-48 flex-col border-r border-gray-100 bg-[#FCFCFB] p-4">
+                  <div className="flex items-center gap-2 mb-8">
+                    <div className="w-8 h-8 rounded-lg bg-[#147866] text-white flex items-center justify-center font-bold">C</div>
+                    <div className="text-sm font-semibold">Cited App</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-4">Vue d'ensemble</div>
+                    <div className="px-3 py-2 text-sm font-medium bg-gray-100 text-gray-900 rounded-md">Portefeuille</div>
+                    <div className="px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-md">Alertes</div>
+                    <div className="px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-md">Rapports</div>
+                  </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
+                  
+                  {/* Top Metrics Row */}
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Visibilité globale</h3>
+                      <p className="text-xs text-gray-500">Derniers 30 jours · Tous les domaines</p>
+                    </div>
+                    <div className="flex bg-gray-50 rounded-lg p-1 border border-gray-100">
+                      <span className="px-3 py-1 text-xs font-medium text-gray-500">24h</span>
+                      <span className="px-3 py-1 text-xs font-medium bg-white shadow-sm rounded-md text-gray-900">30j</span>
+                      <span className="px-3 py-1 text-xs font-medium text-gray-500">Année</span>
+                    </div>
+                  </div>
+
+                  {/* KPI Cards */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    <div className="p-3 border border-gray-100 rounded-lg bg-white">
+                      <div className="text-[10px] uppercase font-semibold text-gray-400 mb-1">Domaines Actifs</div>
+                      <div className="text-xl font-bold text-gray-900">24 <span className="text-xs text-green-500 font-normal ml-1">↑ 2</span></div>
+                    </div>
+                    <div className="p-3 border border-gray-100 rounded-lg bg-white">
+                      <div className="text-[10px] uppercase font-semibold text-gray-400 mb-1">Requêtes IA (Mois)</div>
+                      <div className="text-xl font-bold text-gray-900">14.2k <span className="text-xs text-green-500 font-normal ml-1">↑ 18%</span></div>
+                    </div>
+                    <div className="p-3 border border-red-100 rounded-lg bg-red-50/30">
+                      <div className="text-[10px] uppercase font-semibold text-red-400 mb-1">Blocages 403</div>
+                      <div className="text-xl font-bold text-red-600">3 <span className="text-xs text-red-500 font-normal ml-1">Nouveau</span></div>
+                    </div>
+                    <div className="p-3 border border-gray-100 rounded-lg bg-white">
+                      <div className="text-[10px] uppercase font-semibold text-gray-400 mb-1">Score SEO IA</div>
+                      <div className="text-xl font-bold text-gray-900">92% <span className="text-xs text-gray-400 font-normal ml-1">Stable</span></div>
+                    </div>
+                  </div>
+
+                  {/* Big Chart Area (Fake SVG Chart) */}
+                  <div className="flex-1 border border-gray-100 rounded-lg p-4 bg-white relative overflow-hidden flex flex-col">
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="text-sm font-semibold text-gray-700">Requêtes par LLM (Traffic)</div>
+                      <div className="text-xs font-semibold text-[#147866] bg-[#147866]/10 px-2 py-1 rounded-md">+42% citations globales</div>
+                    </div>
+                    
+                    {/* SVG Chart Graphic */}
+                    <div className="flex-1 w-full relative mt-2">
+                      {/* Grid lines */}
+                      <div className="absolute inset-0 flex flex-col justify-between">
+                        {[1,2,3,4].map(i => <div key={i} className="w-full border-t border-gray-100 border-dashed"></div>)}
+                      </div>
+                      
+                      {/* Chart Bars */}
+                      <div className="absolute inset-x-2 bottom-0 h-full flex items-end justify-between px-2 pt-6">
+                        {[40, 65, 45, 80, 55, 90, 75, 100, 85, 110, 95, 120].map((h, i) => (
+                          <div key={i} className="w-full max-w-[24px] md:max-w-[32px] mx-1 flex flex-col justify-end h-full group">
+                            {/* Claude Section */}
+                            <div className="w-full bg-amber-400/80 rounded-t-sm transition-all duration-300 group-hover:bg-amber-400" style={{height: `${h * 0.2}%`}}></div>
+                            {/* GPT Section */}
+                            <div className="w-full bg-[#147866] rounded-b-sm transition-all duration-300 group-hover:opacity-80" style={{height: `${h * 0.5}%`}}></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Chart Legend */}
+                    <div className="mt-4 flex gap-4 text-xs font-medium justify-center">
+                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#147866]"></div> GPTBot</div>
+                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-amber-400"></div> ClaudeBot</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Bottom Live Activity Bar */}
+              <div className="h-10 border-t border-gray-100 bg-[#FCFCFB] flex items-center px-4 gap-4 text-xs text-gray-500 overflow-hidden">
+                <div className="flex items-center gap-2 font-medium shrink-0">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  Activité Live
+                </div>
+                <div className="w-px h-4 bg-gray-200 shrink-0"></div>
+                <div className="flex items-center gap-2 truncate">
+                  <span className="font-semibold text-gray-900">GPTBot</span> vient de scanner <span className="font-semibold text-gray-900 border-b border-gray-300">acme-corp.com</span> (HTTP 200)
+                </div>
+              </div>
+
+            </div>
           </div>
-          <div>
-            <div className="text-xs text-gray-400 font-normal">Recherche via</div>
-            <div className="text-base tracking-wide">GPTBot</div>
-          </div>
+          
         </div>
       </div>
-
-      <div className="hidden lg:block absolute left-[3%] top-[48%] -translate-y-1/2 z-10 animate-[cited-float_9.2s_ease-in-out_infinite_1.1s]">
-        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/10 text-white rounded-xl px-4 py-3 shadow-[0_0_20px_rgba(20,120,102,0.3)] text-sm font-bold">
-          <div className="w-8 h-8 rounded-full bg-[#f3efe4] flex items-center justify-center text-black font-serif italic text-lg leading-none">
-            A
-          </div>
-          <div>
-            <div className="text-xs text-gray-400 font-normal">Recherche via</div>
-            <div className="text-base tracking-wide">ClaudeBot</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden lg:block absolute left-[5%] top-[80%] z-10 animate-[cited-float_8.8s_ease-in-out_infinite_1.6s]">
-        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/10 text-white rounded-xl px-4 py-3 shadow-[0_0_20px_rgba(20,120,102,0.3)] text-sm font-bold">
-          <div className="w-8 h-8 rounded-full bg-[#202124] border border-gray-600 flex items-center justify-center">
-            {/* Perplexity icon */}
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-              <polyline points="2 17 12 22 22 17"></polyline>
-              <polyline points="2 12 12 17 22 12"></polyline>
-            </svg>
-          </div>
-          <div>
-            <div className="text-xs text-gray-400 font-normal">Recherche via</div>
-            <div className="text-base tracking-wide">Perplexity</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden lg:block absolute right-[5%] top-[12%] z-10 animate-[cited-float_8.4s_ease-in-out_infinite_0.6s]">
-        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/10 text-white rounded-xl px-4 py-3 shadow-[0_0_20px_rgba(179,131,24,0.3)] text-sm font-bold">
-          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-            {/* Google G */ }
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#4285F4">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-            </svg>
-          </div>
-          <div>
-            <div className="text-xs text-gray-400 font-normal">Recherche via</div>
-            <div className="text-base tracking-wide">Gemini</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden lg:block absolute right-[3%] top-[48%] -translate-y-1/2 z-10 animate-[cited-float_7.8s_ease-in-out_infinite_0.3s]">
-        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/10 text-white rounded-xl px-4 py-3 shadow-[0_0_20px_rgba(179,131,24,0.3)] text-sm font-bold">
-          <div className="w-8 h-8 rounded-full bg-[#0668E1] flex items-center justify-center">
-            {/* Meta Logo */ }
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-              <path d="M20.352 10.963c0-3.353-2.697-6.075-6.024-6.075-2.32 0-4.323 1.341-5.289 3.284C8.073 6.229 6.07 4.888 3.75 4.888c-3.327 0-6.024 2.722-6.024 6.075 0 3.355 2.697 6.077 6.024 6.077 2.321 0 4.323-1.342 5.289-3.285.966 1.943 2.968 3.285 5.289 3.285 3.327 0 6.024-2.722 6.024-6.077ZM12 14.18c-1.503 2.155-3.957 3.518-6.732 3.518-4.417 0-8-3.582-8-8s3.583-8 8-8c2.775 0 5.229 1.363 6.732 3.518C13.503 3.043 15.957 1.68 18.732 1.68c4.417 0 8 3.582 8 8s-3.583 8-8 8c-2.775 0-5.229-1.363-6.732-3.518Z" />
-            </svg>
-          </div>
-          <div>
-            <div className="text-xs text-gray-400 font-normal">Recherche via</div>
-            <div className="text-base tracking-wide">Meta AI</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden lg:block absolute right-[5%] top-[80%] z-10 animate-[cited-float_7.4s_ease-in-out_infinite_0.9s]">
-        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/10 text-white rounded-xl px-4 py-3 shadow-[0_0_20px_rgba(179,131,24,0.3)] text-sm font-bold">
-          <div className="w-8 h-8 rounded-full bg-[#00A4EF] flex items-center justify-center">
-            {/* Bing Logo */ }
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-              <path d="M4 1L3 2L3 22.5L10 20L10 10.5L18.5 15.5L21 14L10 2.5L4 1Z"/>
-            </svg>
-          </div>
-          <div>
-            <div className="text-xs text-gray-400 font-normal">Recherche via</div>
-            <div className="text-base tracking-wide">Bingbot</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative z-20 max-w-[1080px] mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center">
-        <div className="mb-6 flex items-center gap-2.5 text-sm font-semibold uppercase tracking-wider bg-white/10 backdrop-blur-md border border-white/10 text-white rounded-full px-4 py-1.5 shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-[#147866] animate-[pulse_2.4s_ease-in-out_infinite]"></span>
-          Radar de visibilité IA · agences web & no-code
-        </div>
-        <h1 className="text-[clamp(38px,5.4vw,74px)] leading-none m-0 max-w-[18ch] [text-wrap:balance] font-bold drop-shadow-lg">
-          Un de vos sites est invisible pour l'IA.
-        </h1>
-        <p className="text-[clamp(15px,1.4vw,19px)] mt-6 max-w-[52ch] [text-wrap:pretty] text-gray-300">
-          Lequel ? Entrez un domaine. Nous le testons avec le User-Agent des plus grands LLMs, exactement comme le font ChatGPT et Claude.
-        </p>
-        
-        <div className="mt-10 w-full max-w-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-2 rounded-2xl shadow-2xl">
-          <ScanForm />
-        </div>
-      </div>
-
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes cited-float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }
-      `}} />
     </div>
   );
 }
