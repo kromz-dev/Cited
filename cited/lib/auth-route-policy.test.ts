@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isProtectedPath } from "./auth-route-policy";
+import { isProtectedPath, safeCallbackUrl } from "./auth-route-policy";
 
 describe("auth route policy", () => {
   it("protects every application surface", () => {
@@ -14,5 +14,12 @@ describe("auth route policy", () => {
     expect(isProtectedPath("/login")).toBe(false);
     expect(isProtectedPath("/pricing")).toBe(false);
     expect(isProtectedPath("/api/audit")).toBe(false);
+  });
+
+  it("keeps internal callback queries and rejects external or backslash URLs", () => {
+    expect(safeCallbackUrl("/settings?tab=billing")).toBe("/settings?tab=billing");
+    expect(safeCallbackUrl("https://evil.example")).toBe("/dashboard");
+    expect(safeCallbackUrl("//evil.example/path")).toBe("/dashboard");
+    expect(safeCallbackUrl("/dashboard\\evil")).toBe("/dashboard");
   });
 });

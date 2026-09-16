@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { redirect } from "next/navigation";
 import { Button, EmptyState, PageHeader, Panel } from "@/components/ui";
 import { CoverageCell } from "@/components/geo/CoverageCell";
 
@@ -13,7 +14,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id;
   
-  if (!userId) return null;
+  if (!userId) redirect("/login");
 
   const brands = await db.brand.findMany({
     where: { userId },
@@ -50,7 +51,9 @@ export default async function DashboardPage() {
         } />
       ) : (
         <Panel className="overflow-hidden">
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="min-w-[720px] w-full text-left text-sm">
+            <caption className="sr-only">Marques suivies et dernières mesures</caption>
             <thead className="border-b border-line bg-paper text-muted">
               <tr>
                 <th className="px-4 py-3 font-medium">Marque</th>
@@ -61,7 +64,7 @@ export default async function DashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {brands.map((brand: any) => {
+              {brands.map((brand) => {
                 const latestCampaign = brand.campaigns[0];
                 const score = latestCampaign?.visibilityScore !== null ? latestCampaign?.visibilityScore : null;
                 const variation = "-";
@@ -80,8 +83,8 @@ export default async function DashboardPage() {
                       {variation === "-" ? <span aria-label="Variation indisponible">—</span> : variation}
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex items-center gap-1" aria-label={latestCampaign?.runs?.length ? `${latestCampaign.runs.filter((run: any) => run.brandMentioned).length} citations sur ${latestCampaign.runs.length}` : "Aucune mesure"}>
-                        {latestCampaign?.runs?.slice(0, 8).map((run: any) => <CoverageCell key={run.id} state={run.status === "COMPLETED" ? (run.brandMentioned ? "cited" : "absent") : "pending"} label={run.promptText} />) || <span className="text-xs text-muted">—</span>}
+                      <div className="flex items-center gap-1" aria-label={latestCampaign?.runs?.length ? `${latestCampaign.runs.filter((run) => run.brandMentioned).length} citations sur ${latestCampaign.runs.length}` : "Aucune mesure"}>
+                        {latestCampaign?.runs?.slice(0, 8).map((run) => <CoverageCell key={run.id} state={run.status === "DONE" ? (run.brandMentioned ? "cited" : "absent") : "pending"} label={run.promptText} />) || <span className="text-xs text-muted">—</span>}
                       </div>
                     </td>
                     <td className="px-4 py-4 text-right text-muted">
@@ -92,6 +95,7 @@ export default async function DashboardPage() {
               })}
             </tbody>
           </table>
+          </div>
         </Panel>
       )}
     </div>

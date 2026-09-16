@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { EngineConnector, EngineId, EngineQuery, EngineResponse, EngineError, EngineUsage } from "./types";
 import { z } from "zod";
 

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { ExternalLink } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Sources | Cited",
@@ -9,7 +10,7 @@ export const metadata = {
 export default async function SourcesPage() {
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return null;
+  if (!userId) redirect("/login");
 
   const citations = await db.citation.findMany({
     where: { brand: { userId } },
@@ -33,8 +34,9 @@ export default async function SourcesPage() {
           Aucune source collectée. Lancez une campagne depuis une marque pour commencer.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-muted/40">
-          <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto rounded-lg border border-line">
+          <table className="min-w-[640px] w-full text-left text-sm">
+            <caption className="sr-only">Sources citées par marque et position</caption>
             <thead className="border-b border-muted/40 bg-muted/10 text-muted">
               <tr>
                 <th className="px-4 py-3 font-medium">Marque</th>

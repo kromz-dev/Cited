@@ -7,16 +7,20 @@ import { Badge, Panel, ResultMark } from "@/components/ui";
 
 interface RunData { prompt: string; family: string; isMentioned: boolean; snippet: string | null; citationCount: number; hasBrandCitation: boolean; }
 export interface AuditData { brandName: string; domain: string; score: number; runs: RunData[]; }
+export type AuditResult = AuditData;
 interface CoverageGridProps { data: AuditData; }
 
 export function CoverageGrid({ data }: CoverageGridProps) {
   const { brandName, domain, score, runs } = data;
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [leadError, setLeadError] = useState("");
   async function handleSubmitLead(formData: FormData) {
     setLoading(true);
+    setLeadError("");
     const result = await captureLead(formData, JSON.stringify({ domain, brandName, score, mentionsCount: runs.filter((run) => run.isMentioned).length, totalRuns: runs.length, competitorMentions: [] }));
     setSubmitted(result.success);
+    if (!result.success) setLeadError("Le rapport reste disponible ici. L’envoi par email a échoué, vous pouvez réessayer.");
     setLoading(false);
   }
   return <Panel className="mx-auto mt-8 max-w-4xl overflow-hidden">
@@ -25,6 +29,6 @@ export function CoverageGrid({ data }: CoverageGridProps) {
       <div className="sm:text-right"><div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Couverture</div><div className="font-heading text-5xl text-cited">{score}<span className="text-2xl">%</span></div></div>
     </div>
     <div className="p-6"><h3 className="mb-4 text-xl">Lecture par requête</h3><div className="space-y-3">{runs.map((run, index) => <div key={`${run.prompt}-${index}`} className="flex gap-3 rounded-md border border-line bg-paper p-4"><ResultMark mentioned={run.isMentioned} /><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><Badge tone={run.isMentioned ? "cited" : "default"}>{run.family}</Badge><span className="text-sm font-medium text-ink">{run.prompt}</span></div><p className="mt-3 text-sm leading-6 text-muted">{run.snippet || (run.isMentioned ? "Votre marque est présente dans cette réponse." : "Aucune mention détectée sur cette requête.")}</p><div className="mt-3 flex flex-wrap gap-4 text-xs text-muted"><span>{run.citationCount} sources citées</span>{run.hasBrandCitation && <span className="inline-flex items-center gap-1 text-cited"><ExternalLink className="h-3 w-3" /> Votre site utilisé comme source</span>}</div></div></div>)}</div></div>
-    <div className="border-t border-line bg-ink p-6 text-paper"><h3 className="text-xl">Recevez le plan d’action</h3><p className="mt-2 max-w-lg text-sm leading-6 text-paper/70">Les recommandations détaillées et les correctifs prioritaires sont envoyés par email.</p>{submitted ? <div className="mt-5 rounded-md border border-cited/50 bg-cited/20 p-4 text-sm text-cited-light">Rapport complet envoyé. Consultez votre boîte mail.</div> : <form action={handleSubmitLead} className="mt-5 flex max-w-lg flex-col gap-3 sm:flex-row"><input aria-label="Adresse email" type="email" name="email" required placeholder="votre@email.com" className="min-w-0 flex-1 rounded-md border border-white/20 bg-white px-3 py-3 text-sm text-ink outline-none focus:border-signal" /><button type="submit" disabled={loading} className="rounded-md bg-paper px-4 py-3 font-heading text-sm font-semibold text-ink hover:bg-cited-light disabled:opacity-50">{loading ? "Envoi..." : "Recevoir mon plan"}</button></form>}</div>
+    <div className="border-t border-line bg-ink p-6 text-paper"><h3 className="text-xl">Recevez le plan d’action</h3><p className="mt-2 max-w-lg text-sm leading-6 text-paper/70">Les recommandations détaillées et les correctifs prioritaires sont envoyés par email.</p>{leadError && <div role="alert" className="mt-4 rounded-md border border-signal/50 bg-signal/10 p-3 text-sm text-signal-light">{leadError}</div>}{submitted ? <div className="mt-5 rounded-md border border-cited/50 bg-cited/20 p-4 text-sm text-cited-light">Rapport complet envoyé. Consultez votre boîte mail.</div> : <form action={handleSubmitLead} className="mt-5 flex max-w-lg flex-col gap-3 sm:flex-row"><input aria-label="Adresse email" type="email" name="email" required placeholder="votre@email.com" className="min-w-0 flex-1 rounded-md border border-white/20 bg-white px-3 py-3 text-sm text-ink outline-none focus:border-signal" /><button type="submit" disabled={loading} className="min-h-11 rounded-md bg-paper px-4 py-3 font-heading text-sm font-semibold text-ink hover:bg-cited-light disabled:opacity-50">{loading ? "Envoi..." : "Recevoir mon plan"}</button></form>}</div>
   </Panel>;
 }

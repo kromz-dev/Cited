@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { Button, Panel } from "@/components/ui";
+export type { AuditData as AuditResult } from "@/components/CoverageGrid";
 
 interface AuditFormProps {
   onAuditComplete: (data: import("./CoverageGrid").AuditData) => void;

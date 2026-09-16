@@ -1,13 +1,7 @@
 import { signIn } from "@/auth";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-
-function safeCallbackUrl(value: string | undefined): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
-    return "/dashboard";
-  }
-  return value;
-}
+import { safeCallbackUrl } from "@/lib/auth-route-policy";
 
 export const metadata = {
   title: "Connexion | Cited",

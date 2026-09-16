@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Réglages | Cited",
@@ -7,7 +8,7 @@ export const metadata = {
 export default async function SettingsPage() {
   const session = await auth();
   const user = session?.user;
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   return (
     <div className="mx-auto max-w-3xl">
