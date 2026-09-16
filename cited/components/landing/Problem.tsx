@@ -1,49 +1,39 @@
-import { ServerCrash, Bot, FileWarning } from "lucide-react";
-import { Card } from "@/components/ui/card";
-
 export function Problem() {
   return (
-    <section id="problem" className="bg-paper px-6 py-24">
-      <div className="mx-auto max-w-4xl text-center">
-        <h2 className="mb-6 text-3xl font-bold tracking-tight text-ink md:text-5xl">
-          Les IA sont aveugles face à votre site.
-        </h2>
-        <p className="mx-auto mb-16 max-w-2xl text-lg text-muted">
-          80% des sites modernes construits avec React, Vue ou d'autres frameworks SPA apparaissent comme une page blanche aux yeux des bots d'Intelligence Artificielle. Vous perdez des milliers de citations potentielles.
-        </p>
+    <div className="relative overflow-hidden py-16 lg:py-24 border-b border-[var(--color-divider,#eaeaea)]">
+      <div className="absolute right-[-160px] top-[-120px] w-[480px] h-[480px] opacity-[0.055] animate-[cited-drift_90s_linear_infinite] pointer-events-none">
+        <svg viewBox="0 0 200 200" width="480" height="480" fill="none" stroke="var(--color-text)" strokeWidth="1.2">
+          <ellipse cx="100" cy="30" rx="86" ry="22"></ellipse>
+          <ellipse cx="100" cy="62" rx="68" ry="18"></ellipse>
+          <ellipse cx="100" cy="92" rx="50" ry="14"></ellipse>
+          <ellipse cx="100" cy="120" rx="34" ry="10"></ellipse>
+          <ellipse cx="100" cy="145" rx="20" ry="7"></ellipse>
+          <ellipse cx="100" cy="166" rx="9" ry="4"></ellipse>
+        </svg>
       </div>
-
-      <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-        <Card className="flex flex-col items-center border-none bg-white p-8 text-center shadow-panel transition-transform hover:-translate-y-1">
-          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-rival-light text-rival">
-            <Bot className="h-8 w-8" />
+      <div className="max-w-[1080px] mx-auto relative px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0">
+          <div className="p-8 border-l border-[var(--color-divider,#eaeaea)]">
+            <div className="text-4xl font-bold text-[var(--color-accent)]">403</div>
+            <div className="text-sm mt-3 opacity-80">Le pare-feu refuse les bots IA. Le site reste normal dans un navigateur.</div>
           </div>
-          <h3 className="mb-3 font-heading text-xl font-semibold text-ink">Les Bots rejettent le JS</h3>
-          <p className="text-sm leading-relaxed text-muted">
-            Contrairement à Googlebot, les crawlers de ChatGPT et Perplexity ne prennent souvent pas le temps (ou n'ont pas la capacité) d'exécuter votre JavaScript.
-          </p>
-        </Card>
-
-        <Card className="flex flex-col items-center border-none bg-white p-8 text-center shadow-panel transition-transform hover:-translate-y-1">
-          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-rival-light text-rival">
-            <FileWarning className="h-8 w-8" />
+          <div className="p-8 border-l border-[var(--color-divider,#eaeaea)]">
+            <div className="text-4xl font-bold">&lt;200</div>
+            <div className="text-sm mt-3 opacity-80">Caractères utiles reçus : la page est une coquille vide, rien à citer.</div>
           </div>
-          <h3 className="mb-3 font-heading text-xl font-semibold text-ink">Contenu Invisible</h3>
-          <p className="text-sm leading-relaxed text-muted">
-            Si votre contenu est chargé dynamiquement via des appels API côté client, les IA ne verront qu'une balise div vide. Votre expertise est ignorée.
-          </p>
-        </Card>
-
-        <Card className="flex flex-col items-center border-none bg-white p-8 text-center shadow-panel transition-transform hover:-translate-y-1">
-          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-rival-light text-rival">
-            <ServerCrash className="h-8 w-8" />
+          <div className="p-8 border-l border-[var(--color-divider,#eaeaea)]">
+            <div className="text-4xl font-bold">24 h</div>
+            <div className="text-sm mt-3 opacity-80">Fréquence des scans. Une régression est signalée le jour même.</div>
           </div>
-          <h3 className="mb-3 font-heading text-xl font-semibold text-ink">Perte de Trafic</h3>
-          <p className="text-sm leading-relaxed text-muted">
-            Le futur de la recherche est génératif (GEO/AEO). Si l'IA ne peut pas lire vos informations, elle citera vos concurrents dans ses réponses.
-          </p>
-        </Card>
+          <div className="p-8 border-l border-[var(--color-divider,#eaeaea)]">
+            <div className="text-4xl font-bold">0</div>
+            <div className="text-sm mt-3 opacity-80">Ligne de code à installer chez le client. Audit entièrement externe.</div>
+          </div>
+        </div>
       </div>
-    </section>
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes cited-drift { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+      `}} />
+    </div>
   );
 }

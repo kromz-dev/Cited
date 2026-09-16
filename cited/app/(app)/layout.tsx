@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { LayoutDashboard, Globe, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Globe, Settings, LogOut, Bell, FileText } from "lucide-react";
 import { redirect } from "next/navigation";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -16,7 +16,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <details className="relative">
           <summary className="cursor-pointer list-none rounded-md border border-line px-3 py-2 text-sm font-semibold text-ink">Menu</summary>
           <nav className="absolute right-0 z-20 mt-2 w-48 rounded-md border border-line bg-white p-2 shadow-panel">
-            <Link href="/dashboard" className="block rounded px-3 py-2 text-sm hover:bg-paper">Mes marques</Link>
+            <Link href="/dashboard" className="block rounded px-3 py-2 text-sm hover:bg-paper">Portefeuille</Link>
+            <Link href="/alerts" className="block rounded px-3 py-2 text-sm hover:bg-paper">Alertes</Link>
+            <Link href="/reports" className="block rounded px-3 py-2 text-sm hover:bg-paper">Rapports</Link>
             <Link href="/sources" className="block rounded px-3 py-2 text-sm hover:bg-paper">Sources</Link>
             <Link href="/settings" className="block rounded px-3 py-2 text-sm hover:bg-paper">Réglages</Link>
           </nav>
@@ -26,9 +28,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <aside className="hidden w-64 border-r border-line bg-white/60 p-5 md:flex md:flex-col">
         <Link href="/" className="mb-10 font-heading text-xl font-semibold tracking-tight">Cited<span className="text-cited">.</span></Link>
         <nav className="flex-1 space-y-1">
-          <Link href="/dashboard" className="flex items-center gap-2 rounded-md bg-cited-light px-3 py-2.5 font-medium text-cited">
+          <Link href="/dashboard" className="flex items-center gap-2 rounded-md px-3 py-2.5 font-medium text-muted hover:bg-paper-deep hover:text-ink">
             <LayoutDashboard className="w-4 h-4" />
-            Mes marques
+            Portefeuille
+          </Link>
+          <Link href="/alerts" className="flex items-center gap-2 rounded-md px-3 py-2.5 font-medium text-muted hover:bg-paper-deep hover:text-ink">
+            <Bell className="w-4 h-4" />
+            Alertes
+          </Link>
+          <Link href="/reports" className="flex items-center gap-2 rounded-md px-3 py-2.5 font-medium text-muted hover:bg-paper-deep hover:text-ink">
+            <FileText className="w-4 h-4" />
+            Rapports
           </Link>
           <Link href="/sources" className="flex items-center gap-2 rounded-md px-3 py-2.5 font-medium text-muted hover:bg-paper-deep hover:text-ink">
             <Globe className="w-4 h-4" />

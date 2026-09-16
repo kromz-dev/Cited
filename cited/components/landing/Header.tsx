@@ -1,39 +1,25 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-line bg-paper/80 backdrop-blur supports-[backdrop-filter]:bg-paper/60">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="font-heading text-2xl font-bold tracking-tight text-ink">
-            Cited<span className="text-cited">.</span>
+    <div className="flex justify-center border-b border-[var(--color-divider,#eaeaea)]">
+      <div className="w-full max-w-[1080px] px-6 py-4 flex items-center justify-between text-sm font-medium">
+        <Link href="/" className="flex items-center gap-2 font-bold text-lg mr-auto" style={{ color: "var(--color-bg)" }}>
+          <span style={{ color: "var(--color-accent)" }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              <path d="M4 6.5h16"></path>
+              <path d="M6.5 12h11"></path>
+              <path d="M10 17.5h5"></path>
+            </svg>
           </span>
+          <span style={{ color: "var(--color-text)" }}>Cited<span style={{ color: "var(--color-accent)" }}>.</span></span>
         </Link>
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted">
-          <Link href="#features" className="hover:text-ink transition-colors">
-            Fonctionnalités
-          </Link>
-          <Link href="#how-it-works" className="hover:text-ink transition-colors">
-            Comment ça marche
-          </Link>
-          <Link href="#faq" className="hover:text-ink transition-colors">
-            FAQ
-          </Link>
-        </nav>
-        <div className="flex items-center gap-4">
-          <Link href="/login">
-            <Button variant="ghost" className="text-ink hover:bg-cited-light/50">
-              Connexion
-            </Button>
-          </Link>
-          <Link href="/pricing">
-            <Button className="bg-cited text-white hover:bg-cited/90 shadow-md hover:shadow-glow transition-all">
-              Tarifs
-            </Button>
-          </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/#how-it-works" className="hover:opacity-70 transition-opacity">Fonctionnement</Link>
+          <Link href="/pricing" className="hover:opacity-70 transition-opacity">Tarifs</Link>
+          <Link href="/login" className="hover:opacity-70 transition-opacity">Connexion</Link>
         </div>
       </div>
-    </header>
+    </div>
   );
 }

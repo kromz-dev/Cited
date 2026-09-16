@@ -11,10 +11,20 @@ export async function launchAuditCampaign(siteId: string) {
     throw new Error("Non authentifié.");
   }
 
-  const site = await db.site.findFirst({
+  let site = await db.site.findFirst({
     where: { id: siteId, userId: session.user.id },
     select: { id: true },
   });
+
+  if (!site) {
+    const monitored = await db.monitoredSite.findFirst({
+      where: { id: siteId, userId: session.user.id },
+      select: { id: true },
+    });
+    if (monitored) {
+      site = { id: monitored.id };
+    }
+  }
 
   if (!site) {
     throw new Error("Site introuvable.");
