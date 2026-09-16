@@ -5,6 +5,8 @@ import { evaluateBrandMention } from "@/lib/analysis/llm-judge";
 import { calculateVisibilityScore } from "@/lib/scoring/visibility";
 import { rateLimit, callerKey } from "@/lib/rate-limit";
 import { z } from "zod";
+import type { EngineCitation } from "@/lib/engines/types";
+import type { JudgeResult } from "@/lib/analysis/llm-judge";
 
 // Force Node.js runtime car Prisma n'est pas compatible Edge sans configuration spécifique
 export const runtime = "nodejs";
@@ -32,6 +34,23 @@ const AuditInput = z.object({
     ),
   brandName: z.string().trim().min(1).max(100),
 });
+
+interface AuditRun {
+  prompt: string;
+  family: string;
+  response: string;
+  citations: EngineCitation[];
+  mention: JudgeResult;
+}
+
+function matchesBrandDomain(citationDomain: string, brandDomain: string): boolean {
+  const normalizedCitation = citationDomain.replace(/^www\./, "").toLowerCase();
+  const normalizedBrand = brandDomain.replace(/^www\./, "").toLowerCase();
+  return (
+    normalizedCitation === normalizedBrand ||
+    normalizedCitation.endsWith(`.${normalizedBrand}`)
+  );
+}
 
 export async function POST(req: Request) {
   try {
@@ -67,15 +86,15 @@ export async function POST(req: Request) {
     console.log(`\n🔍 [DÉCOUVERTE] Analyse du domaine ${domain} pour la marque ${brandName}...`);
     
     // Génération dynamique des 5 requêtes par l'IA
-    const prompts = await generateSmartPrompts(domain, brandName, engine);
+    const prompts = await generateSmartPrompts(domain, brandName);
     
     console.log(`✅ [DÉCOUVERTE RÉUSSIE] ${prompts.length} requêtes générées.`);
 
     // 2. Lancer les requêtes par petits lots (Chunking) pour éviter le Rate Limit
-    const results: any[] = [];
+    const results: PromiseSettledResult<AuditRun>[] = [];
     
     // Chunking function
-    const chunkArray = (arr: any[], size: number) => 
+    const chunkArray = <T,>(arr: T[], size: number) =>
       Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
         arr.slice(i * size, i * size + size)
       );
@@ -122,13 +141,26 @@ export async function POST(req: Request) {
     }
 
     // 4. Agréger les résultats
-    const runs = results.map(r => r.status === "fulfilled" ? r.value : null).filter(Boolean) as any[];
+    const failedRuns = results.filter((r) => r.status === "rejected").length;
+    const runs = results
+      .filter((r): r is PromiseFulfilledResult<AuditRun> => r.status === "fulfilled")
+      .map((r) => r.value);
+    if (runs.length === 0) {
+      return NextResponse.json(
+        { error: "Aucune réponse exploitable du moteur d'audit.", failedRuns },
+        { status: 502 },
+      );
+    }
     
     const runDataForScore = runs.map(r => ({
       engineId: engine.id,
       isMentioned: r.mention.isMentioned,
       position: r.mention.position,
-      family: r.family
+      family: r.family,
+      citationCount: r.citations.length,
+      hasBrandCitation: r.citations.some((c) =>
+        matchesBrandDomain(c.domain, domain),
+      ),
     }));
 
     const report = calculateVisibilityScore(runDataForScore);
@@ -144,6 +176,12 @@ export async function POST(req: Request) {
       domain,
       score: report.globalScore,
       detailedScore: report,
+      execution: {
+        requestedRuns: prompts.length,
+        completedRuns: runs.length,
+        failedRuns,
+        partial: failedRuns > 0,
+      },
       runs: runs.map(r => ({
         prompt: r.prompt,
         family: r.family,
@@ -152,7 +190,9 @@ export async function POST(req: Request) {
         competitorsRecommended: r.mention.competitorsRecommended,
         snippet: r.mention.snippet,
         citationCount: r.citations.length,
-        hasBrandCitation: r.citations.some((c: any) => c.domain.includes(domain.replace(/^www\./, '')))
+        hasBrandCitation: r.citations.some((c) =>
+          matchesBrandDomain(c.domain, domain),
+        ),
       }))
     });
 

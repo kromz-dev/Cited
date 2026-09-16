@@ -1,5 +1,6 @@
 import { groqPlainJson } from "../engines/groq";
 import { db } from "../db";
+import { z } from "zod";
 
 interface FailedRun {
   promptText: string;
@@ -7,75 +8,90 @@ interface FailedRun {
   snippet?: string | null;
 }
 
-interface CorrectionOutput {
-  contentCorrection: string;
-  jsonLdCorrection: string;
-  llmsTxtCorrection: string;
+const CorrectionOutputSchema = z.object({
+  contentCorrection: z.string().trim().min(20).max(8_000),
+  jsonLdCorrection: z.string().trim().min(2).max(12_000),
+  llmsTxtCorrection: z.string().trim().min(20).max(8_000),
+});
+
+type CorrectionOutput = z.infer<typeof CorrectionOutputSchema>;
+
+function validateJsonLd(value: string): string {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error("Le correctif JSON-LD n'est pas un JSON valide.");
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("Le correctif JSON-LD doit être un objet.");
+  }
+  const record = parsed as Record<string, unknown>;
+  if (record["@context"] !== "https://schema.org" || typeof record["@type"] !== "string") {
+    throw new Error("Le correctif JSON-LD doit contenir @context Schema.org et @type.");
+  }
+  return JSON.stringify(parsed, null, 2);
 }
 
-export async function generateCorrectionsForCampaign(campaignId: string, failedRuns: FailedRun[], brandName: string, industry: string | null) {
+export async function generateCorrectionsForCampaign(
+  campaignId: string,
+  failedRuns: FailedRun[],
+  brandName: string,
+  industry: string | null,
+) {
   if (failedRuns.length === 0) return;
 
-  const queriesList = failedRuns.map(r => `- [${r.family || "UNKNOWN"}] "${r.promptText}"`).join("\n");
+  const queriesList = failedRuns
+    .map((run) => `- [${run.family || "UNKNOWN"}] "${run.promptText.slice(0, 500)}"`)
+    .join("\n");
 
   const instruction = `
-Tu es un expert SEO spécialisé dans l'optimisation pour les moteurs de réponse IA (AEO / GEO).
-La marque "${brandName}" (secteur: ${industry || "Non spécifié"}) est INVISIBLE dans les réponses de l'IA (ChatGPT, Perplexity) pour les requêtes suivantes de clients potentiels :
+Tu es un expert SEO spécialisé dans l'optimisation pour les moteurs de réponse IA.
+La marque "${brandName}" (secteur: ${industry || "Non spécifié"}) est absente des
+réponses pour les requêtes suivantes :
 ${queriesList}
 
-Ton but est de fournir un plan d'action AEO ultra-concret basé sur l'étape du parcours client (Funnel) où la marque a échoué :
-- Si l'échec est sur un "PROBLEM" (Haut de tunnel) : L'action doit proposer de créer un contenu éducatif/FAQ. Format ciblé AEO : un paragraphe ultra-dense et clair de 40-60 mots avec des puces (bullet points).
-- Si l'échec est sur une "SOLUTION" (Milieu de tunnel) : L'action doit optimiser la sémantique de la Landing Page principale.
-- Si l'échec est sur une "COMPARISON" (Bas de tunnel) : L'action doit exiger la création d'une page "Alternative à [Concurrent]" et recommander fortement de collecter des avis sur G2/Capterra pour forger un "Entity Consensus" (crucial pour l'IA).
-
-Génère 3 correctifs techniques :
-1. "contentCorrection" : La recommandation stratégique de contenu (texte ou plan d'action) selon les règles AEO ci-dessus.
-2. "jsonLdCorrection" : Un objet JSON-LD (Schema.org) pertinent (ex: FAQPage, SoftwareApplication ou ItemList) pour structurer cette page.
-3. "llmsTxtCorrection" : Le texte Markdown optimisé pour un fichier "/llms.txt" afin que les bots d'IA (GPTBot) comprennent le positionnement de la marque face aux requêtes échouées.
-
-Réponds STRICTEMENT avec ce format JSON valide :
-{
-  "contentCorrection": "Recommandation AEO détaillée...",
-  "jsonLdCorrection": "{ \\"@context\\": \\"https://schema.org\\", ... }",
-  "llmsTxtCorrection": "Contenu Markdown pour llms.txt..."
-}
+Génère exactement trois correctifs exploitables :
+1. contentCorrection : recommandation ou texte AEO concret adapté à la famille de requête.
+2. jsonLdCorrection : une chaîne contenant un objet JSON-LD Schema.org valide.
+3. llmsTxtCorrection : un contenu Markdown directement copiable dans /llms.txt.
+Le JSON-LD doit avoir "@context": "https://schema.org" et un "@type" pertinent.
 `;
 
-  const schemaHint = "JSON output only";
-
   try {
-    const output = await groqPlainJson<CorrectionOutput>(instruction, schemaHint);
+    const rawOutput = await groqPlainJson(instruction, CorrectionOutputSchema);
+    const output: CorrectionOutput = {
+      ...rawOutput,
+      jsonLdCorrection: validateJsonLd(rawOutput.jsonLdCorrection),
+    };
 
-    // Save to DB
     await db.correction.createMany({
       data: [
         {
           campaignId,
           type: "CONTENT",
-          title: "Ajouter un paragraphe optimisé",
+          title: "Ajouter un contenu optimisé",
           content: output.contentCorrection,
           priority: "HIGH",
-          targetQuery: "Multiples requêtes"
+          targetQuery: "Multiples requêtes",
         },
         {
           campaignId,
           type: "JSONLD",
           title: "Intégrer les données structurées",
           content: output.jsonLdCorrection,
-          priority: "MEDIUM"
+          priority: "MEDIUM",
         },
         {
           campaignId,
           type: "LLMS_TXT",
           title: "Créer un fichier llms.txt",
           content: output.llmsTxtCorrection,
-          priority: "HIGH"
-        }
-      ]
+          priority: "HIGH",
+        },
+      ],
     });
-
-  } catch (e) {
-    console.error("Erreur lors de la génération des correctifs :", e);
-    // On ne fait pas échouer la campagne pour ça
+  } catch (error) {
+    console.error("Erreur lors de la génération des correctifs :", error);
   }
 }

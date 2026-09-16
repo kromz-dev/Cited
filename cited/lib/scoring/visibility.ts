@@ -1,24 +1,18 @@
-/**
- * Calcule le score de visibilité d'une marque (AEO Scoring).
- * 
- * Règle métier AEO (Pondération par position) :
- * Position 1 : 100%
- * Position 2 : 80%
- * Position 3 : 60%
- * Position 4 : 40%
- * Position 5+ : 20%
- * Non mentionné : 0%
- */
-
 export interface RunData {
   engineId: string;
   isMentioned: boolean;
   position: number | null;
   family?: string;
+  citationCount?: number;
+  hasBrandCitation?: boolean;
 }
 
 export interface VisibilityReport {
   globalScore: number;
+  visibilityRate: number;
+  rankScore: number;
+  citationRate: number | null;
+  brandCitationRate: number | null;
   problemScore: number | null;
   solutionScore: number | null;
   comparisonScore: number | null;
@@ -34,64 +28,71 @@ function getPositionWeight(position: number | null): number {
 }
 
 function calculateScoreForRuns(runs: RunData[]): number | null {
-  if (!runs || runs.length === 0) return null;
-  
-  const totalWeight = runs.reduce((acc, run) => acc + (run.isMentioned ? getPositionWeight(run.position) : 0), 0);
-  const score = totalWeight / runs.length;
-  
-  return Math.round(score * 10) / 10;
+  if (runs.length === 0) return null;
+  const totalWeight = runs.reduce(
+    (sum, run) => sum + (run.isMentioned ? getPositionWeight(run.position) : 0),
+    0,
+  );
+  return Math.round((totalWeight / runs.length) * 10) / 10;
 }
 
-/**
- * Score et demi-intervalle de confiance à 95 %.
- *
- * Les moteurs de réponse IA ne sont pas déterministes : deux appels identiques
- * ne donnent pas la même réponse. Un score issu d'un seul appel par requête
- * mesure donc surtout du bruit. En interrogeant N fois la même requête, la
- * dispersion des résultats devient mesurable, et toute variation inférieure à
- * la marge ci-dessous ne doit pas être présentée comme une tendance.
- */
 export function scoreWithConfidence(runs: RunData[]): {
   score: number;
   marginOfError: number;
 } {
-  if (!runs || runs.length === 0) return { score: 0, marginOfError: 0 };
-
-  const weights = runs.map((r) =>
-    r.isMentioned ? getPositionWeight(r.position) : 0,
+  if (runs.length === 0) return { score: 0, marginOfError: 0 };
+  const weights = runs.map((run) =>
+    run.isMentioned ? getPositionWeight(run.position) : 0,
   );
-  const mean = weights.reduce((a, b) => a + b, 0) / weights.length;
-
+  const mean = weights.reduce((sum, value) => sum + value, 0) / weights.length;
   if (weights.length < 2) {
     return { score: Math.round(mean * 10) / 10, marginOfError: 0 };
   }
-
-  // Écart-type d'échantillon, puis erreur-type de la moyenne.
   const variance =
-    weights.reduce((acc, w) => acc + (w - mean) ** 2, 0) / (weights.length - 1);
-  const standardError = Math.sqrt(variance) / Math.sqrt(weights.length);
-
+    weights.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
+    (weights.length - 1);
   return {
     score: Math.round(mean * 10) / 10,
-    marginOfError: Math.round(1.96 * standardError * 10) / 10,
+    marginOfError: Math.round((1.96 * Math.sqrt(variance / weights.length)) * 10) / 10,
   };
 }
 
+function percentage(predicate: (run: RunData) => boolean, runs: RunData[]): number {
+  return Math.round((runs.filter(predicate).length / runs.length) * 1000) / 10;
+}
+
 export function calculateVisibilityScore(runs: RunData[]): VisibilityReport {
-  if (!runs || runs.length === 0) {
-    return { globalScore: 0, problemScore: null, solutionScore: null, comparisonScore: null };
+  if (runs.length === 0) {
+    return {
+      globalScore: 0,
+      visibilityRate: 0,
+      rankScore: 0,
+      citationRate: null,
+      brandCitationRate: null,
+      problemScore: null,
+      solutionScore: null,
+      comparisonScore: null,
+    };
   }
 
-  const globalScore = calculateScoreForRuns(runs) || 0;
-  
-  const problemRuns = runs.filter(r => r.family === "PROBLEM");
-  const solutionRuns = runs.filter(r => r.family === "SOLUTION");
-  const comparisonRuns = runs.filter(r => r.family === "COMPARISON");
+  const rankScore = calculateScoreForRuns(runs) ?? 0;
+  const citationRuns = runs.filter((run) => run.citationCount !== undefined);
+  const brandCitationRuns = runs.filter((run) => run.hasBrandCitation !== undefined);
 
   return {
-    globalScore,
-    problemScore: calculateScoreForRuns(problemRuns),
-    solutionScore: calculateScoreForRuns(solutionRuns),
-    comparisonScore: calculateScoreForRuns(comparisonRuns)
+    globalScore: rankScore,
+    visibilityRate: percentage((run) => run.isMentioned, runs),
+    rankScore,
+    citationRate: citationRuns.length
+      ? percentage((run) => (run.citationCount ?? 0) > 0, citationRuns)
+      : null,
+    brandCitationRate: brandCitationRuns.length
+      ? percentage((run) => run.hasBrandCitation === true, brandCitationRuns)
+      : null,
+    problemScore: calculateScoreForRuns(runs.filter((run) => run.family === "PROBLEM")),
+    solutionScore: calculateScoreForRuns(runs.filter((run) => run.family === "SOLUTION")),
+    comparisonScore: calculateScoreForRuns(
+      runs.filter((run) => run.family === "COMPARISON"),
+    ),
   };
 }
