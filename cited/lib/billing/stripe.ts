@@ -1,12 +1,15 @@
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  console.warn("STRIPE_SECRET_KEY is missing. Stripe calls will fail.");
-}
+export function getStripe(): Stripe {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error("STRIPE_SECRET_KEY is required for billing operations.");
+  }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy", {
-  appInfo: {
-    name: "Cited",
-    version: "0.1.0",
-  },
-});
+  return new Stripe(secretKey, {
+    appInfo: {
+      name: "Cited",
+      version: "0.1.0",
+    },
+  });
+}

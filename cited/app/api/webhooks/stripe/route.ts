@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { stripe } from "@/lib/billing/stripe";
+import { getStripe } from "@/lib/billing/stripe";
 import { planForPriceId } from "@/lib/billing/plans";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -31,6 +31,7 @@ export async function POST(req: Request) {
     console.error("STRIPE_WEBHOOK_SECRET absente : webhook refusé.");
     return NextResponse.json({ error: "Not configured" }, { status: 500 });
   }
+  const stripe = getStripe();
 
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");

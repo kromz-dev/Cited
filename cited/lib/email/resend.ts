@@ -1,10 +1,12 @@
 import { Resend } from "resend";
 
-if (!process.env.RESEND_API_KEY) {
-  console.warn("RESEND_API_KEY is missing. Emails will not be sent.");
+function getResend(): Resend {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY is required to send audit report emails.");
+  }
+  return new Resend(apiKey);
 }
-
-export const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
 
 export async function sendAuditReportEmail(
   to: string,
@@ -17,13 +19,7 @@ export async function sendAuditReportEmail(
     competitorMentions: { name: string; count: number }[];
   }
 ) {
-  // If in local dev or missing key, we skip actual sending
-  if (!process.env.RESEND_API_KEY) {
-    console.log("Mocking email to", to);
-    return { success: true };
-  }
-
-  const { brandName, domain, mentionsCount, totalRuns, competitorMentions } = data;
+  const { domain, mentionsCount, totalRuns, competitorMentions } = data;
   const bestCompetitor = competitorMentions.length > 0 ? competitorMentions[0] : null;
   const competitorText = bestCompetitor 
     ? `Son concurrent ${bestCompetitor.name} apparaît dans ${bestCompetitor.count} réponses.` 
@@ -42,7 +38,7 @@ export async function sendAuditReportEmail(
   `;
 
   try {
-    const response = await resend.emails.send({
+    const response = await getResend().emails.send({
       from: "Cited <bonjour@cited.app>", // Update with a verified domain
       to,
       subject: `Votre marque est citée ${mentionsCount} fois sur ${totalRuns} par ChatGPT`,

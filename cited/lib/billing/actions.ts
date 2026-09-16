@@ -1,6 +1,6 @@
 "use server";
 
-import { stripe } from "./stripe";
+import { getStripe } from "./stripe";
 import { isPurchasablePlan, priceIdForPlan } from "./plans";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
@@ -23,6 +23,7 @@ export async function createCheckoutSession(plan: string) {
     throw new Error(`Plan inconnu : ${plan}`);
   }
   const priceId = priceIdForPlan(plan);
+  const stripe = getStripe();
 
   const user = await db.user.findUnique({
     where: { id: session.user.id }
@@ -71,6 +72,7 @@ export async function createCustomerPortalSession() {
     throw new Error("No stripe customer found");
   }
 
+  const stripe = getStripe();
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: user.stripeCustomerId,
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,

@@ -2,6 +2,13 @@ import { signIn } from "@/auth";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
+function safeCallbackUrl(value: string | undefined): string {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
+    return "/dashboard";
+  }
+  return value;
+}
+
 export const metadata = {
   title: "Connexion | Cited",
 };
@@ -12,8 +19,7 @@ export default async function LoginPage({
   searchParams: Promise<{ callbackUrl?: string }>;
 }) {
   const { callbackUrl } = await searchParams;
-  const destination =
-    callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : "/dashboard";
+  const destination = safeCallbackUrl(callbackUrl);
 
   return (
     <main className="min-h-screen bg-paper px-6 py-16">
