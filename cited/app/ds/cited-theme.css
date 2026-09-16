@@ -1,9 +1,9 @@
 /* Cited — surcouche du design system Modernist : polices douces, angles arrondis */
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap");
+
 
 :root {
-  --font-heading: "Nunito", system-ui, sans-serif;
-  --font-body: "Nunito", system-ui, sans-serif;
+  --font-heading: var(--font-nunito), system-ui, sans-serif;
+  --font-body: var(--font-nunito), system-ui, sans-serif;
   --font-heading-weight: 800;
   --radius-sm: 6px;
   --radius-md: 10px;

@@ -1,6 +1,6 @@
 @import "tailwindcss";
-@import "../../designsaas/ds/modernist.css";
-@import "../../designsaas/ds/cited-theme.css";
+@import "./ds/modernist.css";
+@import "./ds/cited-theme.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 

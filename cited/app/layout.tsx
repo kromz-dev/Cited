@@ -1,21 +1,14 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, DM_Sans, Geist } from "next/font/google";
+import { Nunito, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
-const spaceGrotesk = Space_Grotesk({
+const nunito = Nunito({
   subsets: ["latin"],
-  weight: ["500", "700"],
-  variable: "--font-heading",
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-body",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-nunito",
   display: "swap",
 });
 
@@ -35,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={cn(spaceGrotesk.variable, dmSans.variable, "font-sans", geist.variable)}>
+    <html lang="fr" className={cn(nunito.variable, "font-sans", geist.variable)}>
       <body className="antialiased min-h-screen">
         {children}
       </body>
