@@ -5,7 +5,7 @@ import LaunchCampaignButton from "./LaunchCampaignButton";
 
 export default async function BrandDetailPage(props: { params: Promise<{ brandId: string }> }) {
   const session = await auth();
-  if (!session?.user?.id) redirect("/");
+  if (!session?.user?.id) redirect("/login");
   
   const params = await props.params;
   const brand = await db.brand.findUnique({

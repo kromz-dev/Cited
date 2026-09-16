@@ -1,14 +1,14 @@
 import NextAuth from "next-auth"
 import authConfig from "./auth.config"
 import { NextResponse } from "next/server"
+import { isProtectedPath } from "@/lib/auth-route-policy"
 
 const { auth } = NextAuth(authConfig)
 
 export default auth((req) => {
-  const isAppRoute = req.nextUrl.pathname.startsWith("/dashboard") || req.nextUrl.pathname.startsWith("/brands")
-  
-  if (isAppRoute && !req.auth) {
-    const newUrl = new URL("/", req.nextUrl.origin)
+  if (isProtectedPath(req.nextUrl.pathname) && !req.auth) {
+    const newUrl = new URL("/login", req.nextUrl.origin)
+    newUrl.searchParams.set("callbackUrl", req.nextUrl.pathname)
     return NextResponse.redirect(newUrl)
   }
 })

@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Mes marques | Cited",
@@ -11,7 +12,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id;
   
-  if (!userId) return null;
+  if (!userId) redirect("/login");
 
   const brands = await db.brand.findMany({
     where: { userId },
