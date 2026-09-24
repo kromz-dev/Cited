@@ -141,7 +141,7 @@ describe('sites actions', () => {
       expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
     });
 
-    it('refuse un 11e site Solo et nomme le palier Pro', async () => {
+    it('refuse un 11e site Freelance et nomme le palier Agence', async () => {
       mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 1);
@@ -151,7 +151,37 @@ describe('sites actions', () => {
       const res = await addMonitoredSite({ name: 'Onzième', url: 'https://test.com' });
 
       expect(res).toEqual({
-        error: 'Limite du plan Solo atteinte (10 sites). Passez au plan Pro pour continuer.',
+        error: 'Vous surveillez déjà 10 sites, le maximum du palier Freelance. Passez au palier Agence (30 sites) pour en ajouter.',
+      });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+    });
+
+    it('refuse un 31e site Agence et nomme le palier Studio', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'PRO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(30);
+
+      const res = await addMonitoredSite({ name: 'Trente-et-unième', url: 'https://test.com' });
+
+      expect(res).toEqual({
+        error: 'Vous surveillez déjà 30 sites, le maximum du palier Agence. Passez au palier Studio (100 sites) pour en ajouter.',
+      });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+    });
+
+    it('refuse un 101e site Studio et indique le tarif au-delà', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'SCALE', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(100);
+
+      const res = await addMonitoredSite({ name: 'Cent-unième', url: 'https://test.com' });
+
+      expect(res).toEqual({
+        error: 'Au-delà, chaque site coûte 2 € par mois : contactez-nous pour l\'activer.',
       });
       expect(db.monitoredSite.create).not.toHaveBeenCalled();
     });
