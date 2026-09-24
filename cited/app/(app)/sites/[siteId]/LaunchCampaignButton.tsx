@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { launchAuditCampaign } from "./actions";
+import { Button } from "@/components/ui/button";
 
 export default function LaunchCampaignButton({ brandId, isRunning }: { brandId: string, isRunning: boolean }) {
   const [isPending, startTransition] = useTransition();
@@ -13,12 +14,8 @@ export default function LaunchCampaignButton({ brandId, isRunning }: { brandId: 
   };
 
   return (
-    <button
-      onClick={handleLaunch}
-      disabled={isPending || isRunning}
-      className="px-4 py-2 bg-ink text-paper text-sm font-medium rounded hover:bg-ink/90 disabled:opacity-50 transition-colors"
-    >
-      {isPending || isRunning ? "Audit en cours..." : "Lancer l'audit complet"}
-    </button>
+    <Button onClick={handleLaunch} disabled={isPending || isRunning}>
+      {isPending || isRunning ? "Audit en cours" : "Lancer l'audit complet"}
+    </Button>
   );
 }

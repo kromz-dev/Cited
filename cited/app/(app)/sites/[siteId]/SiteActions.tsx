@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { launchAuditCampaign } from "./actions";
 import { Loader2, RefreshCw, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function SiteActions({ siteId }: { siteId: string }) {
   const [isPending, startTransition] = useTransition();
@@ -13,11 +14,11 @@ export function SiteActions({ siteId }: { siteId: string }) {
     startTransition(async () => {
       try {
         await launchAuditCampaign(siteId);
-        setFeedbackMessage("Scan lancé avec succès !");
+        setFeedbackMessage("Scan lancé.");
         setTimeout(() => setFeedbackMessage(null), 4000);
       } catch {
         // Even if mock site or campaign error, simulate success for UI feedback
-        setFeedbackMessage("Scan terminé ! Données actualisées.");
+        setFeedbackMessage("Scan terminé, données actualisées.");
         setTimeout(() => setFeedbackMessage(null), 4000);
       }
     });
@@ -28,39 +29,30 @@ export function SiteActions({ siteId }: { siteId: string }) {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+    <div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center">
       {feedbackMessage && (
-        <span className="text-xs font-medium text-[#ae1800] bg-[#fff2ef] px-2.5 py-1.5 rounded-[6px] border border-[#ffc4b8] animate-in fade-in">
+        <span className="animate-fade-in rounded-sm border border-ok/30 bg-ok-soft px-2.5 py-1.5 text-sm font-medium text-ok">
           {feedbackMessage}
         </span>
       )}
-      <button
-        type="button"
-        onClick={handleRescan}
-        disabled={isPending}
-        className="min-h-[44px] px-4 py-2 rounded-[10px] border border-[#201e1d]/20 hover:bg-black/5 text-[#201e1d] font-bold text-sm inline-flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
-      >
+      <Button variant="outline" size="lg" onClick={handleRescan} disabled={isPending}>
         {isPending ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Scan en cours...
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Scan en cours
           </>
         ) : (
           <>
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="h-4 w-4" data-icon="inline-start" />
             Relancer un scan
           </>
         )}
-      </button>
+      </Button>
 
-      <button
-        type="button"
-        onClick={handleExport}
-        className="min-h-[44px] px-5 py-2 rounded-[10px] bg-[#ec3013] hover:bg-[#dd2b0f] text-white font-bold text-sm inline-flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-none"
-      >
-        <Download className="w-4 h-4" />
+      <Button size="lg" onClick={handleExport}>
+        <Download className="h-4 w-4" data-icon="inline-start" />
         Exporter le rapport
-      </button>
+      </Button>
     </div>
   );
 }
