@@ -178,7 +178,7 @@
   - **Vérification** : aucun lien restant dans l'application vers `/sites/new` ; `npm run build` ne référence plus le dossier supprimé
   - **Taille** : S
 
-- [ ] **T023** [P2] Étendre le scan quotidien au jeu complet de bots de rapport et au `ScanLog` enrichi — `cited/inngest/functions/scan-site.ts`
+- [x] **T023** [P2] Étendre le scan quotidien au jeu complet de bots de rapport et au `ScanLog` enrichi — `cited/inngest/functions/scan-site.ts`
   - **Dépendances** : T013 (colonnes `ScanLog`)
   - **EF/ENF** : EF-026
   - **Vérification** : test `inngest/functions/scan-site.test.ts` — le `ScanLog` créé porte `simpleStatus` et `cause` pour chaque bot du rapport, pas seulement GPTBot

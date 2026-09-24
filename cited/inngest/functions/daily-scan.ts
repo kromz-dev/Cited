@@ -1,7 +1,8 @@
 import { inngest } from "../client";
 import { db } from "@/lib/db";
 
-const BATCH_SIZE = 500;
+/** Un événement porte 10 sites : 1 lancement + 10 steps = 1,1 exécution par site. */
+const SCAN_BATCH_SIZE = 10;
 
 export const dailyScanJob = inngest.createFunction(
   { 
@@ -14,21 +15,21 @@ export const dailyScanJob = inngest.createFunction(
       return await db.monitoredSite.findMany({ select: { id: true } });
     });
 
-    let dispatched = 0;
-    const chunks = [];
-    for (let i = 0; i < allSites.length; i += BATCH_SIZE) {
-      chunks.push(allSites.slice(i, i + BATCH_SIZE));
+    const batches: string[][] = [];
+    for (let i = 0; i < allSites.length; i += SCAN_BATCH_SIZE) {
+      batches.push(allSites.slice(i, i + SCAN_BATCH_SIZE).map((site) => site.id));
     }
 
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      await step.sendEvent(`send-events-${i}`, chunk.map((site: { id: string }) => ({
-        name: "app/scan.site",
-        data: { siteId: site.id }
-      })));
-      dispatched += chunk.length;
+    if (batches.length > 0) {
+      await step.sendEvent(
+        "dispatch-scan-batches",
+        batches.map((siteIds) => ({
+          name: "app/scan.site" as const,
+          data: { siteIds },
+        })),
+      );
     }
 
-    return { totalSites: allSites.length, dispatched };
+    return { totalSites: allSites.length, dispatched: allSites.length, batches: batches.length };
   }
 );
