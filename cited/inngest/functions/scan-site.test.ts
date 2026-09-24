@@ -212,4 +212,34 @@ describe("scanSiteJob", () => {
     });
     expect(sendRegressionAlert).toHaveBeenCalledTimes(1);
   });
+
+  it("enregistre ERREUR pour un site injoignable et BLOQUÉ pour un robots.txt", async () => {
+    vi.mocked(db.monitoredSite.findUnique).mockResolvedValue({
+      id: "site-1",
+      url: "https://exemple.fr",
+      status: "OK",
+      user: { email: "agence@exemple.fr" },
+    } as unknown as MonitoredSiteWithUser);
+
+    vi.mocked(runCoreScan).mockResolvedValueOnce({
+      report: {},
+      results: [{ agent: "GPTBot", simpleStatus: "ERREUR", reasons: ["unreachable: timeout"], httpStatus: 0, durationMs: 1, wordCount: 0 }],
+    } as unknown as CoreScanOutput);
+    await invokeHandler(scanSiteJob, { event: { data: { siteId: "site-1" } }, step: stepThatRuns() });
+    expect(db.monitoredSite.update).toHaveBeenCalledWith({
+      where: { id: "site-1" },
+      data: { status: "ERREUR" },
+    });
+
+    vi.mocked(db.monitoredSite.update).mockClear();
+    vi.mocked(runCoreScan).mockResolvedValueOnce({
+      report: {},
+      results: [{ agent: "GPTBot", simpleStatus: "BLOQUÉ", reasons: ["robots.txt disallows GPTBot"], httpStatus: 200, durationMs: 1, wordCount: 20 }],
+    } as unknown as CoreScanOutput);
+    await invokeHandler(scanSiteJob, { event: { data: { siteId: "site-1" } }, step: stepThatRuns() });
+    expect(db.monitoredSite.update).toHaveBeenCalledWith({
+      where: { id: "site-1" },
+      data: { status: "BLOQUÉ" },
+    });
+  });
 });

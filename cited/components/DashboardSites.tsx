@@ -7,7 +7,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Verdict, type VerdictValue } from "@/components/ui/verdict";
+import { Verdict } from "@/components/ui/verdict";
+import { verdictForSiteStatus } from "@/lib/sites/site-status";
 
 export type MonitoredSite = {
   id: string;
@@ -257,10 +258,10 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
                 </tr>
               ) : (
                 filteredSites.map((site) => {
-                  const isError = site.status === "ERROR" || site.status === "BLOCKED";
+                  const isError = site.status === "ERROR" || site.status === "BLOCKED" || site.status === "BLOQUÉ" || site.status === "ERREUR";
                   const isOk = site.status === "ACTIVE" || site.status === "OK";
                   const isPendingStatus = site.status === "PENDING";
-                  const verdict: VerdictValue = isError ? "refuse" : isOk ? "lu" : "inconnu";
+                  const verdict = verdictForSiteStatus(site.status);
 
                   return (
                     <tr key={site.id} className="h-11 hover:bg-paper">

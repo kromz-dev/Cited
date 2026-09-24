@@ -184,7 +184,7 @@
   - **Vérification** : test `inngest/functions/scan-site.test.ts` — le `ScanLog` créé porte `simpleStatus` et `cause` pour chaque bot du rapport, pas seulement GPTBot
   - **Taille** : M
 
-- [ ] **T024** [P2] Distinguer `ERREUR` de `BLOQUÉ` dans `MonitoredSite.status` et son affichage — `cited/inngest/functions/scan-site.ts`, `cited/components/DashboardSites.tsx`
+- [x] **T024** [P2] Distinguer `ERREUR` de `BLOQUÉ` dans `MonitoredSite.status` et son affichage — `cited/inngest/functions/scan-site.ts`, `cited/components/DashboardSites.tsx`
   - **Dépendances** : T023
   - **EF/ENF** : EF-030
   - **Vérification** : un site en timeout DNS simulé prend le statut `ERREUR`, un site avec `robots.txt` disallow prend `BLOQUÉ`, avec un badge visuellement différent
