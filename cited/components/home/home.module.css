@@ -243,7 +243,12 @@
 .checksTable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13.5px;
+  table-layout: fixed;
+  font-size: 13px;
+}
+
+.checksTable {
+  table-layout: auto;
 }
 
 .table th,
@@ -251,9 +256,20 @@
 .checksTable th,
 .checksTable td {
   text-align: left;
-  padding: 10px 14px;
+  padding: 9px 8px;
   border-top: 1px solid var(--line);
   vertical-align: top;
+  overflow-wrap: break-word;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: 14px;
+}
+
+.checksTable th,
+.checksTable td {
+  padding: 10px 14px;
 }
 
 .table thead th,
@@ -266,33 +282,34 @@
   padding-bottom: 8px;
 }
 
+.colSite {
+  width: 40%;
+}
+
+.colVerdict {
+  width: 20%;
+}
+
 .domainCell {
   font-weight: 600;
   color: var(--ink);
-  white-space: nowrap;
+}
+
+.domainName {
+  display: block;
+  overflow-wrap: break-word;
+}
+
+.domainHost {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--ink-2);
 }
 
 .rowFlagged {
   background: var(--stop-soft);
-}
-
-.verdict {
-  display: inline-block;
-  font-weight: 600;
-  font-size: 13px;
-  padding: 2px 0;
-}
-
-.verdictOk {
-  color: var(--ok);
-}
-
-.verdictStop {
-  color: var(--stop);
-}
-
-.verdictWarn {
-  color: var(--warn);
 }
 
 .detailRow td {
@@ -349,14 +366,18 @@
 /* Responsive table -> stacked rows on small screens */
 
 @media (max-width: 640px) {
+  .table {
+    table-layout: auto;
+  }
+
   .table thead {
     display: none;
   }
 
   .table tbody tr:not(.detailRow) {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 4px 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px 12px;
     padding: 10px 14px;
     border-top: 1px solid var(--line);
   }
@@ -377,6 +398,8 @@
 
   .table td[data-label]::before {
     content: attr(data-label) ": ";
+    display: block;
+    font-size: 11px;
     font-weight: 600;
     color: var(--ink-2);
   }

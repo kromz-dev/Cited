@@ -1,14 +1,15 @@
 import { Fragment } from "react";
+import { Verdict, verdictFromStatus } from "@/components/ui/verdict";
 import styles from "./home.module.css";
 
-type Verdict = "Lu" | "Refusé" | "Vide";
+type VerdictLabel = "Lu" | "Refusé" | "Vide";
 
 interface PortfolioRow {
   domain: string;
   host: string;
-  chatgpt: Verdict;
-  claude: Verdict;
-  perplexity: Verdict;
+  chatgpt: VerdictLabel;
+  claude: VerdictLabel;
+  perplexity: VerdictLabel;
   detail?: {
     since: string;
     cause: string;
@@ -60,12 +61,6 @@ const rows: PortfolioRow[] = [
   },
 ];
 
-function verdictClass(v: Verdict) {
-  if (v === "Lu") return styles.verdictOk;
-  if (v === "Refusé") return styles.verdictStop;
-  return styles.verdictWarn;
-}
-
 export function PortfolioPanel() {
   return (
     <figure className={styles.panel}>
@@ -74,14 +69,19 @@ export function PortfolioPanel() {
         <span className={styles.panelDate}>Vérifié il y a 6 minutes</span>
       </div>
 
-      <table className={`${styles.table} ${styles.tabular}`}>
+      <table className={styles.table}>
         <caption className="sr-only">
           Exemple de rapport de portefeuille avec verdict par assistant IA
         </caption>
+        <colgroup>
+          <col className={styles.colSite} />
+          <col className={styles.colVerdict} />
+          <col className={styles.colVerdict} />
+          <col className={styles.colVerdict} />
+        </colgroup>
         <thead>
           <tr>
             <th scope="col">Site</th>
-            <th scope="col">Hébergeur</th>
             <th scope="col">ChatGPT</th>
             <th scope="col">Claude</th>
             <th scope="col">Perplexity</th>
@@ -92,28 +92,22 @@ export function PortfolioPanel() {
             <Fragment key={row.domain}>
               <tr className={row.detail ? styles.rowFlagged : undefined}>
                 <th scope="row" data-label="Site" className={styles.domainCell}>
-                  {row.domain}
+                  <span className={styles.domainName}>{row.domain}</span>
+                  <span className={styles.domainHost}>{row.host}</span>
                 </th>
-                <td data-label="Hébergeur">{row.host}</td>
                 <td data-label="ChatGPT">
-                  <span className={`${styles.verdict} ${verdictClass(row.chatgpt)}`}>
-                    {row.chatgpt}
-                  </span>
+                  <Verdict value={verdictFromStatus(row.chatgpt)} variant="inline" size="sm" />
                 </td>
                 <td data-label="Claude">
-                  <span className={`${styles.verdict} ${verdictClass(row.claude)}`}>
-                    {row.claude}
-                  </span>
+                  <Verdict value={verdictFromStatus(row.claude)} variant="inline" size="sm" />
                 </td>
                 <td data-label="Perplexity">
-                  <span className={`${styles.verdict} ${verdictClass(row.perplexity)}`}>
-                    {row.perplexity}
-                  </span>
+                  <Verdict value={verdictFromStatus(row.perplexity)} variant="inline" size="sm" />
                 </td>
               </tr>
               {row.detail && (
                 <tr className={styles.detailRow}>
-                  <td colSpan={5}>
+                  <td colSpan={4}>
                     <div className={styles.detailBox}>
                       <p className={styles.detailSince}>{row.detail.since}</p>
                       <dl className={styles.detailGrid}>
