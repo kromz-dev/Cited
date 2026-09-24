@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Download, FileText, CheckCircle2, Sliders, ExternalLink } from "lucide-react";
+import { Download } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 interface ClientReport {
   id: string;
@@ -96,212 +97,147 @@ export default function ReportsPage() {
 
   return (
     <div className="mx-auto max-w-6xl pb-16">
-      {/* Header section */}
-      <div className="border-b-2 border-line pb-8 flex flex-wrap gap-5 justify-between items-end">
+      <div className="flex flex-wrap items-end justify-between gap-5 border-b border-line pb-8">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#ae1800] mb-2.5">
-            Rapports
-          </div>
-          <h1 className="font-heading text-3xl md:text-4xl lg:text-[34px] font-bold text-ink tracking-tight">
+          <h1 className="text-[28px] leading-[34px] font-semibold tracking-[-0.02em] text-ink sm:text-[34px] sm:leading-[40px]">
             Rapport mensuel de visibilité IA
           </h1>
-          <p className="mt-3 text-sm text-muted max-w-[58ch] leading-relaxed">
+          <p className="mt-3 max-w-[58ch] text-sm leading-6 text-ink-2">
             À joindre au reporting de maintenance de chaque client. Généré le 1er du mois, exportable en PDF.
+            Données d&apos;exemple.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Month segmented control */}
-          <div className="inline-flex border border-line rounded-lg overflow-hidden bg-white shadow-xs">
-            <button
+          <div className="flex items-center gap-2">
+            <Button
               type="button"
+              size="sm"
+              variant={selectedMonth === "august" ? "default" : "outline"}
               onClick={() => setSelectedMonth("august")}
-              className={`px-3.5 py-2 text-xs md:text-sm font-medium transition-colors cursor-pointer ${
-                selectedMonth === "august"
-                  ? "bg-ink text-white"
-                  : "text-ink hover:bg-paper-deep"
-              }`}
             >
               Août
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              size="sm"
+              variant={selectedMonth === "september" ? "default" : "outline"}
               onClick={() => setSelectedMonth("september")}
-              className={`px-3.5 py-2 text-xs md:text-sm font-medium border-l border-line transition-colors cursor-pointer ${
-                selectedMonth === "september"
-                  ? "bg-ink text-white"
-                  : "text-ink hover:bg-paper-deep"
-              }`}
             >
               Septembre
-            </button>
+            </Button>
           </div>
 
-          <button
-            type="button"
-            onClick={handleExportPdf}
-            disabled={downloading}
-            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2 rounded-lg bg-[#ec3013] hover:bg-[#dd2b0f] active:bg-[#ae1800] text-white font-heading font-semibold text-sm transition-colors shadow-xs cursor-pointer disabled:opacity-50"
-          >
-            <Download className="w-4 h-4" />
-            {downloading ? "Génération..." : "Exporter en PDF"}
-          </button>
+          <Button type="button" onClick={handleExportPdf} disabled={downloading}>
+            <Download data-icon="inline-start" />
+            {downloading ? "Génération…" : "Exporter en PDF"}
+          </Button>
         </div>
       </div>
 
-      {/* Stats summary grid */}
-      <div className="border-b-2 border-line">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-line border-x border-line">
-          <div className="bg-paper p-5 md:py-[22px] md:px-6">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted mb-1.5">
-              Disponibilité IA moyenne
-            </div>
-            <div className="font-heading font-extrabold text-3xl md:text-[38px] text-ink leading-tight">
-              94 %
-            </div>
-          </div>
+      <div className="grid grid-cols-2 gap-px border-x border-y border-line bg-line md:grid-cols-4">
+        <div className="bg-surface p-5 md:px-6 md:py-[22px]">
+          <div className="type-caption font-medium text-ink-2">Disponibilité IA moyenne</div>
+          <div className="mt-1.5 text-3xl leading-tight font-semibold text-ink tnum md:text-[32px]">94 %</div>
+        </div>
 
-          <div className="bg-paper p-5 md:py-[22px] md:px-6">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted mb-1.5">
-              Scans effectués
-            </div>
-            <div className="font-heading font-extrabold text-3xl md:text-[38px] text-ink leading-tight">
-              540
-            </div>
-          </div>
+        <div className="bg-surface p-5 md:px-6 md:py-[22px]">
+          <div className="type-caption font-medium text-ink-2">Scans effectués</div>
+          <div className="mt-1.5 text-3xl leading-tight font-semibold text-ink tnum md:text-[32px]">540</div>
+        </div>
 
-          <div className="bg-paper p-5 md:py-[22px] md:px-6">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#ae1800] mb-1.5">
-              Incidents
-            </div>
-            <div className="font-heading font-extrabold text-3xl md:text-[38px] text-[#ec3013] leading-tight">
-              4
-            </div>
-          </div>
+        <div className="bg-surface p-5 md:px-6 md:py-[22px]">
+          <div className="type-caption font-medium text-ink-2">Incidents</div>
+          <div className="mt-1.5 text-3xl leading-tight font-semibold text-stop tnum md:text-[32px]">4</div>
+        </div>
 
-          <div className="bg-paper p-5 md:py-[22px] md:px-6">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted mb-1.5">
-              Durée moyenne au rouge
-            </div>
-            <div className="font-heading font-extrabold text-3xl md:text-[38px] text-ink leading-tight">
-              2,4 j
-            </div>
-          </div>
+        <div className="bg-surface p-5 md:px-6 md:py-[22px]">
+          <div className="type-caption font-medium text-ink-2">Durée moyenne au rouge</div>
+          <div className="mt-1.5 text-3xl leading-tight font-semibold text-ink tnum md:text-[32px]">2,4 j</div>
         </div>
       </div>
 
-      {/* Clients reports table section */}
-      <div className="border-b-2 border-line py-10">
-        <h2 className="font-heading font-bold text-2xl text-ink mb-5">Par client</h2>
-        <div className="border border-line rounded-xl overflow-hidden bg-white shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr className="border-b-2 border-line bg-paper/40">
-                  <th className="py-3 px-6 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
-                    Client
-                  </th>
-                  <th className="py-3 px-6 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
-                    Domaines
-                  </th>
-                  <th className="py-3 px-6 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
-                    Disponibilité IA
-                  </th>
-                  <th className="py-3 px-6 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
-                    Incidents
-                  </th>
-                  <th className="py-3 px-6 text-[11px] font-bold uppercase tracking-[0.08em] text-muted text-right">
-                    Rapport
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {clientReports.map((report) => (
-                  <tr
-                    key={report.id}
-                    className="hover:bg-paper/30 transition-colors"
+      <div className="border-b border-line py-10">
+        <h2 className="mb-5 text-xl font-semibold text-ink">Par client</h2>
+        <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+          <table className="w-full min-w-[640px] border-collapse text-left type-table">
+            <caption className="sr-only">Disponibilité IA et incidents par client</caption>
+            <thead>
+              <tr className="border-b border-ink text-left type-caption font-medium text-ink-2">
+                <th scope="col" className="px-6 py-3 font-medium">Client</th>
+                <th scope="col" className="px-3 py-3 font-medium">Domaines</th>
+                <th scope="col" className="px-3 py-3 font-medium">Disponibilité IA</th>
+                <th scope="col" className="px-3 py-3 font-medium">Incidents</th>
+                <th scope="col" className="px-6 py-3 text-right font-medium">Rapport</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {clientReports.map((report) => (
+                <tr key={report.id} className="h-12 hover:bg-paper">
+                  <td className={"px-6 py-3 " + (report.isImportant ? "font-semibold text-ink" : "text-ink")}>
+                    {report.client}
+                  </td>
+                  <td className="px-3 py-3 text-ink tnum">{report.domainsCount}</td>
+                  <td
+                    className={
+                      "px-3 py-3 tnum " + (report.hasIncidentWarning ? "font-semibold text-stop" : "text-ink")
+                    }
                   >
-                    <td
-                      className={`py-3 px-6 ${
-                        report.isImportant ? "font-semibold text-ink" : "text-ink"
-                      }`}
+                    {report.availability} %
+                  </td>
+                  <td className="px-3 py-3 text-ink-2">{report.incidents}</td>
+                  <td className="px-6 py-3 text-right">
+                    <button
+                      type="button"
+                      onClick={() => alert(`Téléchargement du rapport pour ${report.client}...`)}
+                      className="font-medium text-ink underline-offset-4 hover:text-cobalt hover:underline"
                     >
-                      {report.client}
-                    </td>
-                    <td className="py-3 px-6 text-ink">{report.domainsCount}</td>
-                    <td
-                      className={`py-3 px-6 font-mono ${
-                        report.hasIncidentWarning
-                          ? "text-[#ec3013] font-semibold"
-                          : "text-ink"
-                      }`}
-                    >
-                      {report.availability} %
-                    </td>
-                    <td className="py-3 px-6 text-muted">{report.incidents}</td>
-                    <td className="py-3 px-6 text-right">
-                      <button
-                        type="button"
-                        onClick={() => alert(`Téléchargement du rapport pour ${report.client}...`)}
-                        className="text-sm font-medium text-ink hover:text-cited underline-offset-4 hover:underline cursor-pointer"
-                      >
-                        Télécharger
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      Télécharger
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Bottom section: Portfolio availability chart + PDF details */}
-      <div className="py-10 grid grid-cols-1 md:grid-cols-2 gap-9 items-start">
-        {/* Availability chart */}
-        <div className="border border-line rounded-2xl bg-white p-6 md:p-8 shadow-xs">
-          <h2 className="font-heading font-bold text-2xl text-ink mb-1.5">
-            Disponibilité du portefeuille
-          </h2>
-          <p className="text-sm text-muted mb-6">
-            Part des domaines lisibles par les IA, jour par jour.
+      <div className="grid grid-cols-1 items-start gap-6 py-10 md:grid-cols-2">
+        <div className="rounded-lg border border-line bg-surface p-6 md:p-8">
+          <h2 className="text-xl font-semibold text-ink">Disponibilité du portefeuille</h2>
+          <p className="mt-1.5 text-sm text-ink-2">
+            Part des domaines lisibles par les IA, jour par jour. Données d&apos;exemple.
           </p>
 
-          <div className="flex items-end gap-1.5 h-[130px] pt-4 px-1">
+          <div className="mt-6 flex h-[130px] items-end gap-1.5 px-1 pt-4">
             {dailyAvailability.map((item, index) => (
-              <div
-                key={index}
-                className="flex-1 flex flex-col items-center h-full justify-end group relative"
-              >
+              <div key={index} className="group relative flex h-full flex-1 flex-col items-center justify-end">
                 <div
                   style={{ height: `${item.value}%` }}
-                  className={`w-full rounded-t-[4px] transition-all group-hover:opacity-85 ${
-                    item.isAlert ? "bg-[#ec3013]" : "bg-[#d7d3d3]"
-                  }`}
+                  className={
+                    "w-full rounded-t-xs transition-opacity group-hover:opacity-85 " +
+                    (item.isAlert ? "bg-stop" : "bg-line-strong")
+                  }
                 />
-                {/* Tooltip on hover */}
-                <div className="absolute -top-9 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
-                  <span className="bg-ink text-white text-[11px] font-mono px-2 py-0.5 rounded shadow-sm whitespace-nowrap">
-                    {item.day}: {item.value}%
+                <div className="pointer-events-none absolute -top-9 z-10 hidden flex-col items-center group-hover:flex">
+                  <span className="whitespace-nowrap rounded-xs bg-ink px-2 py-0.5 type-caption tnum text-paper">
+                    {item.day} : {item.value} %
                   </span>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="flex justify-between mt-3 text-xs text-muted font-medium">
+          <div className="mt-3 flex justify-between type-caption font-medium text-ink-2">
             <span>1 sept.</span>
             <span>16 sept.</span>
           </div>
         </div>
 
-        {/* PDF contents details */}
-        <div className="border border-line rounded-2xl bg-white p-6 md:p-8 shadow-xs flex flex-col justify-between">
+        <div className="flex flex-col justify-between rounded-lg border border-line bg-surface p-6 md:p-8">
           <div>
-            <h2 className="font-heading font-bold text-2xl text-ink mb-1.5">
-              Ce que contient le PDF
-            </h2>
-            <div className="flex flex-col gap-3 text-sm text-ink/90 border-t border-line pt-4 mt-4 leading-relaxed">
+            <h2 className="text-xl font-semibold text-ink">Ce que contient le PDF</h2>
+            <div className="mt-4 flex flex-col gap-3 border-t border-line pt-4 text-sm leading-6 text-ink">
               <div>Verdict actuel et historique de chaque domaine du client.</div>
               <div>Liste des incidents, avec date d&apos;apparition et de résolution.</div>
               <div>Réponse brute des bots IA, en annexe technique.</div>
@@ -309,11 +245,8 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="mt-6 pt-2">
-            <Link
-              href="/settings"
-              className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 border border-line rounded-lg bg-white text-ink text-sm font-semibold hover:bg-paper-deep transition-colors shadow-xs"
-            >
+          <div className="mt-6">
+            <Link href="/settings" className={buttonVariants({ variant: "outline" })}>
               Personnaliser l&apos;en-tête
             </Link>
           </div>

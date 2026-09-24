@@ -4,6 +4,7 @@ import { useState, useTransition, ChangeEvent, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 
 export default function OnboardingPage() {
@@ -21,10 +22,8 @@ librairie-pas.fr`;
   const [recapSchedule, setRecapSchedule] = useState("Lundi matin");
   const [threshold, setThreshold] = useState("200 car.");
 
-  // Alert channels
+  // Alert channels — only e-mail is wired up today
   const [emailActive, setEmailActive] = useState(true);
-  const [slackActive, setSlackActive] = useState(true);
-  const [webhookActive, setWebhookActive] = useState(false);
 
   const [isPending, startTransition] = useTransition();
   const [isScanning, setIsScanning] = useState(false);
@@ -71,60 +70,35 @@ librairie-pas.fr`;
   };
 
   return (
-    <div className="-m-6 md:-m-10 min-h-screen flex flex-col bg-[#f3f2f2] text-[#201e1d]">
-      {/* Topbar */}
-      <header className="bg-[#201e1d] text-[#f3f2f2]">
-        <div className="w-full max-w-[1240px] mx-auto px-6 py-3.5 flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center font-heading font-extrabold text-[19px] tracking-tight text-[#f3f2f2] hover:opacity-90 transition-opacity mr-auto"
-          >
-            <span className="text-[#ec3013] mr-2">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-              >
-                <path d="M4 6.5h16" />
-                <path d="M6.5 12h11" />
-                <path d="M10 17.5h5" />
-              </svg>
-            </span>
-            Cited<span className="text-[#ec3013]">.</span>
+    <div className="-m-6 flex min-h-screen flex-col bg-paper text-ink md:-m-10">
+      <header className="bg-ink text-paper">
+        <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 py-3.5">
+          <Link href="/" className="mr-auto inline-flex items-center text-[19px] font-semibold tracking-tight">
+            Cited<span className="text-cobalt">.</span>
           </Link>
-          <span className="text-[11px] uppercase tracking-[0.12em] font-medium opacity-60">
-            Étapes 2 et 3 sur 3
-          </span>
+          <span className="type-caption font-medium opacity-70">Étapes 2 et 3 sur 3</span>
         </div>
       </header>
 
-      {/* Progress Bar (2/3 completed) */}
-      <div className="flex h-[6px] bg-[#201e1d]/15">
-        <span className="flex-[2] bg-[#ec3013]" />
+      <div className="flex h-1.5 bg-ink/15">
+        <span className="flex-[2] bg-cobalt" />
         <span className="flex-1" />
       </div>
 
-      {/* Main 2-column layout */}
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-2">
-        {/* Left Column: Étape 2 · Ajouter les domaines */}
-        <div className="p-6 sm:p-12 flex justify-center border-b lg:border-b-0 lg:border-r-2 border-[#201e1d]/15 bg-[#f3f2f2]">
+      <main className="grid flex-1 grid-cols-1 lg:grid-cols-2">
+        {/* Étape 2 · Ajouter les domaines */}
+        <div className="flex justify-center border-b border-line bg-paper p-6 sm:p-12 lg:border-r lg:border-b-0">
           <div className="w-full max-w-[460px]">
-            <div className="text-[11px] uppercase tracking-[0.12em] font-bold text-[#ae1800] mb-3">
-              Étape 2 · Ajouter les domaines
-            </div>
-            <h1 className="font-heading text-[28px] sm:text-[32px] font-bold leading-[1.08] text-[#201e1d] mb-2.5">
+            <p className="mb-2.5 text-sm font-medium text-ink-2">Étape 2 · Ajouter les domaines</p>
+            <h1 className="mb-2.5 text-[28px] leading-[1.1] font-semibold tracking-[-0.02em] text-ink sm:text-[32px]">
               Collez votre portefeuille, un domaine par ligne
             </h1>
-            <p className="text-[14px] text-[#201e1d]/75 mb-[22px] leading-relaxed">
+            <p className="mb-[22px] text-sm leading-6 text-ink-2">
               Le premier scan démarre dès la validation. Comptez une minute pour vingt domaines.
             </p>
 
-            <div className="space-y-1.5">
-              <label htmlFor="o-doms" className="block text-[12px] font-semibold text-[#201e1d]/70">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="o-doms" className="text-sm font-medium text-ink">
                 Domaines
               </label>
               <textarea
@@ -132,17 +106,18 @@ librairie-pas.fr`;
                 rows={8}
                 value={domainsText}
                 onChange={(e) => setDomainsText(e.target.value)}
-                className="w-full bg-[#eae9e9] border border-[#201e1d]/20 rounded-[10px] p-3 font-mono text-[13px] leading-[1.8] text-[#201e1d] focus:border-[#ec3013] focus:outline-none focus:ring-1 focus:ring-[#ec3013] transition-colors"
+                className="w-full rounded-sm border border-line-strong bg-surface p-3 font-mono text-[13px] leading-[1.8] text-ink outline-none transition-colors focus-visible:border-cobalt focus-visible:ring-3 focus-visible:ring-cobalt/25"
                 placeholder="exemple.com"
               />
+              <p className="type-caption text-ink-2">Liste d&apos;exemple pré-remplie ; remplacez-la par vos domaines.</p>
             </div>
 
-            <div className="flex justify-between items-center border-t border-[#201e1d]/15 pt-3.5 mt-3.5 text-[13px] text-[#201e1d]/80">
+            <div className="mt-3.5 flex items-center justify-between border-t border-line pt-3.5 text-sm text-ink-2">
               <span>{domainCount} domaines sur 20 utilisés</span>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-[#ae1800] hover:text-[#ec3013] font-medium transition-colors cursor-pointer"
+                className="font-medium text-cobalt hover:underline"
               >
                 Importer un CSV
               </button>
@@ -155,151 +130,127 @@ librairie-pas.fr`;
               />
             </div>
 
-            <div className="flex flex-wrap gap-2.5 mt-[22px]">
+            <div className="mt-[22px] flex flex-wrap gap-2.5">
               <Button
                 type="button"
+                size="lg"
                 onClick={handleStartScan}
                 disabled={isPending || isScanning}
-                className="min-h-[48px] flex-[1_1_200px] bg-[#ec3013] hover:bg-[#dd2b0f] text-white font-bold rounded-[10px] text-sm shadow-none cursor-pointer transition-colors"
+                className="flex-[1_1_200px]"
               >
                 {isPending || isScanning ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Scan en cours...
+                    <Loader2 className="size-4 animate-spin" />
+                    Scan en cours…
                   </>
                 ) : (
                   "Lancer le premier scan"
                 )}
               </Button>
-              <Link
-                href="/register"
-                className="min-h-[48px] inline-flex items-center justify-center px-6 rounded-[10px] border border-[#201e1d]/20 hover:bg-[#201e1d]/5 font-bold text-sm text-[#201e1d] transition-colors cursor-pointer"
-              >
+              <Link href="/register" className="inline-flex min-h-12 items-center justify-center rounded-sm border border-line-strong px-6 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
                 Retour
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Étape 3 · Choisir les alertes */}
-        <div className="p-6 sm:p-12 flex justify-center bg-[#eae9e9]">
+        {/* Étape 3 · Choisir les alertes */}
+        <div className="flex justify-center bg-surface-2 p-6 sm:p-12">
           <div className="w-full max-w-[460px]">
-            <div className="text-[11px] uppercase tracking-[0.12em] font-bold text-[#ae1800] mb-3">
-              Étape 3 · Choisir les alertes
-            </div>
-            <h2 className="font-heading text-[28px] sm:text-[32px] font-bold leading-[1.08] text-[#201e1d] mb-2.5">
+            <p className="mb-2.5 text-sm font-medium text-ink-2">Étape 3 · Choisir les alertes</p>
+            <h2 className="mb-2.5 text-[28px] leading-[1.1] font-semibold tracking-[-0.02em] text-ink sm:text-[32px]">
               Qui est prévenu quand un site passe au rouge
             </h2>
-            <p className="text-[14px] text-[#201e1d]/75 mb-[22px] leading-relaxed">
-              Une alerte part au changement de verdict, jamais à chaque scan.
+            <p className="mb-[22px] text-sm leading-6 text-ink-2">
+              Une alerte part au changement de verdict, jamais à chaque scan. Les alertes partent par e-mail.
             </p>
 
-            {/* Alert Channels List */}
-            <div className="bg-[#f3f2f2] border border-[#201e1d]/15 rounded-[16px] overflow-hidden">
-              {/* Channel 1: Email */}
-              <div
+            <div className="overflow-hidden rounded-lg border border-line bg-surface">
+              <button
+                type="button"
                 onClick={() => setEmailActive(!emailActive)}
-                className="p-4 sm:px-4.5 sm:py-4 border-b border-[#201e1d]/15 flex items-start gap-3 cursor-pointer select-none hover:bg-black/[0.02] transition-colors"
+                className="flex w-full items-start gap-3 border-b border-line p-4 text-left transition-colors hover:bg-surface-2 sm:px-4.5 sm:py-4"
               >
                 <span
-                  className={`w-4 h-4 rounded-[5px] shrink-0 mt-0.5 transition-colors ${
-                    emailActive ? "bg-[#ec3013]" : "border-2 border-[#201e1d]"
-                  }`}
+                  className={
+                    "mt-0.5 size-4 shrink-0 rounded-[5px] border-2 transition-colors " +
+                    (emailActive ? "border-cobalt bg-cobalt" : "border-line-strong bg-transparent")
+                  }
+                  aria-hidden="true"
                 />
-                <div>
-                  <div className="font-semibold text-[14px] text-[#201e1d]">E-mail</div>
-                  <div className="text-[13px] text-[#201e1d]/60">laura@atelier-boreal.fr</div>
-                </div>
+                <span>
+                  <span className="block text-sm font-semibold text-ink">E-mail</span>
+                  <span className="block text-[13px] text-ink-2">laura@atelier-boreal.fr</span>
+                </span>
+              </button>
+
+              <div className="flex items-start gap-3 border-b border-line p-4 opacity-60 sm:px-4.5 sm:py-4">
+                <span className="mt-0.5 size-4 shrink-0 rounded-[5px] border-2 border-line-strong" aria-hidden="true" />
+                <span className="flex-1">
+                  <span className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-ink">Slack</span>
+                    <Badge variant="outline">En préparation</Badge>
+                  </span>
+                  <span className="block text-[13px] text-ink-2">Pas encore proposé</span>
+                </span>
               </div>
 
-              {/* Channel 2: Slack */}
-              <div
-                onClick={() => setSlackActive(!slackActive)}
-                className="p-4 sm:px-4.5 sm:py-4 border-b border-[#201e1d]/15 flex items-start gap-3 cursor-pointer select-none hover:bg-black/[0.02] transition-colors"
-              >
-                <span
-                  className={`w-4 h-4 rounded-[5px] shrink-0 mt-0.5 transition-colors ${
-                    slackActive ? "bg-[#ec3013]" : "border-2 border-[#201e1d]"
-                  }`}
-                />
-                <div>
-                  <div className="font-semibold text-[14px] text-[#201e1d]">Slack</div>
-                  <div className="text-[13px] text-[#201e1d]/60">#veille-clients · connecté</div>
-                </div>
-              </div>
-
-              {/* Channel 3: Webhook */}
-              <div
-                onClick={() => setWebhookActive(!webhookActive)}
-                className="p-4 sm:px-4.5 sm:py-4 flex items-start gap-3 cursor-pointer select-none hover:bg-black/[0.02] transition-colors"
-              >
-                <span
-                  className={`w-4 h-4 rounded-[5px] shrink-0 mt-0.5 transition-colors ${
-                    webhookActive ? "bg-[#ec3013]" : "border-2 border-[#201e1d]"
-                  }`}
-                />
-                <div>
-                  <div className="font-semibold text-[14px] text-[#201e1d]">Webhook</div>
-                  <div className="text-[13px] text-[#201e1d]/60">POST JSON vers votre outillage</div>
-                </div>
+              <div className="flex items-start gap-3 p-4 opacity-60 sm:px-4.5 sm:py-4">
+                <span className="mt-0.5 size-4 shrink-0 rounded-[5px] border-2 border-line-strong" aria-hidden="true" />
+                <span className="flex-1">
+                  <span className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-ink">Webhook</span>
+                    <Badge variant="outline">En préparation</Badge>
+                  </span>
+                  <span className="block text-[13px] text-ink-2">Pas encore proposé</span>
+                </span>
               </div>
             </div>
 
-            {/* Weekly Recap Segment */}
+            {/* Récapitulatif hebdomadaire */}
             <div className="mt-[22px]">
-              <label className="block text-[12px] font-semibold text-[#201e1d]/70 mb-1.5">
-                Récapitulatif hebdomadaire
-              </label>
-              <div className="inline-flex border border-[#201e1d]/20 rounded-[10px] overflow-hidden bg-white/40">
+              <p className="mb-1.5 text-sm font-medium text-ink">Récapitulatif hebdomadaire</p>
+              <div className="flex flex-wrap gap-2">
                 {["Lundi matin", "Vendredi", "Aucun"].map((opt) => (
-                  <button
+                  <Button
                     key={opt}
                     type="button"
+                    size="sm"
+                    variant={recapSchedule === opt ? "default" : "outline"}
                     onClick={() => setRecapSchedule(opt)}
-                    className={`px-3 py-1.5 text-[13px] cursor-pointer transition-colors border-r border-[#201e1d]/20 last:border-r-0 ${
-                      recapSchedule === opt
-                        ? "bg-[#201e1d] text-[#f3f2f2] font-semibold"
-                        : "text-[#201e1d] hover:bg-black/5"
-                    }`}
                   >
                     {opt}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
 
-            {/* Empty Shell Threshold Segment */}
+            {/* Seuil de coquille vide */}
             <div className="mt-[18px]">
-              <label className="block text-[12px] font-semibold text-[#201e1d]/70 mb-1.5">
-                Seuil de coquille vide
-              </label>
-              <div className="inline-flex border border-[#201e1d]/20 rounded-[10px] overflow-hidden bg-white/40">
+              <p className="mb-1.5 text-sm font-medium text-ink">Seuil de coquille vide</p>
+              <div className="flex flex-wrap gap-2">
                 {["100 car.", "200 car.", "500 car."].map((opt) => (
-                  <button
+                  <Button
                     key={opt}
                     type="button"
+                    size="sm"
+                    variant={threshold === opt ? "default" : "outline"}
                     onClick={() => setThreshold(opt)}
-                    className={`px-3 py-1.5 text-[13px] cursor-pointer transition-colors border-r border-[#201e1d]/20 last:border-r-0 ${
-                      threshold === opt
-                        ? "bg-[#201e1d] text-[#f3f2f2] font-semibold"
-                        : "text-[#201e1d] hover:bg-black/5"
-                    }`}
                   >
                     {opt}
-                  </button>
+                  </Button>
                 ))}
               </div>
-              <span className="block text-[12px] text-[#201e1d]/60 mt-1.5">
+              <p className="mt-1.5 type-caption text-ink-2">
                 En dessous de ce volume de texte utile, le verdict passe au rouge.
-              </span>
+              </p>
             </div>
 
-            {/* Complete Button */}
             <Link
               href="/dashboard"
-              className="w-full min-h-[48px] bg-[#ec3013] hover:bg-[#dd2b0f] text-white font-bold rounded-[10px] text-sm flex items-center justify-center transition-colors mt-6 shadow-none"
+              className="mt-6 flex min-h-12 w-full items-center justify-center rounded-sm bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-ink/88"
             >
-              Terminer et voir le dashboard
+              Terminer et voir le tableau de bord
             </Link>
           </div>
         </div>
