@@ -214,7 +214,7 @@
   - **Vérification** : aucun bouton sans effet ne subsiste dans l'interface authentifiée (principe II)
   - **Taille** : S
 
-- [ ] **T029a** [P2] Historique réel des scans sur la page de détail (remplace le graphique en barres fictif) — `cited/app/(app)/sites/[siteId]/page.tsx`
+- [x] **T029a** [P2] Historique réel des scans sur la page de détail (remplace le graphique en barres fictif) — `cited/app/(app)/sites/[siteId]/page.tsx`
   - **Dépendances** : T023
   - **EF/ENF** : EF-043
   - **Vérification** : la série affichée correspond aux vrais `ScanLog` du site consulté, pas à une donnée commune à tous les sites
