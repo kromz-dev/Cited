@@ -279,9 +279,10 @@ export function HomePage() {
               </div>
 
               <div className={styles.reportMath}>
-                <p className={`${styles.reportMathLine} ${styles.tabular}`}>
-                  30 sites × 10 € = 300 €/mois refacturés à vos clients, pour
-                  un abonnement Cited Agence à 99 €/mois.
+                <p className={styles.reportMathLine}>
+                  <span className={styles.tabular}>30 sites × 10 € = 300 €</span>
+                  /mois refacturés à vos clients, pour un abonnement Cited
+                  Agence à <span className={styles.tabular}>99 €</span>/mois.
                 </p>
                 <p className={styles.reportMathNote}>
                   Le prix de Cited tient dans la ligne que vous ajoutez à

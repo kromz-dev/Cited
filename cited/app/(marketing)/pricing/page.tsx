@@ -166,7 +166,7 @@ export default function PricingPage() {
                     >
                       <span className={styles.planName}>{plan.name}</span>
                       <span className={styles.planPrice}>
-                        {plan.price}
+                        <span className={styles.planPriceValue}>{plan.price}</span>
                         {plan.priceUnit ? (
                           <span className={styles.planPriceUnit}>
                             {" "}

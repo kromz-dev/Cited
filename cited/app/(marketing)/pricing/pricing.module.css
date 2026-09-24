@@ -188,8 +188,11 @@
   margin-top: 6px;
   font-size: 22px;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
   color: var(--ink);
+}
+
+.planPriceValue {
+  font-variant-numeric: tabular-nums;
 }
 
 .planPriceUnit {
@@ -331,12 +334,12 @@
   font-size: 20px;
   font-weight: 600;
   color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
 }
 
 .equationRow .num {
   font-weight: 800;
   color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
 .equationResult {
