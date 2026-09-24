@@ -4,6 +4,7 @@ import { runCoreScan, type SimpleStatus } from "@/lib/scanner/core";
 import { DEFAULT_PROBE_BOTS } from "../../lib/scanner/agents";
 import { sendRegressionAlert } from "@/lib/alerting/sendAlert";
 import { NonRetriableError } from "inngest";
+import { SCAN_CONCURRENCY } from "../../lib/sites/scan-throughput";
 
 /**
  * Contrat stable pour le passage quotidien et pour T043 (premier scan).
@@ -65,7 +66,8 @@ export const scanSiteJob = inngest.createFunction(
   {
     id: "scan-single-site",
     concurrency: {
-      limit: 10,
+      // 10 fonctions × 10 sites × 20 s = 1 000 sites en 0,56 h (ENF-005).
+      limit: SCAN_CONCURRENCY,
     },
     triggers: [{ event: "app/scan.site" }],
   },

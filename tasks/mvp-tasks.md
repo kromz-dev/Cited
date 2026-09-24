@@ -422,7 +422,7 @@
   - **Vérification** : navigation clavier complète sur chaque écran listé, contrôle de contraste ≥ 4.5:1 sur le texte courant
   - **Taille** : M
 
-- [ ] **T055** [QUAL] Revérifier le budget ENF-005 (1000 sites/heure) une fois EF-026 (multi-bots) livré, ajuster la concurrence Inngest si besoin — `cited/inngest/functions/scan-site.ts`
+- [x] **T055** [QUAL] Revérifier le budget ENF-005 (1000 sites/heure) une fois EF-026 (multi-bots) livré, ajuster la concurrence Inngest si besoin — `cited/inngest/functions/scan-site.ts`
   - **Dépendances** : T023
   - **EF/ENF** : ENF-005, EF-028
   - **Vérification** : un test de charge simulé (ou un calcul documenté à partir de la durée moyenne observée par site) montre que 1000 sites tiennent dans une fenêtre d'une heure avec la concurrence configurée
