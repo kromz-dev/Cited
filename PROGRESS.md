@@ -37,4 +37,6 @@ C'est un produit à haute marge, vendu sur le principe de la *Tranquillité d'es
 - `docs/02-cahier-des-charges.md`
 - `docs/04-pivot-veille.md`
 
+**Mise à jour du 24 septembre 2026 :** l'analyse stratégique (`docs/05-analyse-strategique.md`) remet en cause la cible no-code et la méthode de mesure par User-Agent imité. Cibles recommandées : agences de maintenance WordPress et agences SEO/GEO. Kit commercial : `docs/06-kit-prospection.md`.
+
 Toutes les anciennes documentations obsolètes ont été supprimées. La prochaine étape est le développement du moteur de scan.
