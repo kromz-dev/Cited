@@ -1,15 +1,14 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { whiteLabelFor } from "@/lib/billing/plans";
 import { SubscriptionSection } from "./SubscriptionSection";
 import { PersonalDataSection } from "./PersonalDataSection";
+import { WhiteLabelSection } from "./WhiteLabelSection";
 import { SettingsClient } from "./SettingsClient";
 
 /**
  * Route Paramètres : lit la session pour transmettre à `SettingsClient` les
  * quelques données réelles dont ses sections encore sommaires ont besoin
- * (e-mail du compte, nom, accès marque blanche du palier), plutôt que
- * d'afficher des exemples inventés.
+ * (e-mail du compte, nom), plutôt que d'afficher des exemples inventés.
  */
 export default async function SettingsPage() {
   const session = await auth();
@@ -18,19 +17,17 @@ export default async function SettingsPage() {
   const user = userId
     ? await db.user.findUnique({
         where: { id: userId },
-        select: { name: true, email: true, plan: true },
+        select: { name: true, email: true },
       })
     : null;
-
-  const whiteLabelAccess = user ? whiteLabelFor(user.plan) : false;
 
   return (
     <SettingsClient
       subscriptionSection={<SubscriptionSection />}
       personalDataSection={<PersonalDataSection />}
+      whiteLabelSection={<WhiteLabelSection />}
       userName={user?.name ?? null}
       userEmail={user?.email ?? null}
-      whiteLabelAccess={whiteLabelAccess}
     />
   );
 }

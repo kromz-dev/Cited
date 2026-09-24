@@ -4,11 +4,19 @@ import {
   buildReportSections,
   resolveAccentColor,
   resolveBrandName,
+  resolveReportBranding,
+  assertWhiteLabelAllowed,
+  WhiteLabelNotAllowedError,
   DEFAULT_ACCENT_COLOR,
   DEFAULT_BRAND_NAME,
   SECTION_TITLES,
   type MonthlyReportData,
 } from './renderMonthlyReportPdf';
+
+// 1x1 PNG transparent, minuscule, utilisé pour vérifier que le rendu ne
+// plante pas quand un `logoDataUri` déjà chargé est fourni.
+const FIXTURE_PNG_DATA_URI =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
 
 // Données figées représentant un client avec deux sites, un historique et un
 // incident résolu — utilisées par tous les tests de ce fichier.
@@ -106,6 +114,16 @@ describe('renderMonthlyReportPdf', () => {
 
     expect(buffer.subarray(0, 4).toString('utf-8')).toBe('%PDF');
   });
+
+  it('generates a PDF when a pre-loaded logo data URI is provided', async () => {
+    const buffer = await renderMonthlyReportPdf(fixedData, {
+      name: 'Agence Fixture',
+      accentColor: '#2b55d0',
+      logoDataUri: FIXTURE_PNG_DATA_URI,
+    });
+
+    expect(buffer.subarray(0, 4).toString('utf-8')).toBe('%PDF');
+  });
 });
 
 // @react-pdf/renderer compresse le flux PDF par défaut (`renderToBuffer`/
@@ -185,5 +203,64 @@ describe('resolveAccentColor', () => {
     expect(resolveAccentColor('not-a-color')).toBe(DEFAULT_ACCENT_COLOR);
     expect(resolveAccentColor('red')).toBe(DEFAULT_ACCENT_COLOR);
     expect(resolveAccentColor('#12345')).toBe(DEFAULT_ACCENT_COLOR);
+  });
+});
+
+const fixtureBrandSettings = {
+  agencyName: 'Atelier Boréal Agence',
+  logoUrl: 'https://cdn.example.com/logo.png',
+  accentColor: '#2b55d0',
+};
+
+describe('resolveReportBranding', () => {
+  it('returns undefined for FREE, which has no white-label access', () => {
+    expect(resolveReportBranding('FREE', fixtureBrandSettings)).toBeUndefined();
+  });
+
+  it('returns undefined for SOLO, which has no white-label access', () => {
+    expect(resolveReportBranding('SOLO', fixtureBrandSettings)).toBeUndefined();
+  });
+
+  it('returns the branding for PRO', () => {
+    expect(resolveReportBranding('PRO', fixtureBrandSettings)).toEqual({
+      name: 'Atelier Boréal Agence',
+      logoUrl: 'https://cdn.example.com/logo.png',
+      accentColor: '#2b55d0',
+    });
+  });
+
+  it('returns the branding for SCALE', () => {
+    expect(resolveReportBranding('SCALE', fixtureBrandSettings)).toEqual({
+      name: 'Atelier Boréal Agence',
+      logoUrl: 'https://cdn.example.com/logo.png',
+      accentColor: '#2b55d0',
+    });
+  });
+
+  it('returns undefined for an eligible plan with no saved BrandSettings row', () => {
+    expect(resolveReportBranding('PRO', null)).toBeUndefined();
+  });
+
+  it('falls back to the default brand name when agencyName is blank', () => {
+    const result = resolveReportBranding('PRO', { ...fixtureBrandSettings, agencyName: '  ' });
+    expect(result?.name).toBe(DEFAULT_BRAND_NAME);
+  });
+});
+
+describe('assertWhiteLabelAllowed', () => {
+  it('throws WhiteLabelNotAllowedError for a SOLO account', () => {
+    expect(() => assertWhiteLabelAllowed('SOLO')).toThrow(WhiteLabelNotAllowedError);
+  });
+
+  it('throws WhiteLabelNotAllowedError for a FREE account', () => {
+    expect(() => assertWhiteLabelAllowed('FREE')).toThrow(WhiteLabelNotAllowedError);
+  });
+
+  it('does not throw for PRO', () => {
+    expect(() => assertWhiteLabelAllowed('PRO')).not.toThrow();
+  });
+
+  it('does not throw for SCALE', () => {
+    expect(() => assertWhiteLabelAllowed('SCALE')).not.toThrow();
   });
 });

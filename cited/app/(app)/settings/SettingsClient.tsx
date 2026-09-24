@@ -3,27 +3,27 @@
 import { useState, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { buildAlertChannels } from "./alerts-summary";
-import { whiteLabelMessage } from "./white-label-summary";
 
 /**
- * Coquille interactive des paramètres : navigation par ancre autour de la
- * section Abonnement et Données personnelles (Server Components injectés en
- * `children`, car ils ont besoin de la session et de la base). Équipe et
- * Accès API sont hors périmètre du MVP (EF-038) : elles restent de simples
- * indications « en préparation », sans donnée inventée ni bouton actif.
+ * Coquille interactive des paramètres : navigation par ancre autour des
+ * sections Abonnement, Marque blanche et Données personnelles (Server
+ * Components injectés en `children`, car elles ont besoin de la session et
+ * de la base). Équipe et Accès API sont hors périmètre du MVP (EF-038) :
+ * elles restent de simples indications « en préparation », sans donnée
+ * inventée ni bouton actif.
  */
 export function SettingsClient({
   subscriptionSection,
   personalDataSection,
+  whiteLabelSection,
   userName,
   userEmail,
-  whiteLabelAccess,
 }: {
   subscriptionSection: ReactNode;
   personalDataSection: ReactNode;
+  whiteLabelSection: ReactNode;
   userName: string | null;
   userEmail: string | null;
-  whiteLabelAccess: boolean;
 }) {
   const [activeTab, setActiveTab] = useState("abonnement");
 
@@ -121,16 +121,7 @@ export function SettingsClient({
             </p>
           </section>
 
-          {/* Marque blanche */}
-          <section id="marque-blanche" className="scroll-mt-8 border-b border-line pb-8">
-            <div className="mb-1.5 flex items-center gap-2">
-              <h2 className="text-xl font-semibold text-ink">Marque blanche</h2>
-              <Badge variant="outline">En préparation</Badge>
-            </div>
-            <p className="text-sm text-ink-2">
-              Les rapports clients porteront votre identité, sans mention de Cited. {whiteLabelMessage(whiteLabelAccess)}
-            </p>
-          </section>
+          {whiteLabelSection}
 
           {personalDataSection}
         </div>
