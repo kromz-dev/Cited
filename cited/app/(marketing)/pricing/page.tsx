@@ -230,11 +230,14 @@ export default function PricingPage() {
           <div className={styles.terms}>
             <p>
               <strong>Au-delà de 100 sites :</strong> 2 € par site et par
-              mois, sans nouveau palier à négocier.
+              mois. Ce n&apos;est pas activable depuis le compte : demandez-le
+              en répondant à l&apos;e-mail de bienvenue après votre
+              inscription, et nous l&apos;activons à la main.
             </p>
             <p>
-              <strong>Paiement annuel :</strong> deux mois offerts sur les
-              trois offres payantes.
+              <strong>Paiement annuel :</strong> le paiement en ligne est
+              mensuel. Deux mois offerts sur demande, en répondant à
+              l&apos;e-mail de bienvenue après votre inscription.
             </p>
             <p>
               <strong>Offre fondatrice :</strong> −50 % à vie pour les 10
@@ -296,9 +299,12 @@ export default function PricingPage() {
             <details className={styles.faqItem}>
               <summary>Que se passe-t-il si je dépasse mon quota de sites ?</summary>
               <p className={styles.faqAnswer}>
-                Vous êtes prévenu avant d&apos;atteindre la limite de votre
-                palier. Vous passez alors au palier supérieur ou, au-delà de
-                100 sites, vous ajoutez des sites à 2 €/site/mois.
+                L&apos;ajout d&apos;un site est refusé une fois la limite de
+                votre palier atteinte ; le message indique le palier
+                supérieur à choisir. Au-delà de 100 sites, demandez-le en
+                répondant à l&apos;e-mail de bienvenue après votre
+                inscription : nous activons l&apos;ajout à 2 €/site/mois à la
+                main.
               </p>
             </details>
             <details className={styles.faqItem}>

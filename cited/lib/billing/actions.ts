@@ -7,13 +7,32 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 
 /**
+ * Identifiant du coupon fondateur à appliquer si le code fourni correspond.
+ *
+ * Le client ne choisit jamais un identifiant de coupon Stripe directement :
+ * il ne peut que proposer un code, comparé ici au seul coupon autorisé côté
+ * serveur. Un code inconnu (ou la variable absente) est un rejet, jamais un
+ * paiement silencieusement sans réduction.
+ */
+function resolveFounderCoupon(couponCode: string | undefined): string | undefined {
+  const trimmed = couponCode?.trim();
+  if (!trimmed) return undefined;
+
+  const founderCoupon = process.env.STRIPE_FOUNDER_COUPON;
+  if (!founderCoupon || trimmed.toUpperCase() !== founderCoupon.toUpperCase()) {
+    throw new Error("Code promo inconnu.");
+  }
+  return founderCoupon;
+}
+
+/**
  * Ouvre un paiement Stripe pour un plan.
  *
  * L'argument est un nom de plan, jamais un identifiant de tarif : un tarif
  * transmis par le client permettrait de payer le montant le plus bas du
  * compte Stripe et d'obtenir le plan le plus élevé.
  */
-export async function createCheckoutSession(plan: string) {
+export async function createCheckoutSession(plan: string, couponCode?: string) {
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
@@ -23,6 +42,7 @@ export async function createCheckoutSession(plan: string) {
     throw new Error(`Plan inconnu : ${plan}`);
   }
   const priceId = priceIdForPlan(plan);
+  const coupon = resolveFounderCoupon(couponCode);
   const stripe = getStripe();
 
   const user = await db.user.findUnique({
@@ -48,6 +68,7 @@ export async function createCheckoutSession(plan: string) {
         quantity: 1,
       },
     ],
+    ...(coupon ? { discounts: [{ coupon }] } : {}),
     client_reference_id: user.id,
   });
 

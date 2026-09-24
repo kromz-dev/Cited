@@ -22,7 +22,7 @@
 
 **But** : rendre le dépôt déployable en continu sur la pile décrite dans `docs/10-plan-technique.md` §5, avant d'écrire la moindre fonctionnalité produit.
 
-- [ ] **T001** [P] [SETUP] Créer les comptes des services 0 € retenus (Render, Neon, Inngest, Resend, Sentry, Stripe en mode test) et consigner les identifiants de projet (pas les secrets) dans une note d'exploitation privée du fondateur — `docs/10-plan-technique.md` (mise à jour de la section "points non vérifiés" une fois confirmée)
+- [ ] **T001** [P] [SETUP] Créer les comptes des services 0 € retenus (Render, Neon, Inngest, Resend, PostHog, Stripe en mode test) et consigner les identifiants de projet (pas les secrets) dans une note d'exploitation privée du fondateur — `docs/10-plan-technique.md` (mise à jour de la section "points non vérifiés" une fois confirmée)
   - **Dépendances** : Aucune
   - **EF/ENF** : ENF-016
   - **Vérification** : chaque service confirme par écrit (support ou CGU consultées directement) l'autorisation d'usage commercial de son offre gratuite ; le plan technique est mis à jour si un chiffre diffère de ce qui y est documenté
@@ -46,10 +46,10 @@
   - **Vérification** : `npx prisma migrate status` ne signale aucune migration en attente sur l'environnement de production
   - **Taille** : S
 
-- [ ] **T005** [P] [SETUP] Intégrer Sentry (`@sentry/nextjs`) avec configuration minimale — `sentry.server.config.ts`, `sentry.client.config.ts`, `instrumentation.ts`
+- [ ] **T005** [P] [SETUP] Intégrer PostHog (Cloud UE) pour les exceptions client et serveur et la mesure produit, en remplacement de Sentry (`docs/decisions/ADR-001-posthog-remplace-sentry.md`) — `cited/app/providers.tsx`, `cited/app/global-error.tsx`, `cited/lib/posthog-ai.ts`, `cited/app/layout.tsx` (amorcé en local par le fondateur, non commité au 24/09)
   - **Dépendances** : T001
   - **EF/ENF** : ENF-009
-  - **Vérification** : une erreur provoquée manuellement en environnement de test apparaît dans le tableau de bord Sentry sous 1 minute
+  - **Vérification** : une erreur provoquée manuellement côté client et côté serveur apparaît dans PostHog sous 1 minute ; sur les pages marketing, aucun cookie ni `localStorage` PostHog n'est écrit avant consentement (ou le mode sans persistance est actif), comme le prévoit l'ADR-001
   - **Taille** : S
 
 - [x] **T006** [P] [SETUP] Route de compteur d'audience RGPD-safe (pas de cookie, pas de tiers) — `app/api/beacon/route.ts`, appel `navigator.sendBeacon` depuis `app/(marketing)/layout.tsx`
@@ -294,7 +294,7 @@
 
 ## Phase 6 : Facturation, plans, quotas, coupon fondateur
 
-- [ ] **T037** [FACT] Créer le coupon Stripe natif `founder-50` (`duration: forever`, `percent_off: 50`, `max_redemptions: 10`) — opération dans le tableau de bord Stripe, référence documentée dans `docs/10-plan-technique.md`
+- [x] **T037** [FACT] Créer le coupon Stripe natif `founder-50` (`duration: forever`, `percent_off: 50`, `max_redemptions: 10`) — opération dans le tableau de bord Stripe, référence documentée dans `docs/10-plan-technique.md`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-058
   - **Vérification** : le coupon existe côté Stripe et refuse toute application au-delà de 10 utilisations (comportement natif Stripe)
@@ -324,7 +324,7 @@
   - **Vérification** : un utilisateur connecté peut déclencher un export et voir sa date de purge si son compte est résilié
   - **Taille** : S
 
-- [ ] **T042** [P] [FACT] Vérifier que la page de tarifs ne présente le dépassement 100 sites (EF-057) et la facturation annuelle (EF-060) que comme non actifs, jamais comme activables — `cited/app/(marketing)/pricing/page.tsx` (déjà largement conforme, vérification et ajustement de libellé)
+- [x] **T042** [P] [FACT] Vérifier que la page de tarifs ne présente le dépassement 100 sites (EF-057) et la facturation annuelle (EF-060) que comme non actifs, jamais comme activables — `cited/app/(marketing)/pricing/page.tsx` (déjà largement conforme, vérification et ajustement de libellé)
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-057, EF-060, principe II
   - **Vérification** : relecture manuelle de la page — aucun texte ne laisse croire à une activation en libre-service de ces deux mécanismes
@@ -354,7 +354,7 @@
   - **Vérification** : un utilisateur sans abonnement actif est redirigé vers Checkout avant de pouvoir dépasser le scan gratuit
   - **Taille** : S
 
-- [ ] **T046** [ONB] Job planifié `send-discovery-email` (5 questions du kit de prospection, à J+3) — `cited/inngest/functions/discovery-email.ts`
+- [x] **T046** [ONB] Job planifié `send-discovery-email` (5 questions du kit de prospection, à J+3) — `cited/inngest/functions/discovery-email.ts`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-064
   - **Vérification** : test — un compte créé il y a 3 jours reçoit l'événement, un compte créé il y a 1 jour ne le reçoit pas
@@ -404,7 +404,7 @@
 
 ## Phase 9 : Qualité, sécurité transverse, observabilité, déploiement
 
-- [ ] **T052** [P] [QUAL] Réinitialisation de mot de passe par e-mail — `cited/app/api/auth/reset-password/route.ts` (nouveau), gabarit Resend
+- [x] **T052** [P] [QUAL] Réinitialisation de mot de passe par e-mail — `cited/app/api/auth/reset-password/route.ts` (nouveau), gabarit Resend
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-014
   - **Vérification** : test d'intégration — un jeton de réinitialisation à usage unique expire après un délai raisonnable et ne peut être rejoué
@@ -413,7 +413,7 @@
 - [ ] **T053** [P] [QUAL] Journalisation structurée des échecs de scan et d'envoi d'alerte (remplace les `console.error` isolés) — `cited/inngest/functions/scan-site.ts`, `cited/lib/alerting/sendAlert.ts`
   - **Dépendances** : T005
   - **EF/ENF** : ENF-009
-  - **Vérification** : un échec simulé d'envoi Resend apparaît dans Sentry avec `siteId` et cause, pas seulement un message générique
+  - **Vérification** : un échec simulé d'envoi Resend apparaît dans PostHog (`posthog-node`) avec `siteId` et cause, pas seulement un message générique
   - **Taille** : S
 
 - [ ] **T054** [P] [QUAL] Audit d'accessibilité AA des écrans raccordés au réel (contraste, clavier, cibles tactiles 44 px) — checklist `docs/07-design-system.md` §6, appliquée à `DashboardSites.tsx`, `alerts/page.tsx`, `reports/page.tsx`, `sites/[siteId]/page.tsx`, `settings/page.tsx`, `onboarding/page.tsx`
