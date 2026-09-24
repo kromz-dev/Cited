@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { db } from "@/lib/db";
+import { logFailure } from "../log";
 
 export type AlertKind = "REGRESSION" | "RESOLUTION";
 
@@ -75,10 +76,19 @@ export function renderAlertEmail(input: {
   return { subject, text, html };
 }
 
-async function deliver(to: string, email: { subject: string; text: string; html: string }) {
+/** Domaines concernés par un envoi, pour les logs : jamais l'adresse e-mail du destinataire. */
+function domainsSummary(domains: AlertSiteChange[]): string {
+  return domains.map((item) => item.domain).join(", ");
+}
+
+async function deliver(
+  to: string,
+  email: { subject: string; text: string; html: string },
+  domains: AlertSiteChange[],
+) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.warn("RESEND_API_KEY is not defined. Skipping alert email.");
+    logFailure("alert.missing_api_key", { domains: domainsSummary(domains) });
     return { success: false as const, error: "No API Key" };
   }
   try {
@@ -91,7 +101,10 @@ async function deliver(to: string, email: { subject: string; text: string; html:
     });
     return { success: true as const, id: response.data?.id };
   } catch (error) {
-    console.error("Failed to send alert digest:", error);
+    logFailure("alert.send_failed", {
+      domains: domainsSummary(domains),
+      message: error instanceof Error ? error.message : "unknown",
+    });
     return { success: false as const, error };
   }
 }
@@ -137,7 +150,7 @@ export async function sendUserDigest(
   domains: AlertSiteChange[],
 ) {
   if (domains.length === 0) return { success: true as const, skipped: true as const };
-  const sent = await deliver(to, renderAlertEmail({ kind, domains }));
+  const sent = await deliver(to, renderAlertEmail({ kind, domains }), domains);
   if (!sent.success) return sent;
   await recordAlerts(kind, domains);
   return sent;

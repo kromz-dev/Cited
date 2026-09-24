@@ -5,6 +5,7 @@ import { DEFAULT_PROBE_BOTS } from "../../lib/scanner/agents";
 import { sendRegressionAlert } from "@/lib/alerting/sendAlert";
 import { NonRetriableError } from "inngest";
 import { SCAN_CONCURRENCY } from "../../lib/sites/scan-throughput";
+import { logFailure } from "../../lib/log";
 
 /**
  * Contrat stable pour le passage quotidien et pour T043 (premier scan).
@@ -87,6 +88,7 @@ export const scanSiteJob = inngest.createFunction(
         });
 
         if (!site) {
+          logFailure("scan.site_missing", { siteId });
           throw new NonRetriableError(`Site not found: ${siteId}`);
         }
 
