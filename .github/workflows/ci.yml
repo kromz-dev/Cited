@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: cited
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    env:
+      # Placeholder values only. No live database or third-party service is
+      # contacted: Prisma client generation only needs a syntactically valid
+      # DATABASE_URL, and all app pages are rendered dynamically at request
+      # time rather than reading the database at build time.
+      DATABASE_URL: postgresql://u:p@localhost:5432/db
+      AUTH_SECRET: ci-placeholder-secret-value-32-chars
+      AUTH_GOOGLE_ID: ci
+      AUTH_GOOGLE_SECRET: ci
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      INNGEST_SIGNING_KEY: ci
+      STRIPE_SECRET_KEY: sk_test_ci
+      STRIPE_WEBHOOK_SECRET: whsec_ci
+      STRIPE_PRICE_SOLO: price_ci
+      STRIPE_PRICE_PRO: price_ci
+      STRIPE_PRICE_SCALE: price_ci
+      RESEND_API_KEY: ci
+      GEMINI_API_KEY: ci
+      GROQ_API_KEY: ci
+      GEMINI_BILLING_TIER: free
+      ENGINE_CACHE_SECRET: ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: cited/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx eslint .
+
+      - name: Test
+        run: npx vitest run
+
+      - name: Build
+        run: npm run build
