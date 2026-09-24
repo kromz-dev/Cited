@@ -20,20 +20,22 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 
 Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/`, `docs/`, `chore/`), une PR par tâche, fusion par l'humain une fois la CI verte. `chore/ci-quality-gates` et `claude/focused-gates-fav90h` (déjà fusionnées) restent sur GitHub sans usage — à supprimer quand tu veux.
 
-**Antigravity n'est plus sur ce projet** (24/09) : son travail du jour (T019-T025 en local, jamais poussé) a été retiré à la demande du fondateur. Les tâches correspondantes sont **remises à zéro**, personne n'a commencé dessus. Prochaine session : Claude seul, sauf décision contraire.
+**Deux agents en parallèle** : Claude (dossier `Cited-claude`, facturation, réglages, onboarding, infra, CI) et Grok (dossier `Cited-grok`, cœur produit : T019-T036, T053, T055). Une branche et une PR par tâche vers `main`, jamais de PR empilées. Antigravity a été retiré du projet le 24/09.
 
 ### Fait aujourd'hui (24/09), en plus du travail antérieur listé dans `tasks/mvp-tasks.md`
 
 - [x] **T037-T039** : coupon fondateur Stripe (`FONDATEUR50`, vérifié en mode test), accepté au checkout, marque `isFounderMember` via le webhook. Cases T038 et T039 cochées dans `tasks/mvp-tasks.md` le 24/09, le code était déjà sur `main` (PR #13).
 - [x] **T042** : page Tarifs — dépassement 100 sites et paiement annuel présentés comme activables à la main, jamais en libre-service.
-- [x] **T046** : e-mail des 5 questions à J+3. L'e-mail d'offre fondatrice (T047) n'existe pas encore.
+- [x] **T046-T047** : e-mail des 5 questions à J+3, e-mail d'offre fondatrice (déclenchement manuel par script).
+- [x] **T040, T041, T050** : abonnement réel dans les réglages, export RGPD, réglages sans données fictives.
+- [x] **T049** : `/analyse/[domain]` devient la page de résultat partageable du diagnostic (mêmes verdicts par assistant que la page d'accueil).
 - [x] **T052** : réinitialisation de mot de passe par e-mail.
 - [x] **T056** : purge mensuelle de `ScanLog.payload` au-delà de 90 jours.
 - [x] Documentation : `docs/decisions/ADR-001-posthog-remplace-sentry.md`, budget de quotas gratuits Inngest/Neon/Resend recalculé et corrigé dans `docs/10-plan-technique.md`.
 
-24 tâches cochées sur 60 dans `tasks/mvp-tasks.md` — **c'est elle qui fait foi**, cette section n'est qu'un résumé.
+26 tâches cochées sur 60 dans `tasks/mvp-tasks.md` — **c'est elle qui fait foi**, cette section n'est qu'un résumé.
 
-**T040, T041 et T050** étaient codées le 24/09 (PR #14, #15, #16), mais ces PR empilées ont été fusionnées dans leur branche de base au lieu de `main`. Elles sont restaurées par la branche `fix/restore-t040-t041-t050`. **T047** (e-mail d'offre fondatrice, PR #20) est dans le même cas : restauration par une PR séparée.
+**Incident du 24/09** : T040, T041, T050 (PR #14-#16) et T047 (PR #20) étaient des PR empilées, fusionnées dans leur branche de base au lieu de `main`. Restaurées par les PR #33 et #34. Règle depuis : pas de PR empilées, ou fusion avec `--delete-branch`.
 
 ### Services provisionnés (24/09, mode test, 0 €)
 
@@ -55,7 +57,7 @@ Points non vérifiés (T001) : les CGU d'usage commercial de Render, Neon, Resen
 1. **T003/T004** (infra) : créer le service Render (région Francfort, `cited/` comme racine de build), puis baseliner et migrer la base Neon en production. Bloqué au 24/09 par deux permissions refusées en mode automatique (récupération de la chaîne de connexion Neon, génération locale d'un secret) — à relancer avec le fondateur présent, ou en autorisant ces actions.
 2. **Reprendre le cœur produit, dans l'ordre de `tasks/mvp-tasks.md`** : **T019 (quota par plan)** en premier — risque n°1 du PRD, rien n'est fait dessus. Puis T020-T036 (portefeuille, scan quotidien réel, alertes, rapports mensuels PDF).
 3. **Onboarding restant** : T043-T045. T048 attend le rapport mensuel (T032b).
-4. **Écrans fictifs restants** : T049, T051.
+4. **Écrans fictifs restants** : T051 (audit final).
 5. **Qualité** : T053-T055, puis T057 une fois le déploiement en place.
 6. **Déployer une préversion gratuite**, une fois T003/T004 faits.
 7. **Marketing** (0 €) : baromètre « les sites français bloquent-ils ChatGPT ? », puis prospection écrite de 150 agences (`docs/06-kit-prospection.md`). Ne publier que des constats vérifiés.
