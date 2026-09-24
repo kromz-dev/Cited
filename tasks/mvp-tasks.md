@@ -28,7 +28,7 @@
   - **Vérification** : chaque service confirme par écrit (support ou CGU consultées directement) l'autorisation d'usage commercial de son offre gratuite ; le plan technique est mis à jour si un chiffre diffère de ce qui y est documenté
   - **Taille** : S
 
-- [ ] **T002** [P] [SETUP] Pipeline CI GitHub Actions exécutant les quatre portes de qualité — `.github/workflows/ci.yml`
+- [x] **T002** [P] [SETUP] Pipeline CI GitHub Actions exécutant les quatre portes de qualité — `.github/workflows/ci.yml`
   - **Dépendances** : Aucune
   - **EF/ENF** : ENF-010
   - **Vérification** : une pull request avec une erreur de typage volontaire échoue le job CI ; une PR propre passe les quatre étapes (`tsc --noEmit`, `lint`, `vitest run`, `build`)
@@ -66,49 +66,49 @@
 
 **But** : faire exister en base les entités qui manquent avant que les phases fonctionnelles ne puissent les utiliser.
 
-- [ ] **T007** [FONDATIONS] Ajouter le modèle `Client` et le lien optionnel `MonitoredSite.clientId` — `cited/prisma/schema.prisma`
+- [x] **T007** [FONDATIONS] Ajouter le modèle `Client` et le lien optionnel `MonitoredSite.clientId` — `cited/prisma/schema.prisma`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-047, EF-052
   - **Vérification** : `npx prisma format` et `npx prisma validate` passent ; un site sans client reste valide (champ optionnel)
   - **Taille** : S
 
-- [ ] **T008** [FONDATIONS] Table de correspondance quota par plan — `cited/lib/billing/plans.ts` (`PLAN_LIMITS: Record<Plan, { maxSites: number; whiteLabel: boolean }>`)
+- [x] **T008** [FONDATIONS] Table de correspondance quota par plan — `cited/lib/billing/plans.ts` (`PLAN_LIMITS: Record<Plan, { maxSites: number; whiteLabel: boolean }>`)
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-018
   - **Vérification** : test unitaire `lib/billing/plans.test.ts` couvrant `FREE` (0 site), `SOLO` (10), `PRO` (30), `SCALE` (100)
   - **Taille** : S
 
-- [ ] **T009** [P] [FONDATIONS] Ajouter le modèle `BrandSettings` (1-1 avec `User`) — `cited/prisma/schema.prisma`
+- [x] **T009** [P] [FONDATIONS] Ajouter le modèle `BrandSettings` (1-1 avec `User`) — `cited/prisma/schema.prisma`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-048, EF-050
   - **Vérification** : `npx prisma validate` passe
   - **Taille** : S
 
-- [ ] **T010** [P] [FONDATIONS] Ajouter les champs `isFounderMember`/`founderOfferAt` sur `User` — `cited/prisma/schema.prisma`
+- [x] **T010** [P] [FONDATIONS] Ajouter les champs `isFounderMember`/`founderOfferAt` sur `User` — `cited/prisma/schema.prisma`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-058, EF-067
   - **Vérification** : `npx prisma validate` passe
   - **Taille** : S
 
-- [ ] **T011** [FONDATIONS] Ajouter le modèle `AlertEvent` (type régression/résolution, cause, correctif, canal, date) — `cited/prisma/schema.prisma`
+- [x] **T011** [FONDATIONS] Ajouter le modèle `AlertEvent` (type régression/résolution, cause, correctif, canal, date) — `cited/prisma/schema.prisma`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-036, EF-037
   - **Vérification** : `npx prisma validate` passe ; un index `(siteId, sentAt desc)` existe pour l'historique
   - **Taille** : S
 
-- [ ] **T012** [FONDATIONS] Ajouter le modèle `MonthlyReport` (rapport par client/période, PDF en `Bytes`, disponibilité, incidents) — `cited/prisma/schema.prisma`
+- [x] **T012** [FONDATIONS] Ajouter le modèle `MonthlyReport` (rapport par client/période, PDF en `Bytes`, disponibilité, incidents) — `cited/prisma/schema.prisma`
   - **Dépendances** : T007
   - **EF/ENF** : EF-047, EF-049, EF-051
   - **Vérification** : `npx prisma validate` passe
   - **Taille** : S
 
-- [ ] **T013** [FONDATIONS] Étendre `ScanLog` avec `simpleStatus` et `cause` dérivés du `CoreScanOutput` — `cited/prisma/schema.prisma`
+- [x] **T013** [FONDATIONS] Étendre `ScanLog` avec `simpleStatus` et `cause` dérivés du `CoreScanOutput` — `cited/prisma/schema.prisma`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-043, EF-044, EF-045
   - **Vérification** : `npx prisma validate` passe ; les colonnes sont nullables (compatibles avec les lignes existantes)
   - **Taille** : S
 
-- [ ] **T014** [FONDATIONS] Migration Prisma unique regroupant T007-T013 et application en local puis en production — `cited/prisma/migrations/`
+- [x] **T014** [FONDATIONS] Migration Prisma unique regroupant T007-T013 et application en local puis en production — `cited/prisma/migrations/` — migration générée, `migrate deploy` en prod reste à faire avec T004
   - **Dépendances** : T007, T008, T009, T010, T011, T012, T013
   - **EF/ENF** : —
   - **Vérification** : `npx prisma migrate dev --name mvp-entities` en local sans erreur ; `npx prisma migrate deploy` en production (via T004) sans perte de données existantes
