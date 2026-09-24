@@ -380,7 +380,7 @@
 
 **Note** : la plupart des écrans à données fictives ont déjà été raccordés au réel dans les phases fonctionnelles ci-dessus (alertes en Phase 4, rapports en Phase 5, abonnement en Phase 6, onboarding en Phase 7) — délibérément, pour ne pas laisser cette dette en fin de parcours. Cette phase couvre ce qui reste : la double expérience de scan public et les sections de paramètres hors périmètre MVP.
 
-- [ ] **T049** [MOCK] Faire de `/analyse/[domain]` la page de résultat partageable du diagnostic (réutilise T015/T016), retirer toute trace visible de l'ancien positionnement "visibilité de marque" — `cited/app/(marketing)/analyse/[domain]/page.tsx`
+- [x] **T049** [MOCK] Faire de `/analyse/[domain]` la page de résultat partageable du diagnostic (réutilise T015/T016), retirer toute trace visible de l'ancien positionnement "visibilité de marque" — `cited/app/(marketing)/analyse/[domain]/page.tsx`
   - **Dépendances** : T016
   - **EF/ENF** : décision §14.3 du PRD
   - **Vérification** : la page ne mentionne plus de "score de visibilité" agrégé ; elle affiche les mêmes verdicts par assistant que `ScanForm`
