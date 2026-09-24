@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, LoaderCircle } from "lucide-react";
-import { Button, Panel } from "@/components/ui";
+import { LoaderCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 export type { AuditData as AuditResult } from "@/components/CoverageGrid";
 
 interface AuditFormProps {
@@ -25,33 +27,61 @@ export function AuditForm({ onAuditComplete, initialDomain = "" }: AuditFormProp
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain: formData.get("domain") }),
       });
-      if (!res.ok) throw new Error("Impossible de scanner ce domaine. Vérifiez l'URL.");
+      if (!res.ok) throw new Error("Impossible de scanner ce domaine. Vérifiez l'adresse et réessayez.");
       onAuditComplete(await res.json());
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue.");
+      setError(err instanceof Error ? err.message : "Le scan a échoué. Réessayez dans un instant.");
     } finally {
       setLoading(false);
     }
   }
 
-  return <Panel glass className="mx-auto max-w-xl p-6 sm:p-8">
-    <form onSubmit={handleSubmit}>
-      <div className="mb-6">
-        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-cited">Scanner Technique</div>
-        <h2 className="text-2xl">Vérifiez la lisibilité de votre site</h2>
-        <p className="mt-2 text-sm leading-6 text-muted">Saisissez l&apos;URL de votre site pour simuler la visite de ChatGPT et Claude.</p>
-      </div>
-      <div className="space-y-4">
-        <div>
-          <label className="mb-2 block text-sm font-semibold" htmlFor="domain">URL de votre site</label>
-          <input defaultValue={initialDomain} required type="text" id="domain" name="domain" placeholder="ex : https://mon-site.com" className="w-full rounded-md border border-line bg-paper px-3 py-3 text-sm outline-none transition-colors placeholder:text-muted focus:border-cited focus:bg-white" />
-        </div>
-        {error && <div role="alert" className="rounded-md border border-rival/30 bg-rival-light p-3 text-sm text-rival">{error}</div>}
-        <Button type="submit" disabled={loading} className="mt-4 w-full">
-          {loading ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Analyse en cours...</> : <>Lancer le scan <ArrowRight className="h-4 w-4" /></>}
-        </Button>
-        <p className="mt-4 text-center text-xs text-muted">Résultat en 15 secondes · Scan gratuit</p>
-      </div>
-    </form>
-  </Panel>;
+  return (
+    <Card className="mx-auto max-w-xl shadow-float">
+      <CardContent className="p-6 sm:p-8">
+        <form onSubmit={handleSubmit}>
+          <div className="mb-6">
+            <h2 className="text-[22px] leading-7 font-semibold text-ink">Vérifiez la lisibilité de votre site</h2>
+            <p className="mt-2 text-sm leading-6 text-ink-2">
+              Saisissez l&apos;adresse de votre site pour simuler la visite de ChatGPT et Claude.
+            </p>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink" htmlFor="domain">
+                Adresse de votre site
+              </label>
+              <Input
+                defaultValue={initialDomain}
+                required
+                type="text"
+                id="domain"
+                name="domain"
+                fieldSize="lg"
+                placeholder="https://mon-site.com"
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? "domain-error" : undefined}
+              />
+            </div>
+            {error && (
+              <p id="domain-error" role="alert" className="rounded-sm border border-stop/30 bg-stop-soft p-3 text-sm text-stop">
+                {error}
+              </p>
+            )}
+            <Button type="submit" size="lg" disabled={loading} className="mt-4 w-full">
+              {loading ? (
+                <>
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                  Analyse en cours
+                </>
+              ) : (
+                "Lancer le scan"
+              )}
+            </Button>
+            <p className="mt-4 text-center type-caption text-ink-2">Résultat en 15 secondes, sans compte à créer.</p>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
 }

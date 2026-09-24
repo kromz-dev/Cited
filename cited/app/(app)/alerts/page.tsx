@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { SlidersHorizontal, ArrowUpRight, Check, AlertCircle } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Verdict, type VerdictValue } from "@/components/ui/verdict";
 
 type AlertFilter = "all" | "red" | "green";
 
@@ -10,10 +12,11 @@ interface AlertItem {
   id: string;
   domain: string;
   type: "red" | "green";
+  verdict: VerdictValue;
   title: string;
   description: string;
-  tag: string;
   date: string;
+  handled?: boolean;
 }
 
 const initialAlerts: AlertItem[] = [
@@ -21,47 +24,55 @@ const initialAlerts: AlertItem[] = [
     id: "1",
     domain: "client-vitrine.bubbleapps.io",
     type: "red",
+    verdict: "refuse",
     title: "client-vitrine.bubbleapps.io est passé au rouge",
     description: "GPTBot reçoit un 403 Forbidden · page testée : /",
-    tag: "Bloqué",
     date: "10 sept. · 06:12",
   },
   {
     id: "2",
     domain: "maison-verdier.com",
     type: "red",
+    verdict: "vide",
     title: "maison-verdier.com est passé au rouge",
     description: "148 caractères utiles servis, sous le seuil de 200",
-    tag: "Coquille vide",
     date: "14 sept. · 06:08",
   },
   {
     id: "3",
     domain: "studio-lami.fr",
     type: "green",
+    verdict: "lu",
     title: "studio-lami.fr est repassé au vert",
     description: "2 884 caractères utiles servis à GPTBot",
-    tag: "Résolu",
     date: "8 sept. · 06:05",
+    handled: true,
   },
   {
     id: "4",
     domain: "studio-lami.fr",
     type: "red",
+    verdict: "vide",
     title: "studio-lami.fr est passé au rouge",
     description: "Rendu côté client : 96 caractères utiles",
-    tag: "Coquille vide",
     date: "5 sept. · 06:07",
   },
   {
     id: "5",
     domain: "cabinet-nore.fr",
     type: "green",
+    verdict: "lu",
     title: "cabinet-nore.fr est repassé au vert",
     description: "Règle de pare-feu corrigée côté hébergeur",
-    tag: "Résolu",
     date: "2 sept. · 06:11",
+    handled: true,
   },
+];
+
+const filters: { id: AlertFilter; label: string }[] = [
+  { id: "all", label: "Tout" },
+  { id: "red", label: "Passages au rouge" },
+  { id: "green", label: "Retours au vert" },
 ];
 
 export default function AlertsPage() {
@@ -75,169 +86,110 @@ export default function AlertsPage() {
 
   return (
     <div className="mx-auto max-w-6xl pb-16">
-      {/* Header section */}
-      <div className="border-b-2 border-line pb-8">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#ae1800] mb-2.5">
-          Alertes
-        </div>
-        <h1 className="font-heading text-3xl md:text-4xl lg:text-[34px] font-bold text-ink tracking-tight">
+      <div className="border-b border-line pb-8">
+        <h1 className="text-[28px] leading-[34px] font-semibold tracking-[-0.02em] text-ink sm:text-[34px] sm:leading-[40px]">
           Journal des changements de verdict
         </h1>
-        <p className="mt-3 text-sm text-muted max-w-[60ch] leading-relaxed">
-          Une alerte est créée lorsqu&apos;un domaine change d&apos;état, jamais à chaque scan. Les canaux actifs sont l&apos;e-mail et Slack.
+        <p className="mt-3 max-w-[60ch] text-sm leading-6 text-ink-2">
+          Une alerte est créée lorsqu&apos;un domaine change d&apos;état, jamais à chaque scan. Les alertes
+          partent par e-mail.
         </p>
       </div>
 
-      {/* Filter and actions bar */}
-      <div className="py-6 flex flex-wrap gap-3 items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3 py-6">
         <div className="flex flex-wrap items-center gap-3">
-          {/* Segmented options */}
-          <div className="inline-flex border border-line rounded-lg overflow-hidden bg-white shadow-xs">
-            <button
-              type="button"
-              onClick={() => setFilter("all")}
-              className={`px-3.5 py-2 text-xs md:text-sm font-medium transition-colors cursor-pointer ${
-                filter === "all"
-                  ? "bg-ink text-white"
-                  : "text-ink hover:bg-paper-deep"
-              }`}
-            >
-              Tout
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter("red")}
-              className={`px-3.5 py-2 text-xs md:text-sm font-medium border-l border-line transition-colors cursor-pointer ${
-                filter === "red"
-                  ? "bg-ink text-white"
-                  : "text-ink hover:bg-paper-deep"
-              }`}
-            >
-              Passages au rouge
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter("green")}
-              className={`px-3.5 py-2 text-xs md:text-sm font-medium border-l border-line transition-colors cursor-pointer ${
-                filter === "green"
-                  ? "bg-ink text-white"
-                  : "text-ink hover:bg-paper-deep"
-              }`}
-            >
-              Retours au vert
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {filters.map((f) => (
+              <Button
+                key={f.id}
+                type="button"
+                size="sm"
+                variant={filter === f.id ? "default" : "outline"}
+                onClick={() => setFilter(f.id)}
+              >
+                {f.label}
+              </Button>
+            ))}
           </div>
-
-          <span className="text-xs md:text-[13px] text-muted">
-            14 alertes sur les 30 derniers jours
+          <span className="type-table text-ink-2">
+            {initialAlerts.length} alertes sur les 30 derniers jours · données d&apos;exemple
           </span>
         </div>
 
-        <Link
-          href="/settings"
-          className="inline-flex items-center justify-center min-h-[42px] px-4 py-2 border border-line rounded-lg bg-white text-ink text-xs md:text-sm font-semibold hover:bg-paper-deep transition-colors shadow-xs"
-        >
-          Gérer les canaux
+        <Link href="/settings" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          Gérer les alertes
         </Link>
       </div>
 
-      {/* Alerts list */}
-      <div className="border border-line rounded-2xl overflow-hidden bg-white shadow-xs divide-y divide-line">
+      <div className="overflow-hidden rounded-lg border border-line bg-surface">
         {filteredAlerts.length > 0 ? (
-          filteredAlerts.map((alert) => (
-            <div
-              key={alert.id}
-              className="p-5 md:px-6 flex flex-wrap gap-4 items-center hover:bg-paper/40 transition-colors"
-            >
-              {/* Dot indicator */}
-              {alert.type === "red" ? (
-                <span
-                  className="w-4 h-4 rounded-[5px] bg-[#ec3013] shrink-0"
-                  title="Passé au rouge"
-                  aria-label="Passé au rouge"
-                />
-              ) : (
-                <span
-                  className="w-4 h-4 rounded-[5px] border-2 border-ink shrink-0 bg-transparent"
-                  title="Repassé au vert"
-                  aria-label="Repassé au vert"
-                />
-              )}
+          <div className="divide-y divide-line">
+            {filteredAlerts.map((alert) => (
+              <div
+                key={alert.id}
+                className={
+                  "flex flex-wrap items-center gap-4 p-5 md:px-6 " + (alert.handled ? "opacity-70" : "")
+                }
+              >
+                <Verdict value={alert.verdict} variant="glyph" size="lg" />
 
-              {/* Details */}
-              <div className="flex-1 min-w-[280px]">
-                <div className="font-semibold text-[15px] text-ink">{alert.title}</div>
-                <div className="text-[13px] text-muted mt-1">{alert.description}</div>
+                <div className="min-w-[280px] flex-1">
+                  <div className="text-[15px] leading-5 font-semibold text-ink">{alert.title}</div>
+                  <div className="mt-1 text-[13px] leading-5 text-ink-2">{alert.description}</div>
+                </div>
+
+                <Verdict value={alert.verdict} variant="inline" />
+
+                <span className="type-table min-w-[130px] text-ink-2 tnum">{alert.date}</span>
+
+                <Link
+                  href="/dashboard"
+                  className="type-table font-medium text-ink underline-offset-4 hover:text-cobalt hover:underline"
+                >
+                  Détail
+                </Link>
               </div>
-
-              {/* Status Tag */}
-              <span
-                className={`inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-[7px] ${
-                  alert.tag === "Résolu"
-                    ? "bg-[#f8f4f4] text-[#444141] border border-[#d7d3d3]"
-                    : "bg-[#fff2ef] text-[#7c1405] border border-[#ffc4b8]"
-                }`}
-              >
-                {alert.tag}
-              </span>
-
-              {/* Date */}
-              <span className="text-[13px] text-muted min-w-[130px]">{alert.date}</span>
-
-              {/* Action Link */}
-              <Link
-                href="/dashboard"
-                className="text-[13px] font-medium text-ink hover:text-cited underline-offset-4 hover:underline"
-              >
-                Détail
-              </Link>
-            </div>
-          ))
+            ))}
+          </div>
         ) : (
-          <div className="p-8 text-center text-sm text-muted">
-            Aucune alerte trouvée pour ce filtre.
+          <div className="p-10 text-center">
+            <p className="text-sm font-medium text-ink">Aucune alerte pour ce filtre.</p>
+            <p className="mt-1 text-sm text-ink-2">Choisissez « Tout » pour revoir les 30 derniers jours.</p>
           </div>
         )}
       </div>
 
-      {/* Bottom informational cards */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Slack message preview */}
-        <div className="border border-line rounded-2xl bg-white p-5 md:p-[22px] shadow-xs flex flex-col justify-between">
-          <div>
-            <h2 className="font-heading font-bold text-[19px] text-ink mb-2">
-              Aperçu du message Slack
-            </h2>
-            <div className="bg-[#eae9e9] rounded-[10px] p-4 text-sm leading-[1.6] border border-line/40">
-              <div className="font-bold text-ink flex items-center gap-1.5">
-                Cited · #veille-clients
-              </div>
+      <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Aperçu de l&apos;e-mail d&apos;alerte</CardTitle>
+            <CardDescription>Envoyé à chaque changement de verdict, jamais à chaque scan.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border border-line bg-paper p-4 text-sm leading-6">
+              <div className="font-semibold text-ink">Cited — client-vitrine.bubbleapps.io</div>
               <div className="mt-2 text-ink">
-                <span className="text-[#ae1800] font-bold">Rouge</span> — client-vitrine.bubbleapps.io ne répond plus à GPTBot (403 Forbidden). Dernier état vert : 9 septembre.
+                <Verdict value="refuse" variant="inline" /> — GPTBot ne répond plus (403 Forbidden). Dernier
+                état lu : 9 septembre.
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Weekly recap card */}
-        <div className="border border-line rounded-2xl bg-white p-5 md:p-[22px] shadow-xs flex flex-col justify-between">
-          <div>
-            <h2 className="font-heading font-bold text-[19px] text-ink mb-2">
-              Récapitulatif hebdomadaire
-            </h2>
-            <p className="text-sm text-muted mb-3 leading-relaxed">
-              Envoyé le lundi à 8 h : la liste des domaines au rouge, ceux revenus au vert, et les scans en échec.
-            </p>
-          </div>
-          <div>
-            <Link
-              href="/settings"
-              className="inline-flex items-center justify-center min-h-[42px] px-4 py-2 border border-line rounded-lg bg-white text-ink text-sm font-semibold hover:bg-paper-deep transition-colors shadow-xs"
-            >
+        <Card>
+          <CardHeader>
+            <CardTitle>Récapitulatif hebdomadaire</CardTitle>
+            <CardDescription>
+              Envoyé le lundi à 8 h par e-mail : les domaines refusés, ceux redevenus lisibles, et les scans en
+              échec.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/settings" className={buttonVariants({ variant: "outline", size: "sm" })}>
               Changer la fréquence
             </Link>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

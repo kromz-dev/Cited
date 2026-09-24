@@ -30,12 +30,18 @@ model User {
   purgeAt        DateTime?
   dataExportedAt DateTime?
 
+  // Offre fondatrice : -50 % à vie pour les 10 premières agences.
+  isFounderMember Boolean   @default(false)
+  founderOfferAt  DateTime?
+
   createdAt DateTime @default(now())
 
   accounts       Account[]
   sessions       Session[]
   sites          Site[]
   monitoredSites MonitoredSite[]
+  clients        Client[]
+  brandSettings  BrandSettings?
 
   @@index([purgeAt])
 }
@@ -175,23 +181,90 @@ model MonitoredSite {
   name      String
   url       String
   status    String   @default("ACTIVE")
+  clientId  String?
   createdAt DateTime @default(now())
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  scanLogs ScanLog[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client      Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  scanLogs    ScanLog[]
+  alertEvents AlertEvent[]
 
   @@index([userId])
+  @@index([clientId])
   @@index([status, createdAt])
 }
 
 model ScanLog {
-  id         String   @id @default(cuid())
-  siteId     String
-  httpStatus Int
-  payload    String?
-  createdAt  DateTime @default(now())
+  id           String   @id @default(cuid())
+  siteId       String
+  httpStatus   Int
+  payload      String?
+  /// Verdict simplifié dérivé du CoreScanOutput (OK, BLOQUÉ, COQUILLE VIDE, ERREUR).
+  simpleStatus String?
+  /// Cause lisible du verdict, en français.
+  cause        String?
+  createdAt    DateTime @default(now())
 
   site MonitoredSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@index([siteId, createdAt(sort: Desc)])
+}
+
+/// Client final d'une agence : regroupe des sites pour le rapport en marque blanche.
+model Client {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  logoUrl   String?
+  createdAt DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sites   MonitoredSite[]
+  reports MonthlyReport[]
+
+  @@index([userId])
+}
+
+/// Réglages de marque blanche de l'agence (1-1 avec User).
+model BrandSettings {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  agencyName  String?
+  logoUrl     String?
+  accentColor String?
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Alerte envoyée lors d'un changement d'état d'un site (une par changement).
+model AlertEvent {
+  id      String   @id @default(cuid())
+  siteId  String
+  /// REGRESSION ou RESOLUTION.
+  type    String
+  cause   String
+  fix     String?
+  /// EMAIL (Slack et webhook en préparation).
+  channel String   @default("EMAIL")
+  sentAt  DateTime @default(now())
+
+  site MonitoredSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, sentAt(sort: Desc)])
+}
+
+/// Rapport mensuel en marque blanche, par client et par période (AAAA-MM).
+model MonthlyReport {
+  id              String   @id @default(cuid())
+  clientId        String
+  period          String
+  pdf             Bytes?
+  availabilityPct Float?
+  incidentCount   Int      @default(0)
+  generatedAt     DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, period])
 }

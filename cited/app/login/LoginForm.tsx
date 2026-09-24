@@ -4,7 +4,9 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter();
@@ -20,7 +22,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
       redirect: false,
     });
     if (result?.error) {
-      setError("Email ou mot de passe incorrect.");
+      setError("E-mail ou mot de passe incorrect. Vérifiez les deux champs et réessayez.");
       setLoading(false);
       return;
     }
@@ -29,20 +31,33 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
   }
 
   return (
-    <form action={submit} className="mt-8 space-y-4">
-      <div>
-        <label className="mb-2 block text-sm font-semibold" htmlFor="email">Adresse email</label>
-        <input id="email" name="email" type="email" autoComplete="email" required className="w-full rounded-md border border-line bg-paper px-3 py-3 text-sm focus:border-cited focus:bg-white" />
+    <form action={submit} className="mt-8 flex flex-col gap-4">
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-ink-2" htmlFor="email">
+          Adresse e-mail
+        </label>
+        <Input id="email" name="email" type="email" autoComplete="email" required fieldSize="lg" />
       </div>
-      <div>
-        <label className="mb-2 block text-sm font-semibold" htmlFor="password">Mot de passe</label>
-        <input id="password" name="password" type="password" autoComplete="current-password" required className="w-full rounded-md border border-line bg-paper px-3 py-3 text-sm focus:border-cited focus:bg-white" />
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-ink-2" htmlFor="password">
+          Mot de passe
+        </label>
+        <Input id="password" name="password" type="password" autoComplete="current-password" required fieldSize="lg" />
       </div>
-      {error && <p role="alert" className="rounded-md border border-rival/30 bg-rival-light p-3 text-sm text-rival">{error}</p>}
-      <button type="submit" disabled={loading} className="flex min-h-11 w-full items-center justify-center gap-2 rounded bg-cited px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">
-        {loading ? "Connexion..." : "Se connecter"} <ArrowRight className="h-4 w-4" />
-      </button>
-      <p className="text-center text-sm text-muted">Pas encore de compte ? <Link href="/register" className="font-semibold text-cited hover:underline">Créer un compte</Link></p>
+      {error && (
+        <p role="alert" className="rounded-md border border-stop/30 bg-stop-soft p-3 text-sm text-stop">
+          {error}
+        </p>
+      )}
+      <Button type="submit" size="lg" disabled={loading} className="w-full">
+        {loading ? "Connexion..." : "Se connecter"}
+      </Button>
+      <p className="text-center text-sm text-ink-2">
+        Pas encore de compte ?{" "}
+        <Link href="/register" className="font-medium text-cobalt hover:underline">
+          Créer mon compte
+        </Link>
+      </p>
     </form>
   );
 }
