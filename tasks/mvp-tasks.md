@@ -252,7 +252,7 @@
   - **Vérification** : test unitaire — à partir de données figées, le PDF généré contient les sections attendues (verdict actuel, historique, incidents, annexe technique)
   - **Taille** : M
 
-- [ ] **T032a** [P3] Agrégation des données d'un client sur une période (`ScanLog`, `AlertEvent`) — `cited/app/actions/reports.ts`
+- [x] **T032a** [P3] Agrégation des données d'un client sur une période (`ScanLog`, `AlertEvent`) — `cited/app/actions/reports.ts`
   - **Dépendances** : T007, T011, T023, T026
   - **EF/ENF** : EF-047
   - **Vérification** : test — un client avec deux sites et un incident résolu produit une disponibilité et une liste d'incidents cohérentes avec les données de test
