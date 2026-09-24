@@ -283,7 +283,7 @@ Erreurs : `400` (URL invalide), `403` (refus SSRF), `429` (`Retry-After` en en-t
 | SSRF (scan public, scan planifié) | `assertSafeUrl`/`crawlUrl` déjà robustes (résolution DNS, refus des plages non-unicast, revalidation de chaque redirection) | Réutiliser telle quelle dans `addMonitoredSite`/`addMonitoredSitesBulk` (EF-022, T020) — ne jamais dupliquer la logique |
 | Limitation de débit | Adossée à PostgreSQL (`lib/rate-limit.ts`), déjà utilisée par `/api/scan`, `/api/audit`, l'inscription | Étendre à `addMonitoredSitesBulk` (import de masse) pour éviter l'abus par un compte payant |
 | Authentification | NextAuth v5, session base de données | Ajouter la réinitialisation de mot de passe par e-mail (EF-014, absente aujourd'hui) |
-| Autorisation des tarifs Stripe | Résolution serveur uniquement (`lib/billing/plans.ts`) | Inchangé ; le coupon fondateur (§14 PRD) est un objet Stripe natif, jamais un pourcentage calculé côté client |
+| Autorisation des tarifs Stripe | Résolution serveur uniquement (`lib/billing/plans.ts`) | Inchangé ; le coupon fondateur (§14 PRD) est un objet Stripe natif, jamais un pourcentage calculé côté client. Coupon créé en mode test le 24/09 (T037) : id `FONDATEUR50` (et non `founder-50`), −50 %, `duration: forever`, `max_redemptions: 10`. Le serveur ne l'accepte que s'il correspond à `STRIPE_FOUNDER_COUPON`. À recréer à l'identique en mode live. |
 | Secrets | Variables d'environnement (`.env.example` déjà exhaustif) | Répliquer dans les variables d'environnement Render + GitHub Actions (secrets chiffrés), jamais dans un fichier commité |
 | RGPD | Champs `purgeAt`/`dataExportedAt` déjà en base, non exposés | Exposer dans les paramètres (EF-015, T041) ; purge à 60 j déjà programmée par le webhook Stripe (EF-056) |
 
