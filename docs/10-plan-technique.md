@@ -75,11 +75,11 @@ Le moteur de scan (`lib/scanner/*`), l'authentification, la base Prisma, le cron
                           │  scan-site (concurrence 10)        │
                           │  send-discovery-email (J+3)         │
                           │  generate-monthly-report (1er du mois)│
-                          │  keep-alive (ping /api/health, anti spin-down) │
+                          │  prune-scan-logs (1ᵉʳ du mois)       │
                           └────────────────────────────────┘
 
      Services annexes (0 €, appelés en sortie, jamais de dépendance bloquante) :
-       Resend (e-mails)   Stripe (paiement + portail client)   Sentry (erreurs)
+       Resend (e-mails)   Stripe (paiement + portail client)   PostHog UE (erreurs, mesure)
        Rendu headless optionnel (Playwright), seulement si hébergé gratuitement (§5, §9)
 ```
 
@@ -96,15 +96,15 @@ Principe directeur (ENF-016) : chaque service a une offre gratuite qui autorise 
 | Hébergement app | **Render — Free Web Service (région Francfort)** | Processus Node persistant : pas de plafond de temps CPU ni de timeout par requête serverless, compatible avec un scan à 20 s | Non interdit dans les CGU consultées ; Render déconseille seulement la *fiabilité* en production, ce n'est pas une clause d'interdiction — **à confirmer par écrit à l'inscription (ENF-016)** | Mise en veille après 15 min sans trafic, réveil ~1 min ; 750 h gratuites/mois par espace de travail (couvre un service unique 24 h/24) | Passage au plan payant (7 $/mois) dès le 1ᵉʳ client payant si le réveil dégrade la conversion du scan public |
 | Hébergement app — repli | Netlify Free | Usage commercial explicitement autorisé (CGU) ; excellent support Next.js officiel | Confirmé | **Timeout synchrone 10 s** sur le plan gratuit — sous le budget ENF-004 (20 s) pour un scan complet ; nécessiterait de réduire le nombre de sondes par appel | À activer seulement si Render s'avère inutilisable (CGU défavorables ou instabilité constatée) |
 | Hébergement app — exclu | Vercel Hobby | — | **Interdit explicitement** pour tout usage générant un revenu (paiement, SaaS) | — | Jamais tant que le compte reste Hobby |
-| Base de données | **Neon — Free** | Postgres serverless, mise à l'échelle à zéro automatique et **reprise transparente** à la première requête (pas d'action manuelle) | Confirmé, conçu pour une vraie appli en production à trafic faible | 0,5 Go de stockage/projet, 100 h de calcul/mois, compute jusqu'à 2 CU | Palier payant dès que le volume de `ScanLog`/`MonthlyReport` approche 0,5 Go (voir tâche de purge, §15) ou 100 h de calcul consommées |
+| Base de données | **Neon — Free** | Postgres serverless, mise à l'échelle à zéro automatique et **reprise transparente** à la première requête (pas d'action manuelle) | Confirmé, conçu pour une vraie appli en production à trafic faible | 0,5 Go de stockage/projet, 100 CU-h/mois (≈ 400 h à 0,25 CU), mise en veille après 5 min d'inactivité non réglable ; CU-h épuisées = base **suspendue** jusqu'au mois suivant (vérifié le 24/09 sur neon.com) | Palier payant dès que le volume de `ScanLog`/`MonthlyReport` approche 0,5 Go (voir tâche de purge, §15) ou 100 h de calcul consommées |
 | Base de données — repli | Supabase Free | Alternative équivalente | Confirmé | Le projet est **mis en pause après 7 jours sans activité base** (pas seulement sans visite) et la reprise peut nécessiter une action dans le tableau de bord — risque plus élevé qu'un simple délai d'autoscale | Non retenu par défaut : le cron quotidien devrait suffire à éviter la pause, mais le risque de blocage manuel est écarté en choisissant Neon |
-| Jobs planifiés / événements | **Inngest — Hobby** | Déjà intégré (`inngest/functions/*`) ; cron + fan-out + retries gérés, aucune infrastructure de file à maintenir (principe VI) | Non restreint pour un compte payant à ses propres clients (Inngest facture l'orchestration, pas les revenus de l'app) | 50 000 exécutions/mois, 5 étapes concurrentes, 3 utilisateurs | Palier payant si le portefeuille total dépasse ≈ 1600 sites/jour (30 000 exécutions/mois à 1 exécution/site/jour) — loin au-dessus de la cible à 90 jours |
+| Jobs planifiés / événements | **Inngest — Hobby** | Déjà intégré (`inngest/functions/*`) ; cron + fan-out + retries gérés, aucune infrastructure de file à maintenir (principe VI) | Non restreint pour un compte payant à ses propres clients (Inngest facture l'orchestration, pas les revenus de l'app) | 50 000 exécutions/mois, **chaque step compte** (1 lancement + N steps), 5 steps concurrents, 500 000 événements/mois | Plafond vers 330 sites avec le `scan-site` actuel, vers 1 500 sites une fois les scans regroupés par lots (§8.1) : le regroupement doit précéder la prospection à volume |
 | Jobs planifiés — repli | `node-cron` sur le même processus Render | Zéro dépendance externe si Inngest devient limitant | — | Perd la reprise sur erreur et l'observabilité par exécution qu'offre Inngest ; à éviter tant qu'Inngest suffit (principe VI : ne pas réinventer une file quand un service gratuit suffit) | Seulement si Inngest devient payant avant tout revenu |
 | E-mail transactionnel | **Resend — Free** | Déjà intégré (`lib/alerting/sendAlert.ts`) | Non explicitement restreint ; le fournisseur qualifie le palier gratuit d'adapté au développement et à une "très petite" production — **volume à surveiller** | 3000 e-mails/mois, **100 e-mails/jour** | Palier payant (20 $/mois) dès que les alertes de régression + le questionnaire J+3 + les accusés de rapport mensuel dépassent 100/jour, plausible autour de 30-50 agences actives |
 | Rendu headless (dépendance JS) | **Aucun par défaut** ; interface `Renderer` optionnelle (`lib/scanner/renderer.ts`) activable sur une instance Playwright si elle tourne gratuitement | Décision §14.4 du PRD : pas de service payant au stade MVP | — | Oracle Cloud Always Free (Ampere A1) est le seul candidat gratuit capable de faire tourner Chromium, mais **la capacité Ampere A1 a été réduite de moitié (4 → 2 OCPU, 24 → 12 Go) le 15 juin 2026 et son allocation dépend de la disponibilité régionale**, non garantie à l'inscription — **statut à vérifier avant toute dépendance produit** | Passage à un service géré (Browserless, etc.) uniquement une fois financé par le MRR (décision déjà actée) |
 | PDF (rapport mensuel, export diagnostic) | **`@react-pdf/renderer`** (rendu par description de mise en page, sans navigateur) | Fonctionne sur un processus Node classique, donc sur l'hébergement retenu, sans dépendre du rendu headless incertain ci-dessus (§9) | Licence MIT, aucun coût | — | — |
 | CI / qualité | **GitHub Actions** | Dépôt déjà sur GitHub | Gratuit illimité sur dépôt public ; 2000 min/mois sur dépôt privé | À surveiller si le dépôt reste privé et que les builds s'allongent | — |
-| Observabilité / erreurs | **Sentry — Developer (gratuit)** | Un seul utilisateur (le fondateur), suffisant | Plafond d'usage, pas de restriction commerciale identifiée | 5000 événements/mois, rétention 30 j, 1 utilisateur | Palier payant (26 $/mois Team) si le volume d'erreurs dépasse 5000/mois (signal probable d'un problème plus grave à corriger avant de payer plus) |
+| Observabilité / erreurs / mesure produit | **PostHog Cloud UE — gratuit** (remplace Sentry, voir `docs/decisions/ADR-001-posthog-remplace-sentry.md`) | Un seul outil pour les exceptions client et serveur et le parcours produit | Non précisé sur la page de tarifs : **à confirmer (T001)** | Par mois : 1 M d'événements, 100 000 exceptions, 5 000 enregistrements de session | Palier payant à l'usage si un quota est dépassé ; consentement RGPD à trancher avant la mise en ligne (ADR-001) |
 | Mesure d'audience (marketing) | **Compteur maison** : route `app/api/beacon/route.ts` + table `PageView` minimaliste, sans cookie ni tiers | Respecte le principe VI (pas de nouvelle dépendance externe) et RGPD par construction (aucune donnée personnelle, pas de traceur tiers) | — | Rudimentaire : pas de tunnel de conversion détaillé | Umami auto-hébergé (MIT, léger, RGPD) dès qu'une instance dédiée existe (ex. si le rendu headless finit par justifier un VPS) |
 | Domaine | Sous-domaine gratuit de l'hébergeur (`*.onrender.com` en développement) | Coût nul le temps de valider la traction | — | Image de marque moindre pour la prospection écrite | Achat de `cited.app` (≈ 10-15 €/an) dès le premier client payant — seule dépense actée du plan |
 
@@ -116,13 +116,14 @@ Principe directeur (ENF-016) : chaque service a une offre gratuite qui autorise 
 - Render : mise en veille après 15 min, ~1 min de réveil, 750 h gratuites/mois par espace de travail, avis officiel déconseillant la production sans engagement contractuel identifié sur l'usage commercial (**à confirmer par écrit auprès de Render à l'inscription**) : agrégation de sources tierces (pas de CGU officielle consultée directement, accès réseau bloqué pendant la rédaction de ce plan) — voir note d'incertitude ci-dessous.
 - Neon Free : usage commercial confirmé, autoscale à zéro avec reprise automatique, 0,5 Go/projet, 100 h de calcul/mois : agrégation de sources tierces citant la documentation Neon (accès direct à neon.com bloqué pendant la rédaction) — **à revérifier sur neon.com/docs à l'inscription**.
 - Supabase Free : pause après 7 jours d'inactivité **base de données** (pas seulement d'inactivité de visite) : [Supabase Docs — Project Pausing](https://supabase.com/docs/guides/platform/free-project-pausing).
-- Inngest Hobby : 50 000 exécutions/mois : [Inngest Docs — Usage Limits](https://www.inngest.com/docs/usage-limits/inngest).
-- Resend Free : 3000 e-mails/mois, 100/jour : agrégation de sources tierces citant `resend.com/docs/knowledge-base/account-quotas-and-limits` (accès direct bloqué pendant la rédaction) — **à revérifier sur resend.com à l'inscription**.
+- Inngest Hobby : 50 000 exécutions/mois, une exécution par lancement et par step, 5 steps concurrents : [Inngest — Pricing](https://www.inngest.com/pricing), consulté le 24/09/2026.
+- Neon Free (0,5 Go, 100 CU-h, veille à 5 min non réglable, suspension si CU-h épuisées) : [Neon — Plans](https://neon.com/docs/introduction/plans), consulté le 24/09/2026.
+- Resend Free (100 e-mails/jour, 3 000/mois, 10 requêtes/s) : [Resend — Account quotas and limits](https://resend.com/docs/knowledge-base/account-quotas-and-limits), consulté le 24/09/2026.
 - Oracle Always Free — réduction de capacité Ampere A1 (4→2 OCPU, 24→12 Go) au 15 juin 2026 et dépendance à la disponibilité régionale : [InfoQ — "Oracle Quietly Halves Free Tier Ampere A1 Compute Limits"](https://www.infoq.com/news/2026/07/oracle-cloud-free-tier-limits/), [Oracle Docs — Always Free Resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm).
-- Sentry Developer (gratuit) : 5000 événements/mois, 1 utilisateur, rétention 30 j : agrégation de sources tierces (pas d'accès direct à sentry.io pendant la rédaction) — **à revérifier à l'inscription**.
+- PostHog (gratuit) : 1 M d'événements, 100 000 exceptions, 5 000 enregistrements de session, 100 000 événements LLM par mois : [PostHog — Pricing](https://posthog.com/pricing), consulté le 24/09/2026. Rétention et usage commercial non précisés sur cette page.
 - Koyeb : la recherche indique que Koyeb a fermé son palier gratuit "Starter" aux nouvelles inscriptions après son rachat par Mistral AI début 2026 — **écarté de ce plan pour cette raison, à ne pas retenir sans vérifier l'éligibilité d'un nouveau compte**.
 
-**Points non vérifiés à traiter avant l'inscription définitive (ENF-016, tâche dédiée dans `tasks/mvp-tasks.md`)** : les CGU exactes de Render sur l'usage commercial (rien d'officiel consulté directement, accès réseau restreint pendant la rédaction de ce plan), les chiffres précis Neon/Resend/Sentry ci-dessus (issus d'agrégateurs tiers plutôt que de la documentation officielle de premier niveau, malgré une tentative de lecture directe). Aucune décision produit ne doit supposer ces chiffres exacts avant confirmation écrite.
+**Points non vérifiés à traiter avant l'inscription définitive (ENF-016, tâche dédiée dans `tasks/mvp-tasks.md`)** : les CGU exactes de Render sur l'usage commercial (rien d'officiel consulté directement, accès réseau restreint pendant la rédaction de ce plan), l'usage commercial et la rétention du palier gratuit de PostHog. Les quotas Inngest, Neon, Resend et PostHog ont été relevés le 24/09/2026 sur les pages officielles.
 
 ## 6. Modèle de données cible
 
@@ -263,7 +264,21 @@ Erreurs : `400` (URL invalide), `403` (refus SSRF), `429` (`Retry-After` en en-t
 | `send-regression-alert` (logique intégrée à `scan-single-site`) | changement de statut détecté | `lib/alerting/sendAlert.ts` | E-mail avec cause + correctif, distinct régression/retour au vert, journalisé dans `AlertEvent` | EF-033 à EF-037 |
 | `send-discovery-email` (nouveau) | cron horaire, filtre `createdAt` à J+3, ou événement différé Inngest (`step.sleepUntil`) déclenché à l'inscription | `inngest/functions/discovery-email.ts` | E-mail des 5 questions de découverte (kit `docs/06`) | EF-064 |
 | `generate-monthly-report` (nouveau) | cron `0 6 1 * *` (1ᵉʳ du mois) + déclenchement à la demande via `generateMonthlyReport` | `inngest/functions/monthly-report.ts` | Agrège `ScanLog`/`AlertEvent` de la période close, génère le PDF (§9), écrit `MonthlyReport`, envoie l'e-mail "rapport disponible" | EF-047, EF-049, EF-051 |
-| `keep-alive` (nouveau, opérationnel) | cron toutes les 10 min | `inngest/functions/keep-alive.ts` | `GET /api/health` sur l'app hébergée — évite la mise en veille Render (§5) | Fiabilité du scan public (ENF-004, conversion P1) |
+| `prune-scan-logs` (T056) | cron `0 4 1 * *` (1ᵉʳ du mois) | `inngest/functions/prune-scan-logs.ts` | Vide `ScanLog.payload` au-delà de 90 jours, une seule requête dans un seul step | ENF-016 (stockage Neon) |
+
+**Pas de `keep-alive` sur Inngest** (décision du 24/09, remplace l'entrée prévue ici) : un ping toutes les 10 min coûterait environ 4 300 exécutions de fonction par mois, plus une par step (voir §8.1). Le réveil de Render passe par un pinger externe gratuit (tâche T003) sur `GET /api/health`, route qui **ne doit jamais interroger la base** : sinon Neon ne se met jamais en veille et consomme 720 h × 0,25 CU = 180 CU-h par mois, au-delà des 100 CU-h gratuites.
+
+### 8.1 Budget d'exécutions Inngest (vérifié le 24/09 sur inngest.com/pricing)
+
+Inngest Hobby compte **une exécution par lancement de fonction et une par step**. Une fonction à 5 `step.run` coûte 6 exécutions. Le plafond est de 50 000 exécutions par mois.
+
+| Poste | Coût par mois | Remarque |
+|---|---|---|
+| `scan-site`, forme actuelle (1 lancement + 4 steps, + 1 si alerte) | ≈ 150 par site | Plafond atteint vers **330 sites** |
+| `scan-site` par lots de 10 sites, 1 step par site | ≈ 33 par site | Plafond vers **1 500 sites** : c'est la forme à viser (T023/T055) |
+| `daily-scan-dispatcher` | ≈ 90 + 1 step par tranche de 500 sites | Négligeable |
+| `send-discovery-email` (T046) | ≈ 90 + 2 par nouveau compte | Négligeable |
+| `prune-scan-logs` (T056) | 2 | Négligeable |
 
 **Dédoublonnage des alertes (EF-034)** : déjà garanti par la comparaison `oldStatus !== newStatus` dans `scan-site.ts` — aucune modification nécessaire, seulement l'enrichissement de la cause (T025).
 
@@ -283,16 +298,16 @@ Erreurs : `400` (URL invalide), `403` (refus SSRF), `429` (`Retry-After` en en-t
 | SSRF (scan public, scan planifié) | `assertSafeUrl`/`crawlUrl` déjà robustes (résolution DNS, refus des plages non-unicast, revalidation de chaque redirection) | Réutiliser telle quelle dans `addMonitoredSite`/`addMonitoredSitesBulk` (EF-022, T020) — ne jamais dupliquer la logique |
 | Limitation de débit | Adossée à PostgreSQL (`lib/rate-limit.ts`), déjà utilisée par `/api/scan`, `/api/audit`, l'inscription | Étendre à `addMonitoredSitesBulk` (import de masse) pour éviter l'abus par un compte payant |
 | Authentification | NextAuth v5, session base de données | Ajouter la réinitialisation de mot de passe par e-mail (EF-014, absente aujourd'hui) |
-| Autorisation des tarifs Stripe | Résolution serveur uniquement (`lib/billing/plans.ts`) | Inchangé ; le coupon fondateur (§14 PRD) est un objet Stripe natif, jamais un pourcentage calculé côté client |
+| Autorisation des tarifs Stripe | Résolution serveur uniquement (`lib/billing/plans.ts`) | Inchangé ; le coupon fondateur (§14 PRD) est un objet Stripe natif, jamais un pourcentage calculé côté client. Coupon créé en mode test le 24/09 (T037) : id `FONDATEUR50` (et non `founder-50`), −50 %, `duration: forever`, `max_redemptions: 10`. Le serveur ne l'accepte que s'il correspond à `STRIPE_FOUNDER_COUPON`. À recréer à l'identique en mode live. |
 | Secrets | Variables d'environnement (`.env.example` déjà exhaustif) | Répliquer dans les variables d'environnement Render + GitHub Actions (secrets chiffrés), jamais dans un fichier commité |
 | RGPD | Champs `purgeAt`/`dataExportedAt` déjà en base, non exposés | Exposer dans les paramètres (EF-015, T041) ; purge à 60 j déjà programmée par le webhook Stripe (EF-056) |
 
 ## 11. Observabilité
 
-- **Erreurs** : Sentry (Developer, gratuit) sur le serveur et le client, capture des échecs de scan, d'envoi d'alerte et de génération de rapport (ENF-009).
+- **Erreurs** : PostHog (Cloud UE, gratuit) sur le serveur (`posthog-node`) et le client (`posthog-js`, `capture_exceptions`), capture des échecs de scan, d'envoi d'alerte et de génération de rapport (ENF-009, ADR-001).
 - **Journalisation applicative** : remplacer les `console.error`/`console.warn` isolés (`scan-site.ts`, `sendAlert.ts`) par un appel structuré incluant `siteId`, `bot`, `cause` — exploitable sans grep manuel.
 - **Suivi des jobs** : le tableau de bord Inngest (inclus dans l'offre gratuite) donne déjà l'historique d'exécution, les retries et les échecs par fonction — pas d'outil supplémentaire nécessaire (principe VI).
-- **Alerte sur soi-même** : `keep-alive` (§8) sert aussi de sonde de disponibilité — un échec répété de ping remonte dans Sentry.
+- **Alerte sur soi-même** : le pinger externe gratuit qui empêche la mise en veille Render (§8, T003) sert aussi de sonde de disponibilité, avec son propre e-mail d'alerte en cas d'échec répété.
 
 ## 12. Stratégie de test
 
@@ -316,11 +331,13 @@ Erreurs : `400` (URL invalide), `403` (refus SSRF), `429` (`Retry-After` en en-t
 | Risque | Impact | Parade |
 |---|---|---|
 | Les CGU exactes de Render sur l'usage commercial ne sont pas confirmées par écrit (accès direct bloqué pendant la rédaction de ce plan) | Un hébergeur pourrait suspendre le compte en cours de route | Confirmer par écrit (formulaire de support Render) avant tout encaissement Stripe réel ; repli documenté sur Netlify (§5) si la réponse est défavorable |
-| Mise en veille Render (15 min d'inactivité) dégrade le premier scan public d'un visiteur après une période creuse | Repousse l'objectif "scan → inscription ≥ 10 %" | Job `keep-alive` Inngest (§8), à vérifier en conditions réelles avant la prospection à grande échelle |
+| Mise en veille Render (15 min d'inactivité) dégrade le premier scan public d'un visiteur après une période creuse | Repousse l'objectif "scan → inscription ≥ 10 %" | Pinger externe gratuit sur `GET /api/health`, route sans accès base (§8), à vérifier en conditions réelles avant la prospection à grande échelle |
 | Capacité Oracle Always Free (Ampere A1) non garantie dans une région UE | Le rendu headless (option EF-029) reste indisponible plus longtemps que prévu | Déjà accepté par la décision §14.4 du PRD : l'indicateur de dépendance JS reste étiqueté comme approximatif tant que le rendu n'est pas branché — aucune dépendance produit bloquante |
-| Stockage Neon (0,5 Go/projet) atteint par l'accumulation de `ScanLog.payload` (JSON complet par scan) | Blocage des écritures en base | Purge/compression du payload brut au-delà de 90 jours (nouvelle tâche de maintenance, à instrumenter avant que le volume ne devienne critique) |
-| Volume d'e-mails Resend (100/jour) dépassé par la combinaison alertes + J+3 + rapports mensuels à mesure que le portefeuille grandit | Alertes de régression retardées — risque direct pour le principe I (crédibilité de la mesure) | Suivre le compteur mensuel Resend dès 5 agences actives ; palier payant (20 $/mois) largement couvert par le MRR cible (1000 €) |
-| Les chiffres de quotas gratuits (Neon, Resend, Sentry) proviennent d'agrégateurs tiers, pas de la documentation officielle consultée directement (réseau restreint pendant la rédaction) | Une limite réelle différente de celle documentée ici casserait une hypothèse de dimensionnement | Tâche dédiée de vérification à l'inscription (ENF-016) avant tout engagement produit sur ces chiffres |
+| Stockage Neon (0,5 Go/projet) atteint par l'accumulation de `ScanLog.payload` (JSON complet par scan) | Blocage des écritures en base | Purge du payload au-delà de 90 jours (T056, livrée) ; n'écrire le payload que si `simpleStatus` ou `cause` change par rapport au scan précédent (T023) |
+| Exécutions Inngest (50 000/mois, chaque step compte) épuisées par le scan quotidien | Plus aucun scan ni alerte jusqu'au mois suivant | Regrouper les scans par lots de 10 sites avec 1 step par site (§8.1) avant de dépasser 300 sites ; aucun job récurrent de confort sur Inngest |
+| CU-h Neon (100/mois) épuisées par une activité qui empêche la veille | Base suspendue jusqu'au mois suivant | Aucun ping récurrent vers une route qui lit la base ; surveiller la consommation CU-h dans la console Neon chaque semaine après le lancement |
+| Volume d'e-mails Resend (100/jour) dépassé par la combinaison alertes + J+3 + rapports mensuels à mesure que le portefeuille grandit | Alertes de régression retardées — risque direct pour le principe I (crédibilité de la mesure) | Un seul e-mail récapitulatif par agence et par passage du scan, jamais un par site (T025/T026) ; suivre le compteur mensuel Resend dès 5 agences actives ; palier payant (20 $/mois) largement couvert par le MRR cible (1000 €) |
+| L'usage commercial et la rétention du palier gratuit de PostHog ne sont pas précisés sur sa page de tarifs (les quotas Inngest, Neon, Resend et PostHog ont été relevés le 24/09/2026 sur les pages officielles) | Une restriction découverte tard obligerait à changer d'outil de mesure | Confirmation écrite dans le cadre de T001, avant tout encaissement Stripe réel |
 
 ## 15. Traçabilité exigences → sections
 
