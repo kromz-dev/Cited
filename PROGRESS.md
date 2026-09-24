@@ -36,6 +36,18 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 - [x] Plan technique 0 € : `docs/10-plan-technique.md`. Pile retenue : Render (offre gratuite) + Neon Postgres + Inngest + Resend + Sentry + `@react-pdf/renderer`. Les conditions de ces offres sont à confirmer (tâche T001).
 - [x] Liste des tâches du MVP, 57 tâches en 9 phases : `tasks/mvp-tasks.md` (**c'est elle qui fait foi pour le « quoi faire ensuite »**)
 
+### Services provisionnés (24/09, mode test, 0 €)
+
+| Service | Ressource | Identifiants non secrets |
+|---|---|---|
+| Neon | Projet `cited`, Postgres 17, Francfort (`aws-eu-central-1`), base `cited`, rôle `cited` | projet `billowing-resonance-22258158`. La chaîne de connexion (secrète) est à récupérer dans la console Neon ou via le MCP, et à mettre directement dans Render (`DATABASE_URL`). |
+| Stripe (test) | 3 produits et prix mensuels HT en EUR | `STRIPE_PRICE_SOLO=price_1UJ459E0KhuxlY8kOXQkdsjH` (39 €), `STRIPE_PRICE_PRO=price_1UJ45LE0KhuxlY8k1kqASn38` (99 €), `STRIPE_PRICE_SCALE=price_1UJ45PE0KhuxlY8kI8hhUDP1` (249 €). Lookup keys `cited_{solo,pro,scale}_monthly`. |
+| Stripe (test) | Coupon fondateur | `FONDATEUR50` : −50 %, à vie, 10 utilisations maximum |
+| Sentry | Projet `cited-web` (Next.js), org `cited-0g`, région UE | `SENTRY_DSN=https://2d024724c6a27762e805e4c26f393241@o4512139371937792.ingest.de.sentry.io/4512139399528528` (public par conception) |
+| Render | Espace « My Workspace » | Service web à créer après la fusion dans `main` (T003) |
+| Resend | Compte | Domaine d'envoi à ajouter (nécessite un domaine) |
+| Inngest | — | Compte et clés à créer (`INNGEST_SIGNING_KEY`, `INNGEST_EVENT_KEY`) |
+
 ---
 
 ## 2. À faire ensuite, dans l'ordre
