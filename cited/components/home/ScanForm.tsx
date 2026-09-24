@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Download } from "lucide-react";
 import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -202,7 +202,44 @@ function ResultRow({ title, value, cause, fix }: { title: string } & ResultSumma
 }
 
 function ScanResultPanel({ data, submittedUrl }: { data: ScanApiResponse; submittedUrl: string }) {
-  const { report } = data;
+  const { report, results } = data;
+  const [downloading, setDownloading] = React.useState(false);
+
+  async function handleDownloadPdf() {
+    setDownloading(true);
+    try {
+      const res = await fetch("/api/pdf/diagnostic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ report, results }),
+      });
+      if (!res.ok) throw new Error("Erreur lors de la génération du PDF.");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.style.display = "none";
+      const disposition = res.headers.get("Content-Disposition");
+      let filename = "diagnostic.pdf";
+      if (disposition && disposition.includes("filename=")) {
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+    } catch (err) {
+      console.error("Failed to download PDF", err);
+      alert("Impossible de télécharger le PDF. Veuillez réessayer.");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   const redirectCount = report.access.redirects.length;
   const redirected = redirectCount > 0 && report.finalUrl !== submittedUrl;
 
@@ -257,6 +294,22 @@ function ScanResultPanel({ data, submittedUrl }: { data: ScanApiResponse; submit
             </ul>
           </div>
         )}
+
+        <div className="mt-2 border-t border-line pt-4 flex justify-center">
+          <Button variant="outline" onClick={handleDownloadPdf} disabled={downloading} className="w-full sm:w-auto">
+            {downloading ? (
+              <>
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                Génération...
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                Télécharger le rapport (PDF)
+              </>
+            )}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

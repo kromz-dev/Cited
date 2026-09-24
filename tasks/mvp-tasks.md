@@ -134,7 +134,7 @@
   - **Vérification** : test manuel sur un site avec `robots.txt` bloquant un seul bot — les trois verdicts restent visuellement distincts (composant `Verdict`, jamais fondus)
   - **Taille** : M
 
-- [ ] **T017** [P1] Export PDF du diagnostic public, au logo Cited — `cited/app/actions/publicReport.ts`, `cited/lib/reports/renderDiagnosticPdf.ts`
+- [x] **T017** [P1] Export PDF du diagnostic public, au logo Cited — `cited/app/actions/publicReport.ts`, `cited/lib/reports/renderDiagnosticPdf.ts`
   - **Dépendances** : T016, T031 (moteur PDF partagé — voir Phase 5, réutilisé ici en avance)
   - **EF/ENF** : EF-011
   - **Vérification** : le PDF généré contient les trois verdicts et ne porte aucune marque blanche cliente
