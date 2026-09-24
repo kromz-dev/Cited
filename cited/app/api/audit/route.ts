@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { rateLimit, callerKey } from "@/lib/rate-limit";
 import { z } from "zod";
-import { BotAgent, DEFAULT_SCAN_BOTS } from "@/lib/scanner/agents";
+import { BOTS, DEFAULT_PROBE_BOTS } from "@/lib/scanner/agents";
 import { crawlUrl } from "@/lib/scanner/crawler";
 import { analyzeResponse, AnalyzerResult, ScannerStatus } from "@/lib/scanner/analyzer";
 
 export const runtime = "nodejs";
 export const maxDuration = 30; // 30s max (comme défini dans le cahier des charges)
 
+const BASELINE_AGENT = "CitedBot";
 const AUDIT_LIMIT_PER_HOUR = 10; // On peut augmenter un peu la limite vu que c'est moins coûteux qu'un LLM
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
@@ -50,8 +51,8 @@ function calculateGlobalScore(pages: PageScanResult[]): number {
   let accessibleBots = 0;
   
   for (const page of pages) {
-    // On ignore le navigateur normal pour le score
-    const aiRuns = page.runs.filter(r => r.agent !== "Browser");
+    // On ignore la requête de référence pour le score
+    const aiRuns = page.runs.filter(r => r.agent !== BASELINE_AGENT);
     totalBots += aiRuns.length;
     accessibleBots += aiRuns.filter(r => r.status === "ACCESSIBLE").length;
   }
@@ -100,11 +101,11 @@ export async function POST(req: Request) {
       const targetUrl = new URL(path, urlObj.origin).toString();
       console.log(`\n▶ Scannage de ${targetUrl}...`);
       
-      // 1. D'abord on scanne avec le "Browser" pour avoir la référence (baseline)
-      const browserCrawl = await crawlUrl(targetUrl, "Browser");
-      const browserAnalysis = analyzeResponse(browserCrawl);
+      // 1. D'abord la requête honnête (User-Agent CitedBot) pour avoir la référence (baseline)
+      const browserCrawl = await crawlUrl(targetUrl);
+      const browserAnalysis = analyzeResponse(browserCrawl, BASELINE_AGENT);
       
-      console.log(`  [Browser] Code: ${browserAnalysis.httpStatus}, Mots: ${browserAnalysis.wordCount}`);
+      console.log(`  [${BASELINE_AGENT}] Code: ${browserAnalysis.httpStatus}, Mots: ${browserAnalysis.wordCount}`);
       
       // Si la page d'accueil est complètement en erreur (404, DNS introuvable, etc), on arrête.
       if (path === "/" && (browserAnalysis.httpStatus === 0 || browserAnalysis.httpStatus >= 500)) {
@@ -121,13 +122,12 @@ export async function POST(req: Request) {
       }
       
       const runs: AnalyzerResult[] = [browserAnalysis];
-      const aiBots = DEFAULT_SCAN_BOTS.filter(b => b !== "Browser");
-      
-      // 2. On scanne avec tous les bots IA en parallèle
-      const botPromises = aiBots.map(async (agent) => {
-        const crawl = await crawlUrl(targetUrl, agent);
-        // On passe le wordCount du navigateur comme contrôle
-        return analyzeResponse(crawl, browserAnalysis.wordCount);
+      // 2. Sondes secondaires en User-Agent de robot IA : requérant non vérifié,
+      // le vrai robot peut être traité autrement (vérification par IP).
+      const botPromises = DEFAULT_PROBE_BOTS.map(async (agent) => {
+        const crawl = await crawlUrl(targetUrl, { userAgent: BOTS[agent].userAgent! });
+        // On passe le wordCount de la référence comme contrôle
+        return analyzeResponse(crawl, agent, browserAnalysis.wordCount);
       });
       
       const botResults = await Promise.all(botPromises);

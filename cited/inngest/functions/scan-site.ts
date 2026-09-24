@@ -9,9 +9,9 @@ export const scanSiteJob = inngest.createFunction(
     id: "scan-single-site",
     concurrency: {
       limit: 10,
-    }
+    },
+    triggers: [{ event: "app/scan.site" }],
   },
-  { event: "app/scan.site" },
   async ({ event, step }) => {
     const { siteId } = event.data;
 
@@ -26,12 +26,13 @@ export const scanSiteJob = inngest.createFunction(
       throw new NonRetriableError(`Site not found: ${siteId}`);
     }
 
-    const gptResult = await step.run("run-scan", async () => {
-      const results = await runCoreScan(site.url, ["GPTBot"]);
-      const result = results.find((r: any) => r.agent === "GPTBot") || results[0];
-      return result;
+    const scan = await step.run("run-scan", async () => {
+      const { report, results } = await runCoreScan(site.url, ["GPTBot"]);
+      const summary = results.find((r) => r.agent === "GPTBot") || results[0];
+      return { summary, report };
     });
 
+    const gptResult = scan.summary;
     const newStatus = gptResult.simpleStatus;
     
     await step.run("log-scan", async () => {
@@ -39,7 +40,8 @@ export const scanSiteJob = inngest.createFunction(
         data: {
           siteId: site.id,
           httpStatus: gptResult.httpStatus,
-          payload: JSON.stringify(gptResult)
+          // Les trois résultats (robots.txt, accès, JS) restent séparés dans le journal.
+          payload: JSON.stringify(scan)
         }
       });
     });

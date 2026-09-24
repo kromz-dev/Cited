@@ -1,125 +1,192 @@
-import test, { mock } from "node:test";
-import assert from "node:assert";
-import { runCoreScan, mapStatusToSimple } from "./core";
-import { BotAgent } from "./agents";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-test("mapStatusToSimple maps correctly", () => {
-  assert.strictEqual(mapStatusToSimple("ACCESSIBLE"), "OK");
-  assert.strictEqual(mapStatusToSimple("BLOCKED_403"), "BLOQUÉ");
-  assert.strictEqual(mapStatusToSimple("BLOCKED_CAPTCHA"), "BLOQUÉ");
-  assert.strictEqual(mapStatusToSimple("EMPTY_JS_REQUIRED"), "COQUILLE VIDE");
-  assert.strictEqual(mapStatusToSimple("ERROR"), "ERREUR");
+vi.mock("node:dns/promises", () => ({
+  lookup: vi.fn(async () => [{ address: "93.184.216.34", family: 4 }]),
+}));
+
+import { mapStatusToSimple, runCoreScan, runScan } from "./core";
+import { Renderer } from "./renderer";
+
+type Handler = (url: string, userAgent: string) => Response | Promise<Response>;
+
+function stubFetch(handler: Handler) {
+  const fn = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+    const ua = (init?.headers as Record<string, string>)?.["User-Agent"] ?? "";
+    return handler(String(input), ua);
+  });
+  vi.stubGlobal("fetch", fn);
+  return fn;
+}
+
+const html = (body: string, head = "") => `<html><head>${head}</head><body>${body}</body></html>`;
+const LONG_PAGE = html(`<p>Un texte très long pour que ça dépasse 50 mots. ${"mot ".repeat(60)}</p>`);
+
+describe("mapStatusToSimple", () => {
+  it("maps correctly", () => {
+    expect(mapStatusToSimple("ACCESSIBLE")).toBe("OK");
+    expect(mapStatusToSimple("BLOCKED_403")).toBe("BLOQUÉ");
+    expect(mapStatusToSimple("BLOCKED_CAPTCHA")).toBe("BLOQUÉ");
+    expect(mapStatusToSimple("EMPTY_JS_REQUIRED")).toBe("COQUILLE VIDE");
+    expect(mapStatusToSimple("ERROR")).toBe("ERREUR");
+  });
 });
 
-test("runCoreScan identifies OK, BLOQUÉ and COQUILLE VIDE", async (t) => {
-  // Mock global fetch
-  const fetchMock = mock.fn(async (url: string | Request | URL, options?: RequestInit) => {
-    const userAgent = (options?.headers as Record<string, string>)?.["User-Agent"] || "";
-    
-    // Simulate a block for GPTBot
-    if (userAgent.includes("GPTBot")) {
-      return {
-        status: 403,
-        text: async () => "Forbidden",
-      } as Response;
-    }
-    
-    // Simulate empty shell for ClaudeBot (SPA without SSR)
-    if (userAgent.includes("ClaudeBot")) {
-      return {
-        status: 200,
-        text: async () => '<div id="root"></div>',
-      } as Response;
-    }
-    
-    // Simulate OK for Browser and others
-    return {
-      status: 200,
-      text: async () => "<html><body><p>Un texte très long pour que ça dépasse 50 mots. " + "mot ".repeat(60) + "</p></body></html>",
-    } as Response;
+describe("runScan", () => {
+  beforeEach(() => vi.unstubAllGlobals());
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("sends an honest CitedBot User-Agent by default", async () => {
+    const fetchMock = stubFetch((url) =>
+      url.endsWith("/robots.txt") ? new Response("", { status: 404 }) : new Response(LONG_PAGE),
+    );
+    const report = await runScan("https://example.com/");
+    const uas = fetchMock.mock.calls.map(([, init]) => (init?.headers as Record<string, string>)["User-Agent"]);
+    expect(uas.length).toBeGreaterThan(0);
+    for (const ua of uas) expect(ua).toMatch(/^CitedBot\/1\.0 \(\+https?:\/\/.+\)$/);
+    expect(report.access.userAgent).toMatch(/^CitedBot\/1\.0/);
+    expect(report.access.unverifiedProbes).toEqual([]);
   });
-  
-  global.fetch = fetchMock as any;
-  
-  const bots: BotAgent[] = ["GPTBot", "ClaudeBot", "PerplexityBot"];
-  const results = await runCoreScan("https://example.com", bots);
-  
-  assert.strictEqual(results.length, 3);
-  
-  const gptResult = results.find(r => r.agent === "GPTBot");
-  assert.strictEqual(gptResult?.simpleStatus, "BLOQUÉ");
-  assert.strictEqual(gptResult?.httpStatus, 403);
-  
-  const claudeResult = results.find(r => r.agent === "ClaudeBot");
-  assert.strictEqual(claudeResult?.simpleStatus, "COQUILLE VIDE");
-  assert.strictEqual(claudeResult?.httpStatus, 200);
-  
-  const perpResult = results.find(r => r.agent === "PerplexityBot");
-  assert.strictEqual(perpResult?.simpleStatus, "OK");
-  assert.strictEqual(perpResult?.httpStatus, 200);
-  
-  mock.restoreAll();
+
+  it("returns robots.txt policy, access risk and JS dependency as separate results", async () => {
+    stubFetch((url) => {
+      if (url.endsWith("/robots.txt")) {
+        return new Response("User-agent: GPTBot\nDisallow: /\n\nUser-agent: *\nAllow: /\n");
+      }
+      return new Response(html('<div id="root"></div>'), { headers: { "x-robots-tag": "noindex" } });
+    });
+    const report = await runScan("https://example.com/");
+
+    expect(report.robots.fetchStatus).toBe("ok");
+    expect(report.robots.policies.find((p) => p.bot === "GPTBot")).toMatchObject({ verdict: "disallowed", group: "specific", purpose: "training" });
+    expect(report.robots.policies.find((p) => p.bot === "OAI-SearchBot")).toMatchObject({ verdict: "allowed", group: "wildcard", purpose: "search" });
+
+    expect(report.access.risk).toBe("ok");
+    expect(report.jsDependency).toMatchObject({ verdict: "likely_js_dependent", hasAppRoot: true, renderedWordCount: null, renderer: "none" });
+    expect(report.indexing.perBot.find((i) => i.bot === "ClaudeBot")?.noindex).toBe(true);
+  });
+
+  it("compares raw and rendered text when a renderer is provided", async () => {
+    stubFetch((url) =>
+      url.endsWith("/robots.txt") ? new Response("", { status: 404 }) : new Response(html('<div id="root"></div>')),
+    );
+    const renderer: Renderer = { name: "fake", render: async () => LONG_PAGE };
+    const report = await runScan("https://example.com/", { renderer });
+    expect(report.jsDependency).toMatchObject({ verdict: "js_dependent", rawWordCount: 0, renderer: "fake" });
+    expect(report.jsDependency.renderedWordCount).toBeGreaterThan(50);
+  });
+
+  it("follows the redirect before reading robots.txt of the content origin", async () => {
+    const fetchMock = stubFetch((url) => {
+      if (url === "http://example.com/") return new Response(null, { status: 301, headers: { location: "https://www.example.com/" } });
+      if (url === "https://www.example.com/robots.txt") return new Response("User-agent: *\nDisallow: /\n");
+      return new Response(LONG_PAGE);
+    });
+    const report = await runScan("http://example.com/");
+    expect(report.finalUrl).toBe("https://www.example.com/");
+    expect(report.access.risk).toBe("ok");
+    expect(report.access.redirects).toHaveLength(1);
+    expect(report.robots.url).toBe("https://www.example.com/robots.txt");
+    expect(fetchMock.mock.calls.map(([u]) => String(u))).toContain("https://www.example.com/robots.txt");
+  });
 });
 
-test("runCoreScan handles fetch timeouts (AbortError) properly", async (t) => {
-  const fetchMock = mock.fn(async () => {
-    throw new DOMException("The operation was aborted", "AbortError");
+describe("runCoreScan", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("identifies OK, BLOQUÉ and COQUILLE VIDE", async () => {
+    stubFetch((url) => {
+      if (url.endsWith("/robots.txt")) return new Response("", { status: 404 });
+      if (url.includes("challenge")) {
+        return new Response(html("", "<title>Just a moment...</title>"), { status: 403, headers: { "cf-mitigated": "challenge" } });
+      }
+      if (url.includes("spa")) return new Response(html('<div id="root"></div>'));
+      return new Response(LONG_PAGE);
+    });
+
+    const ok = await runCoreScan("https://example.com", ["PerplexityBot"]);
+    expect(ok.results[0]).toMatchObject({ agent: "PerplexityBot", simpleStatus: "OK", httpStatus: 200 });
+
+    const blocked = await runCoreScan("https://challenge.example.com", ["GPTBot"]);
+    expect(blocked.results[0]).toMatchObject({ simpleStatus: "BLOQUÉ", httpStatus: 403 });
+    expect(blocked.report.access.risk).toBe("challenged");
+
+    const empty = await runCoreScan("https://spa.example.com", ["ClaudeBot"]);
+    expect(empty.results[0]).toMatchObject({ simpleStatus: "COQUILLE VIDE", httpStatus: 200 });
   });
-  global.fetch = fetchMock as any;
 
-  const bots: BotAgent[] = ["GPTBot"];
-  const results = await runCoreScan("https://slow-site.com", bots);
-  
-  assert.strictEqual(results.length, 1);
-  assert.strictEqual(results[0].simpleStatus, "ERREUR");
-  assert.strictEqual(results[0].httpStatus, 0);
-  
-  mock.restoreAll();
-});
-
-test("runCoreScan handles network errors like DNS resolution failure", async (t) => {
-  const fetchMock = mock.fn(async () => {
-    throw new TypeError("fetch failed"); 
+  it("marks a bot BLOQUÉ when robots.txt disallows it even if the page loads", async () => {
+    stubFetch((url) =>
+      url.endsWith("/robots.txt")
+        ? new Response("User-agent: ClaudeBot\nDisallow: /\n")
+        : new Response(LONG_PAGE),
+    );
+    const { results } = await runCoreScan("https://example.com", ["ClaudeBot", "GPTBot"]);
+    expect(results.find((r) => r.agent === "ClaudeBot")).toMatchObject({ simpleStatus: "BLOQUÉ", reasons: ["robots.txt disallows ClaudeBot"] });
+    expect(results.find((r) => r.agent === "GPTBot")?.simpleStatus).toBe("OK");
   });
-  global.fetch = fetchMock as any;
 
-  const bots: BotAgent[] = ["ClaudeBot"];
-  const results = await runCoreScan("https://not-found-domain.com", bots);
-  
-  assert.strictEqual(results.length, 1);
-  assert.strictEqual(results[0].simpleStatus, "ERREUR");
-  assert.strictEqual(results[0].httpStatus, 0);
-  
-  mock.restoreAll();
-});
+  it("labels spoofed-UA probes as unverified requesters", async () => {
+    stubFetch((url, ua) => {
+      if (url.endsWith("/robots.txt")) return new Response("", { status: 404 });
+      if (ua.includes("GPTBot")) return new Response("Forbidden", { status: 403 });
+      return new Response(LONG_PAGE);
+    });
+    const { report, results } = await runCoreScan("https://example.com", ["GPTBot"]);
+    expect(report.access.unverifiedProbes).toEqual([
+      {
+        claimedBot: "GPTBot",
+        label: "unverified requester claiming to be GPTBot",
+        risk: "blocked",
+        httpStatus: 403,
+        differsFromBaseline: true,
+      },
+    ]);
+    // Le résumé repose sur la requête honnête, pas sur la sonde.
+    expect(results[0].simpleStatus).toBe("OK");
+  });
 
-test("runCoreScan handles edge cases for exact text length (boundary 50 words)", async (t) => {
-  const words49 = "mot ".repeat(49).trim(); 
-  const words50 = "mot ".repeat(50).trim(); 
-
-  const fetchMock = mock.fn(async (url: string | Request | URL, options?: RequestInit) => {
-    const userAgent = (options?.headers as Record<string, string>)?.["User-Agent"] || "";
-    
-    if (userAgent.includes("GPTBot")) {
-      return { status: 200, text: async () => `<html><body><p>${words49}</p></body></html>` } as Response;
+  it("never sends a token-only bot as User-Agent", async () => {
+    const fetchMock = stubFetch((url) =>
+      url.endsWith("/robots.txt") ? new Response("", { status: 404 }) : new Response(LONG_PAGE),
+    );
+    const { report } = await runCoreScan("https://example.com", ["Google-Extended", "Applebot-Extended"]);
+    expect(report.access.unverifiedProbes).toEqual([]);
+    for (const [, init] of fetchMock.mock.calls) {
+      expect((init?.headers as Record<string, string>)["User-Agent"]).not.toMatch(/Extended/);
     }
-    
-    if (userAgent.includes("ClaudeBot")) {
-      return { status: 200, text: async () => `<html><body><p>${words50}</p></body></html>` } as Response;
-    }
-    
-    return { status: 200, text: async () => `<html><body><p>${"mot ".repeat(200)}</p></body></html>` } as Response;
   });
-  
-  global.fetch = fetchMock as any;
 
-  const results = await runCoreScan("https://edge-case.com", ["GPTBot", "ClaudeBot"]);
-  
-  const gptResult = results.find(r => r.agent === "GPTBot");
-  assert.strictEqual(gptResult?.simpleStatus, "COQUILLE VIDE", "49 mots doit marquer la page comme COQUILLE VIDE");
+  it("handles fetch timeouts (AbortError) properly", async () => {
+    stubFetch(() => {
+      throw new DOMException("The operation was aborted", "AbortError");
+    });
+    const { results } = await runCoreScan("https://slow-site.com", ["GPTBot"]);
+    expect(results).toHaveLength(1);
+    expect(results[0].simpleStatus).toBe("ERREUR");
+    expect(results[0].httpStatus).toBe(0);
+  });
 
-  const claudeResult = results.find(r => r.agent === "ClaudeBot");
-  assert.strictEqual(claudeResult?.simpleStatus, "OK", "50 mots doit suffire pour être OK");
-  
-  mock.restoreAll();
+  it("handles network errors like DNS resolution failure", async () => {
+    stubFetch(() => {
+      throw new TypeError("fetch failed");
+    });
+    const { results } = await runCoreScan("https://not-found-domain.com", ["ClaudeBot"]);
+    expect(results[0].simpleStatus).toBe("ERREUR");
+    expect(results[0].httpStatus).toBe(0);
+  });
+
+  it("handles the 50-word boundary", async () => {
+    const words49 = "mot ".repeat(49).trim();
+    const words50 = "mot ".repeat(50).trim();
+    stubFetch((url) => {
+      if (url.endsWith("/robots.txt")) return new Response("", { status: 404 });
+      return new Response(html(`<p>${url.includes("49") ? words49 : words50}</p>`));
+    });
+
+    const short = await runCoreScan("https://w49.example.com", ["GPTBot"]);
+    expect(short.results[0].simpleStatus, "49 mots doit marquer la page comme COQUILLE VIDE").toBe("COQUILLE VIDE");
+
+    const enough = await runCoreScan("https://w50.example.com", ["GPTBot"]);
+    expect(enough.results[0].simpleStatus, "50 mots doit suffire pour être OK").toBe("OK");
+  });
 });
