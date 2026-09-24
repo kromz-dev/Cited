@@ -21,7 +21,9 @@ export async function POST(req: Request) {
       // fallback
     }
 
-    return new NextResponse(pdfBuffer, {
+    // `Buffer` n'est pas un `BodyInit` dans les types DOM : on passe le même
+    // contenu sous forme de `Uint8Array` (une copie, négligeable pour un PDF).
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="diagnostic-${domain}.pdf"`,
