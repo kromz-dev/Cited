@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { maxSitesFor } from "@/lib/billing/plans";
+import { PLAN_LIMITS, maxSitesFor } from "@/lib/billing/plans";
 import { db } from "@/lib/db";
 import { assertSafeUrl } from "@/lib/scanner/crawler";
 import { revalidatePath } from "next/cache";
@@ -26,12 +26,12 @@ export async function getMonitoredSites() {
 
 function quotaReachedMessage(plan: string, maxSites: number): string {
   if (plan === "SOLO") {
-    return `Limite du plan Solo atteinte (${maxSites} sites). Passez au plan Pro pour continuer.`;
+    return `Vous surveillez déjà ${maxSites} sites, le maximum du palier Freelance. Passez au palier Agence (${PLAN_LIMITS.PRO.maxSites} sites) pour en ajouter.`;
   }
   if (plan === "PRO") {
-    return `Limite du plan Pro atteinte (${maxSites} sites). Passez au plan Scale pour continuer.`;
+    return `Vous surveillez déjà ${maxSites} sites, le maximum du palier Agence. Passez au palier Studio (${PLAN_LIMITS.SCALE.maxSites} sites) pour en ajouter.`;
   }
-  return `Plafond du plan Scale atteint (${maxSites} sites).`;
+  return `Vous surveillez déjà ${maxSites} sites, le maximum du palier Studio. Au-delà, chaque site coûte 2 € par mois : contactez-nous pour l'activer.`;
 }
 
 export async function addMonitoredSite(data: { name: string; url: string }) {
@@ -56,9 +56,12 @@ export async function addMonitoredSite(data: { name: string; url: string }) {
       };
     }
 
-    // Le décompte et l'insertion sont dans la même transaction : deux ajouts
-    // simultanés ne peuvent pas tous les deux passer sous la limite.
+    // Postgres est en READ COMMITTED : deux ajouts simultanés peuvent lire
+    // le même count et insérer tous les deux. Le verrou de la ligne User
+    // sérialise les ajouts d'un même compte avant le décompte.
     const result = await db.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT 1 FROM "User" WHERE id = ${userId} FOR UPDATE`;
+
       const user = await tx.user.findUnique({
         where: { id: userId },
         select: { stripeCurrentPeriodEnd: true, plan: true },
@@ -196,6 +199,8 @@ export async function addMonitoredSitesBulk(raw: string) {
     }
 
     const result = await db.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT 1 FROM "User" WHERE id = ${userId} FOR UPDATE`;
+
       const user = await tx.user.findUnique({
         where: { id: userId },
         select: { stripeCurrentPeriodEnd: true, plan: true },
