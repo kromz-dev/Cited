@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { assignSiteClient, createClient } from "@/app/actions/clients";
 import { addMonitoredSite, deleteMonitoredSite } from "@/app/actions/sites";
 import { Loader2, Plus, ShieldAlert, X, Download, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -14,13 +15,27 @@ export type MonitoredSite = {
   name: string;
   url: string;
   status: string;
+  clientId: string | null;
   createdAt: Date;
+};
+
+export type AgencyClient = {
+  id: string;
+  name: string;
 };
 
 const FILTERS = ["Tous", "En alerte", "OK"] as const;
 
-export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[] }) {
+export function DashboardSites({
+  initialSites,
+  initialClients,
+}: {
+  initialSites: MonitoredSite[];
+  initialClients: AgencyClient[];
+}) {
   const [sites, setSites] = useState(initialSites);
+  const [clients, setClients] = useState(initialClients);
+  const [clientName, setClientName] = useState("");
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -64,6 +79,34 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
       if (response.success) {
         setSites((prev) => prev.filter((s) => s.id !== id));
       }
+    });
+  };
+
+  const handleCreateClient = (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
+    startTransition(async () => {
+      const response = await createClient(clientName);
+      if ("error" in response && response.error) {
+        setError(response.error);
+        return;
+      }
+      if ("data" in response && response.data) {
+        setClients((prev) => [...prev, response.data].sort((a, b) => a.name.localeCompare(b.name, "fr")));
+        setClientName("");
+      }
+    });
+  };
+
+  const handleAssignClient = (siteId: string, clientId: string | null) => {
+    setError("");
+    startTransition(async () => {
+      const response = await assignSiteClient(siteId, clientId);
+      if ("error" in response && response.error) {
+        setError(response.error);
+        return;
+      }
+      setSites((prev) => prev.map((site) => (site.id === siteId ? { ...site, clientId } : site)));
     });
   };
 
@@ -211,6 +254,22 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
         </Card>
       )}
 
+      <form onSubmit={handleCreateClient} className="flex flex-wrap items-end gap-3">
+        <div className="min-w-[220px] flex-1">
+          <label htmlFor="client-name" className="mb-1.5 block text-sm font-medium text-ink">Nouveau client</label>
+          <Input
+            id="client-name"
+            value={clientName}
+            onChange={(event) => setClientName(event.target.value)}
+            placeholder="Nom du client, par exemple Atelier Boréal"
+            maxLength={80}
+          />
+        </div>
+        <Button type="submit" variant="outline" disabled={isPending || clientName.trim().length === 0}>
+          Créer le client
+        </Button>
+      </form>
+
       {/* Tableau des domaines */}
       <div className="overflow-hidden rounded-lg border border-line bg-surface">
         <div className="overflow-x-auto">
@@ -219,6 +278,7 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
             <thead className="border-b border-ink text-ink-2">
               <tr>
                 <th scope="col" className="px-3 py-2 font-medium">Domaine</th>
+                <th scope="col" className="px-3 py-2 font-medium">Client</th>
                 <th scope="col" className="px-3 py-2 font-medium">Verdict IA</th>
                 <th scope="col" className="px-3 py-2 text-right font-medium">Code</th>
                 <th scope="col" className="px-3 py-2 text-right font-medium">Texte utile</th>
@@ -231,6 +291,7 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
               {isPending && (
                 <tr className="h-11 animate-pulse">
                   <td className="px-3 py-2"><div className="h-4 w-3/4 rounded bg-surface-2" /></td>
+                  <td className="px-3 py-2"><div className="h-4 w-20 rounded bg-surface-2" /></td>
                   <td className="px-3 py-2"><div className="h-4 w-16 rounded bg-surface-2" /></td>
                   <td className="px-3 py-2"><div className="ml-auto h-4 w-8 rounded bg-surface-2" /></td>
                   <td className="px-3 py-2"><div className="ml-auto h-4 w-14 rounded bg-surface-2" /></td>
@@ -241,7 +302,7 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
               )}
               {filteredSites.length === 0 && !isPending ? (
                 <tr>
-                  <td colSpan={7} className="px-3 py-12 text-center">
+                  <td colSpan={8} className="px-3 py-12 text-center">
                     {sites.length === 0 ? (
                       <>
                         <p className="text-sm font-medium text-ink">Aucun domaine surveillé pour le moment</p>
@@ -267,6 +328,21 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
                       <td className="px-3 py-2">
                         <div className="font-medium text-ink">{site.url.replace(/^https?:\/\//, '')}</div>
                         <div className="type-caption text-ink-2">{site.name}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <label className="sr-only" htmlFor={`client-${site.id}`}>Client de {site.name}</label>
+                        <select
+                          id={`client-${site.id}`}
+                          value={site.clientId ?? ""}
+                          disabled={isPending}
+                          onChange={(event) => handleAssignClient(site.id, event.target.value || null)}
+                          className="h-8 max-w-[200px] rounded-sm border border-line bg-surface px-2 text-sm text-ink"
+                        >
+                          <option value="">Sans client</option>
+                          {clients.map((client) => (
+                            <option key={client.id} value={client.id}>{client.name}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="px-3 py-2">
                         {isPendingStatus ? (

@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { listClients } from "@/app/actions/clients";
 import { getMonitoredSites } from "@/app/actions/sites";
 import { DashboardSites } from "@/components/DashboardSites";
 
@@ -13,7 +14,10 @@ export default async function DashboardPage() {
 
   if (!userId) redirect("/login");
 
-  const monitoredSites = await getMonitoredSites();
+  const [monitoredSites, clients] = await Promise.all([
+    getMonitoredSites(),
+    listClients(),
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl pb-12">
@@ -24,7 +28,10 @@ export default async function DashboardPage() {
         </p>
       </header>
 
-      <DashboardSites initialSites={monitoredSites.data || []} />
+      <DashboardSites
+        initialSites={monitoredSites.data || []}
+        initialClients={clients.data || []}
+      />
     </div>
   );
 }
