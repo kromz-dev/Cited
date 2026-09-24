@@ -342,13 +342,13 @@
   - **Vérification** : le délai artificiel (`setTimeout(800ms)`) disparaît ; les domaines collés créent réellement des `MonitoredSite` et un scan est déclenché
   - **Taille** : M
 
-- [ ] **T044** [ONB] N'afficher que les canaux d'alerte réellement actifs (e-mail) dans l'onboarding, retirer ou marquer "en préparation" Slack/webhook — `cited/app/(app)/onboarding/page.tsx`
+- [x] **T044** [ONB] N'afficher que les canaux d'alerte réellement actifs (e-mail) dans l'onboarding, retirer ou marquer "en préparation" Slack/webhook — `cited/app/(app)/onboarding/page.tsx`
   - **Dépendances** : T043
   - **EF/ENF** : EF-038, principe II
   - **Vérification** : aucune case à cocher sans effet réel ne subsiste (cohérent avec T050)
   - **Taille** : S
 
-- [ ] **T045** [ONB] Choix du plan pendant l'onboarding, redirection Stripe Checkout — `cited/app/(app)/onboarding/page.tsx`
+- [x] **T045** [ONB] Choix du plan pendant l'onboarding, redirection Stripe Checkout — `cited/app/(app)/onboarding/page.tsx`
   - **Dépendances** : T038
   - **EF/ENF** : EF-063
   - **Vérification** : un utilisateur sans abonnement actif est redirigé vers Checkout avant de pouvoir dépasser le scan gratuit
