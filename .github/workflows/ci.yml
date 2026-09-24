@@ -418,6 +418,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
+      - uses: actions/checkout@v5
+
       - name: Check all jobs passed
         run: |
           echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
