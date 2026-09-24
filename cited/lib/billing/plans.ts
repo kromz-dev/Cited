@@ -67,3 +67,8 @@ export const PLAN_LIMITS: Record<Plan, { maxSites: number; whiteLabel: boolean }
 export function maxSitesFor(plan: string): number {
   return (PLAN_LIMITS as Record<string, { maxSites: number; whiteLabel: boolean }>)[plan]?.maxSites ?? 0;
 }
+
+/** Accès à la marque blanche pour un plan. Un plan inconnu n'y a pas droit. */
+export function whiteLabelFor(plan: string): boolean {
+  return (PLAN_LIMITS as Record<string, { maxSites: number; whiteLabel: boolean }>)[plan]?.whiteLabel ?? false;
+}
