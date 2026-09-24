@@ -1,26 +1,38 @@
 /*
  * Jetons des pages marketing (accueil, tarifs).
  * Appliquer la classe `.root` sur l'élément racine de la page.
+ * Valeurs alignées sur app/globals.css (docs/07-design-system.md).
  * Les variables --color-* reprennent les noms attendus par ScanForm.
  */
 .root {
-  --paper: #f7f9fb;
+  --paper: #f3f5f8;
   --surface: #ffffff;
-  --ink: #17202b;
-  --ink-2: #4a5563;
-  --line: #d9e0e7;
-  --ok: #0e7c66;
-  --ok-soft: #e3f2ee;
-  --stop: #b42318;
-  --stop-soft: #fbeae8;
-  --warn: #9a6700;
-  --warn-soft: #fbf3dc;
-  --radius: 6px;
+  --surface-2: #e9edf2;
+  --ink: #18213a;
+  --ink-2: #5a6478;
+  --ink-3: #8a93a6;
+  --line: #d9dfe7;
+  --line-strong: #8390a3;
+  --cobalt: #2b55d0;
+  --cobalt-soft: #e6ecfb;
+  --ok: #177249;
+  --ok-soft: #e1f3ea;
+  --stop: #be2b2b;
+  --stop-soft: #fbe7e7;
+  --warn: #8f5a00;
+  --warn-soft: #fbf0d9;
+  --unknown: #5d6880;
+  --unknown-soft: #edf0f4;
+  --radius: 6px;          /* contrôles */
+  --radius-card: 10px;    /* cartes, blocs de preuve */
+  --radius-panel: 14px;   /* grands panneaux */
   --shell: 1120px;
+  --shadow-float: 0 1px 2px rgb(24 33 58 / 0.06), 0 12px 32px -12px rgb(24 33 58 / 0.22);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --color-bg: var(--surface);
   --color-text: var(--ink);
-  --color-accent: var(--ok);
+  --color-accent: var(--cobalt);
   --color-divider: var(--line);
 
   background: var(--paper);
@@ -32,8 +44,13 @@
 }
 
 .root :focus-visible {
-  outline: 2px solid var(--ok);
-  outline-offset: 3px;
+  outline: 2px solid var(--cobalt);
+  outline-offset: 2px;
+}
+
+.root ::selection {
+  background: var(--cobalt-soft);
+  color: var(--ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

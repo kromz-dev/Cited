@@ -1,99 +1,303 @@
 @import "tailwindcss";
-@import "./ds/modernist.css";
-@import "./ds/cited-theme.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================
-   CITED — Design Tokens
-   Couleurs, typographie et espacement du système de design.
-   Réf : docs/03-direction-design.md §2
+   CITED — Système de design (source unique)
+   Réf : docs/07-design-system.md
+
+   Principe : chrome silencieux, verdicts parlants.
+   L'interface est monochrome (papier + encre) ; la couleur est
+   réservée aux verdicts (Lu / Refusé / Vide / Inconnu) et à
+   l'interactif (cobalt). Les cartes n'ont pas d'ombre : la
+   structure vient des filets et des paliers de surface.
    ============================================================ */
 
-@theme {
-  --color-paper: #f4f6f3;
-  --color-paper-deep: #e9eeea;
-  --color-ink: #152421;
-  --color-ink-soft: #33443f;
-  --color-cited: #147866;
-  --color-cited-light: #dff1eb;
-  --color-rival: #8a3f5b;
-  --color-rival-light: #f4e3e9;
-  --color-muted: #71817b;
-  --color-line: #d7e0db;
-  --color-signal: #b38318;
-  --color-signal-light: #fbf1d3;
+/* ---------- 1. Jetons primitifs (thème clair) ---------- */
+:root {
+  color-scheme: light;
 
-  /* Mappage des variables Modernist / Cited-theme pour Tailwind v4 */
-  --color-bg: var(--color-bg);
-  --color-surface: var(--color-surface);
-  --color-text: var(--color-text);
-  --color-accent: var(--color-accent);
-  --color-accent-2: var(--color-accent-2);
-  --color-divider: var(--color-divider);
+  /* Surfaces */
+  --paper: #f3f5f8;      /* fond de page, papier froid */
+  --surface: #ffffff;    /* cartes, tableaux, champs */
+  --surface-2: #e9edf2;  /* survol, en-têtes de tableau, fonds discrets */
 
-  /* Typographie — polices importées dans layout.tsx via Google Fonts */
-  --font-heading: "Space Grotesk", sans-serif;
-  --font-body: "DM Sans", sans-serif;
+  /* Encre */
+  --ink: #18213a;        /* texte principal, bouton principal */
+  --ink-2: #5a6478;      /* texte secondaire, libellés (5.9:1 sur blanc) */
+  --ink-3: #8a93a6;      /* placeholders, désactivé (3.1:1, jamais pour du texte courant) */
 
-  /* Rayons */
-  --radius-sm: 5px;
-  --radius-md: 9px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-  --radius-2xl: 28px;
+  /* Filets */
+  --line: #d9dfe7;       /* séparateurs, bordures de carte */
+  --line-strong: #8390a3;/* bordures de contrôles (3.2:1, WCAG 1.4.11) */
 
-  --shadow-panel: 0 1px 2px rgb(21 36 33 / 0.04), 0 12px 32px rgb(21 36 33 / 0.06);
-  --shadow-glass: 0 18px 48px rgb(21 36 33 / 0.12);
-  --shadow-glow: 0 0 40px rgb(20 120 102 / 0.2);
+  /* Interactif */
+  --cobalt: #2b55d0;     /* liens, focus, sélection (6.3:1 sur blanc) */
+  --cobalt-soft: #e6ecfb;
 
-  /* Animation timing */
-  --duration-fast: 150ms;
-  --duration-medium: 300ms;
-  --duration-slow: 500ms;
-  --easing: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Verdicts — toujours accompagnés d'une forme et d'un mot */
+  --ok: #177249;          --ok-soft: #e1f3ea;       /* Lu */
+  --stop: #be2b2b;        --stop-soft: #fbe7e7;     /* Refusé */
+  --warn: #8f5a00;        --warn-soft: #fbf0d9;     /* Vide */
+  --unknown: #5d6880;     --unknown-soft: #edf0f4;  /* Inconnu */
+
+  /* Élévation : une seule ombre, pour les couches flottantes */
+  --float-shadow: 0 1px 2px rgb(24 33 58 / 0.06), 0 12px 32px -12px rgb(24 33 58 / 0.22);
+
+  /* Mouvement */
+  --brand-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-1: 120ms;  /* état : survol, focus, pression */
+  --duration-2: 200ms;  /* ouverture / fermeture, dépliage */
+  --duration-3: 320ms;  /* un seul moment orchestré par page */
+
 }
 
-body {
-  font-family: var(--font-body);
-  background-color: var(--color-paper);
-  color: var(--color-ink);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ---------- 2. Thème sombre (application) ---------- */
+.dark {
+  color-scheme: dark;
+
+  --paper: #0e131d;
+  --surface: #151c29;
+  --surface-2: #1e2736;
+
+  --ink: #e6eaf2;
+  --ink-2: #a2acbf;
+  --ink-3: #6e7a90;
+
+  --line: #273142;
+  --line-strong: #5f6b82;
+
+  --cobalt: #8caaff;
+  --cobalt-soft: #1b2a4f;
+
+  --ok: #4fcb8e;          --ok-soft: #12331f;
+  --stop: #f2716a;        --stop-soft: #3e1a1a;
+  --warn: #e8a93f;        --warn-soft: #3a2a0e;
+  --unknown: #9aa4b8;     --unknown-soft: #242c3a;
+
+  --float-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -12px rgb(0 0 0 / 0.6);
+
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
+/* ---------- 2b. Alias sémantiques ----------
+   Déclarés sur :root ET .dark : une propriété personnalisée qui référence
+   une autre est résolue là où elle est déclarée, pas là où elle est lue. */
+:root, .dark {
+  /* Alias sémantiques shadcn (base-ui) */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--surface);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--ink);
+  --muted-foreground: var(--ink-2);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--ink);
+  --destructive: var(--stop);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--cobalt);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--surface);
+  --sidebar-accent: var(--surface-2);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--cobalt);
+  --chart-1: var(--ok);
+  --chart-2: var(--stop);
+  --chart-3: var(--warn);
+  --chart-4: var(--unknown);
+  --chart-5: var(--cobalt);
+
+  /* Alias historiques lus par ScanForm et les anciens écrans */
+  --color-bg: var(--surface);
+  --color-surface: var(--surface);
+  --color-text: var(--ink);
+  --color-divider: var(--line);
+}
+
+.dark {
+  --primary-foreground: var(--paper);
+  --sidebar-primary-foreground: var(--paper);
+}
+
+/* ---------- 3. Exposition Tailwind (@theme) ---------- */
+@theme inline {
+  /* Couleurs du système */
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-cobalt: var(--cobalt);
+  --color-cobalt-soft: var(--cobalt-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-stop: var(--stop);
+  --color-stop-soft: var(--stop-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-unknown: var(--unknown);
+  --color-unknown-soft: var(--unknown-soft);
+
+  /* Sémantique shadcn */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Alias historiques (écrans non migrés). À supprimer après migration.
+     `muted` est un texte gris (text-muted), pas un fond : ne pas utiliser bg-muted. */
+  --color-muted: var(--ink-2);
+  --color-ink-soft: var(--ink-2);
+  --color-paper-deep: var(--surface-2);
+  --color-cited: var(--ok);
+  --color-cited-light: var(--ok-soft);
+  --color-rival: var(--stop);
+  --color-rival-light: var(--stop-soft);
+  --color-signal: var(--warn);
+  --color-signal-light: var(--warn-soft);
+
+  /* Typographie : une seule famille (Schibsted Grotesk), mono pour le code */
+  --font-sans: var(--font-marketing), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: var(--font-marketing), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-marketing), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Rayons par niveau : puce 4, contrôle 6, carte 10, panneau 14 */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+
+  /* Ombres : une seule vraie ombre (flottant). Les alias historiques deviennent des filets. */
+  --shadow-float: var(--float-shadow);
+  --shadow-panel: 0 0 0 1px var(--line);
+  --shadow-glass: 0 0 0 1px var(--line);
+  --shadow-glow: none;
+
+  --ease-brand: var(--brand-ease);
+}
+
+/* ---------- 4. Base ---------- */
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3, h4 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  h1 { letter-spacing: -0.02em; }
+
+  p { text-wrap: pretty; }
+
+  ::selection {
+    background: var(--cobalt-soft);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--cobalt);
+    outline-offset: 2px;
+  }
+
+  code, kbd, samp, pre {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+}
+
+/* ---------- 5. Utilitaires du système ---------- */
+/* Chiffres tabulaires : uniquement sur les cellules numériques et les heures.
+   Dans Schibsted Grotesk, tnum élargit aussi la ponctuation : ne pas l'appliquer à un domaine ou à une phrase. */
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rôles typographiques (préfixe `type-` pour ne pas être confondus avec une couleur par le fusionneur de classes) */
+@utility type-display {
+  font-size: clamp(2.25rem, 1.4rem + 3.6vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
   font-weight: 700;
-  letter-spacing: -0.02em;
+}
+@utility type-table {
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+@utility type-caption {
+  font-size: 0.75rem;
+  line-height: 1rem;
 }
 
-::selection { background: var(--color-cited-light); color: var(--color-ink); }
-
-*:focus-visible {
-  outline: 2px solid var(--color-signal);
-  outline-offset: 3px;
-}
-
-/* ============================================================
-   Animations (Landing Page Guide V2)
-   ============================================================ */
-
+/* Une seule animation d'apparition, réservée au moment d'entrée d'une page. */
 @keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-  animation: fade-in var(--duration-slow) var(--easing) both;
+  animation: fade-in var(--duration-3) var(--brand-ease) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -101,164 +305,6 @@ h1, h2, h3, h4, h5, h6 {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
-}
-
-@theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
-}
-/* Force Shadcn to use designer variables */
-:root {
-  --background: var(--color-bg);
-  --foreground: var(--color-text);
-  --card: var(--color-bg);
-  --card-foreground: var(--color-text);
-  --popover: var(--color-bg);
-  --popover-foreground: var(--color-text);
-  --primary: var(--color-accent);
-  --primary-foreground: var(--color-bg);
-  --secondary: var(--color-surface);
-  --secondary-foreground: var(--color-text);
-  --muted: var(--color-surface);
-  --muted-foreground: var(--color-muted);
-  --border: var(--color-divider);
-  --input: var(--color-divider);
-  --ring: var(--color-accent);
-}
-.dark {
-  --background: var(--color-bg);
-  --foreground: var(--color-text);
-  --card: var(--color-bg);
-  --card-foreground: var(--color-text);
-  --popover: var(--color-bg);
-  --popover-foreground: var(--color-text);
-  --primary: var(--color-accent);
-  --primary-foreground: var(--color-bg);
-  --secondary: var(--color-surface);
-  --secondary-foreground: var(--color-text);
-  --muted: var(--color-surface);
-  --muted-foreground: var(--color-muted);
-  --border: var(--color-divider);
-  --input: var(--color-divider);
-  --ring: var(--color-accent);
 }
