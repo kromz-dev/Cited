@@ -410,11 +410,27 @@ jobs:
         # npm ci fails if package-lock.json is out of sync with package.json
 
   # ──────────────────────────────────────────────────────────────────
+  # ──────────────────────────────────────────────────────────────────
+  # SAST — GitHub CodeQL for application security (XSS, Injection)
+  # ──────────────────────────────────────────────────────────────────
+  codeql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
   # FINAL GATE — all jobs must pass before merge
   # ──────────────────────────────────────────────────────────────────
   ci-passed:
     if: always()
-    needs: [lint, typecheck, test, build, security, prisma, quality-guard, lockfile]
+    needs: [lint, typecheck, test, build, security, prisma, quality-guard, lockfile, codeql]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -448,6 +464,7 @@ jobs:
           check_job "Prisma" "${{ needs.prisma.result }}"
           check_job "Quality Guard" "${{ needs.quality-guard.result }}"
           check_job "Lockfile" "${{ needs.lockfile.result }}"
+          check_job "CodeQL (SAST)" "${{ needs.codeql.result }}"
 
           if [ "$FAILED" -eq 1 ]; then
             echo ""
