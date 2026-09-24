@@ -154,7 +154,7 @@
 
 **But** : la valeur payante centrale. **T019 ouvre cette phase avant tout confort d'interface**, conformément au risque n°1 du PRD (quota non appliqué = fuite de revenu).
 
-- [ ] **T019** [P2] **Appliquer le quota de sites par plan** — `cited/app/actions/sites.ts::addMonitoredSite`
+- [x] **T019** [P2] **Appliquer le quota de sites par plan** — `cited/app/actions/sites.ts::addMonitoredSite`
   - **Dépendances** : T008
   - **EF/ENF** : EF-018
   - **Vérification** : test `app/actions/sites.test.ts` — un compte `SOLO` avec 10 sites déjà actifs reçoit une erreur orientant vers le palier supérieur au 11ᵉ ajout, jamais une erreur technique générique
