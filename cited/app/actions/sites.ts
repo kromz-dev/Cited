@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { maxSitesFor } from "@/lib/billing/plans";
 import { db } from "@/lib/db";
+import { assertSafeUrl } from "@/lib/scanner/crawler";
 import { revalidatePath } from "next/cache";
 
 export async function getMonitoredSites() {
@@ -46,6 +47,15 @@ export async function addMonitoredSite(data: { name: string; url: string }) {
 
     const userId = session.user.id;
 
+    let safeUrl: string;
+    try {
+      safeUrl = await assertSafeUrl(data.url);
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : "URL refusée",
+      };
+    }
+
     // Le décompte et l'insertion sont dans la même transaction : deux ajouts
     // simultanés ne peuvent pas tous les deux passer sous la limite.
     const result = await db.$transaction(async (tx) => {
@@ -72,7 +82,7 @@ export async function addMonitoredSite(data: { name: string; url: string }) {
       const site = await tx.monitoredSite.create({
         data: {
           name: data.name,
-          url: data.url,
+          url: safeUrl,
           userId,
           status: "ACTIVE",
         },

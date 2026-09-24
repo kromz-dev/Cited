@@ -24,9 +24,14 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
+vi.mock('@/lib/scanner/crawler', () => ({
+  assertSafeUrl: vi.fn(async (url: string) => url),
+}));
+
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { assertSafeUrl } from '@/lib/scanner/crawler';
 import type { Session } from 'next-auth';
 
 // `auth` is exported by NextAuth v5 as an intersection of several call
@@ -147,6 +152,17 @@ describe('sites actions', () => {
         error: 'Limite du plan Solo atteinte (10 sites). Passez au plan Pro pour continuer.',
       });
       expect(db.monitoredSite.create).not.toHaveBeenCalled();
+    });
+
+    it('refuse une URL qui résout vers une IP privée et ne crée aucune ligne', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      vi.mocked(assertSafeUrl).mockRejectedValueOnce(new Error('Forbidden IP resolved: 10.0.0.1'));
+
+      const res = await addMonitoredSite({ name: 'Interne', url: 'http://secret.internal' });
+
+      expect(res).toEqual({ error: 'Forbidden IP resolved: 10.0.0.1' });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+      expect(db.user.findUnique).not.toHaveBeenCalled();
     });
   });
 
