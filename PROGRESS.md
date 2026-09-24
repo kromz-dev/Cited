@@ -40,3 +40,5 @@ C'est un produit à haute marge, vendu sur le principe de la *Tranquillité d'es
 **Mise à jour du 24 septembre 2026 :** l'analyse stratégique (`docs/05-analyse-strategique.md`) remet en cause la cible no-code et la méthode de mesure par User-Agent imité. Cibles recommandées : agences de maintenance WordPress et agences SEO/GEO. Kit commercial : `docs/06-kit-prospection.md`.
 
 Toutes les anciennes documentations obsolètes ont été supprimées. La prochaine étape est le développement du moteur de scan.
+
+**Mise à jour du 24 septembre 2026 (2) :** constitution du projet et PRD du MVP écrits — `docs/08-constitution.md` (principes, portes de qualité) et `docs/09-prd-mvp.md` (parcours, exigences EF/ENF taguées Existant/En cours/À modifier/À construire, critères de sortie).
