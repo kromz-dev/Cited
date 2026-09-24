@@ -294,7 +294,7 @@
 
 ## Phase 6 : Facturation, plans, quotas, coupon fondateur
 
-- [ ] **T037** [FACT] Créer le coupon Stripe natif `founder-50` (`duration: forever`, `percent_off: 50`, `max_redemptions: 10`) — opération dans le tableau de bord Stripe, référence documentée dans `docs/10-plan-technique.md`
+- [x] **T037** [FACT] Créer le coupon Stripe natif `founder-50` (`duration: forever`, `percent_off: 50`, `max_redemptions: 10`) — opération dans le tableau de bord Stripe, référence documentée dans `docs/10-plan-technique.md`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-058
   - **Vérification** : le coupon existe côté Stripe et refuse toute application au-delà de 10 utilisations (comportement natif Stripe)
