@@ -162,9 +162,10 @@ export async function addMonitoredSitesBulk(raw: string) {
         const parsed = parseBulkLine(line);
         try {
           const safe = await assertSafeUrl(parsed.url);
-          return { line, name: parsed.name, safe };
+          return { ok: true as const, line, name: parsed.name, safe };
         } catch (error) {
           return {
+            ok: false as const,
             line,
             error: error instanceof Error ? error.message : "URL refusée",
           };
@@ -175,7 +176,7 @@ export async function addMonitoredSitesBulk(raw: string) {
     const seen = new Set<string>();
     const candidates: { line: string; name: string; url: string }[] = [];
     for (const row of checked) {
-      if ("error" in row) {
+      if (!row.ok) {
         skipped.push({ line: row.line, reason: row.error });
         continue;
       }
@@ -199,7 +200,7 @@ export async function addMonitoredSitesBulk(raw: string) {
         !user.stripeCurrentPeriodEnd ||
         user.stripeCurrentPeriodEnd.getTime() < Date.now()
       ) {
-        return { error: "Abonnement requis" as const };
+        return { error: "Abonnement requis" };
       }
 
       const existing = await tx.monitoredSite.findMany({
