@@ -428,7 +428,7 @@
   - **Vérification** : un test de charge simulé (ou un calcul documenté à partir de la durée moyenne observée par site) montre que 1000 sites tiennent dans une fenêtre d'une heure avec la concurrence configurée
   - **Taille** : S
 
-- [ ] **T056** [QUAL] Purge/compression de `ScanLog.payload` au-delà de 90 jours (protection du quota de stockage Neon, §14 du plan technique) — `cited/inngest/functions/prune-scan-logs.ts` (nouveau), cron mensuel
+- [x] **T056** [QUAL] Purge/compression de `ScanLog.payload` au-delà de 90 jours (protection du quota de stockage Neon, §14 du plan technique) — `cited/inngest/functions/prune-scan-logs.ts` (nouveau), cron mensuel
   - **Dépendances** : T004
   - **EF/ENF** : ENF-016 (budget), risque §14 du plan technique
   - **Vérification** : test — un `ScanLog` de plus de 90 jours voit son `payload` vidé, ses colonnes dérivées (`simpleStatus`, `cause`) restent intactes pour l'historique
