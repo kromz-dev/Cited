@@ -24,7 +24,7 @@
     "next-auth": "^5.0.0-beta.32",
     "posthog-js": "^1.434.12",
     "posthog-node": "^5.53.0",
-    "prisma": "^5.22.0",
+    "prisma": "^7.10.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "recharts": "^3.10.1",
