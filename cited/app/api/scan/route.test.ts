@@ -34,7 +34,7 @@ describe("POST /api/scan", () => {
     counters.clear();
   });
 
-  const createRequest = (body: any, ip: string = "127.0.0.1") => {
+  const createRequest = (body: Record<string, unknown>, ip: string = "127.0.0.1") => {
     return new Request("http://localhost:3000/api/scan", {
       method: "POST",
       headers: {

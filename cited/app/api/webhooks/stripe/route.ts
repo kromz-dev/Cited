@@ -50,7 +50,7 @@ export async function POST(req: Request) {
   try {
     let fetchedSubscription: Stripe.Subscription | null = null;
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object as any;
+      const session = event.data.object as Stripe.Checkout.Session;
       if (session.subscription) {
         fetchedSubscription = await stripe.subscriptions.retrieve(
           session.subscription as string,
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
 
       switch (event.type) {
         case "checkout.session.completed": {
-          const session = event.data.object as any;
+          const session = event.data.object as Stripe.Checkout.Session;
           const userId = session.client_reference_id;
           if (!userId || !fetchedSubscription) break;
 

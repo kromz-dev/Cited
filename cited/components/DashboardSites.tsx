@@ -99,7 +99,7 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
           <div className="text-3xl font-semibold text-ink">{sites.length}<span className="text-muted text-lg font-normal"> / 20</span></div>
         </div>
         <div className="bg-paper p-5 rounded-xl border border-line flex flex-col justify-between">
-          <div className="text-sm text-muted font-medium mb-2">Lisibles par l'IA</div>
+          <div className="text-sm text-muted font-medium mb-2">Lisibles par l&apos;IA</div>
           <div className="text-3xl font-semibold text-ink">{healthySites.length}</div>
         </div>
         <div className="bg-paper p-5 rounded-xl border border-line flex flex-col justify-between">

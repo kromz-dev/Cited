@@ -84,7 +84,7 @@ export default function AlertsPage() {
           Journal des changements de verdict
         </h1>
         <p className="mt-3 text-sm text-muted max-w-[60ch] leading-relaxed">
-          Une alerte est créée lorsqu'un domaine change d'état, jamais à chaque scan. Les canaux actifs sont l'e-mail et Slack.
+          Une alerte est créée lorsqu&apos;un domaine change d&apos;état, jamais à chaque scan. Les canaux actifs sont l&apos;e-mail et Slack.
         </p>
       </div>
 

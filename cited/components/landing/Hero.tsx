@@ -13,12 +13,12 @@ export function Hero() {
           <div className="mx-auto flex max-w-[940px] flex-col items-center text-center">
             <div className="mb-6 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider bg-white text-gray-600 border border-gray-200 rounded-full px-4 py-1.5 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              L'analytics des LLMs pour votre SaaS
+              L&apos;analytics des LLMs pour votre SaaS
             </div>
             
             <h1 className="mt-5 text-balance text-[2.5rem] font-bold leading-[1.05] tracking-tight text-gray-900 sm:text-[3.2rem] lg:text-[4rem]">
               Découvrez exactement comment <br className="hidden sm:block" />
-              <span className="text-[#147866]">l'IA lit vos sites.</span>
+              <span className="text-[#147866]">l&apos;IA lit vos sites.</span>
             </h1>
             
             <p className="mt-6 max-w-[650px] text-pretty text-base leading-relaxed text-gray-500 sm:text-lg">
@@ -61,7 +61,7 @@ export function Hero() {
                     <div className="text-sm font-semibold">Cited App</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-4">Vue d'ensemble</div>
+                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-4">Vue d&apos;ensemble</div>
                     <div className="px-3 py-2 text-sm font-medium bg-gray-100 text-gray-900 rounded-md">Portefeuille</div>
                     <div className="px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-md">Alertes</div>
                     <div className="px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-md">Rapports</div>

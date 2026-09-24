@@ -13,7 +13,7 @@ export function PricingPreview() {
             <span className="text-[15px] opacity-80">par mois, sans engagement</span>
           </div>
           <p className="m-0 text-[15px] opacity-90 max-w-[48ch] leading-relaxed">
-            Jusqu'à 20 domaines surveillés, scan quotidien, alertes Slack et e-mail, historique complet. Soit 5 € par site et par mois à refacturer dans votre contrat de maintenance.
+            Jusqu&apos;à 20 domaines surveillés, scan quotidien, alertes Slack et e-mail, historique complet. Soit 5 € par site et par mois à refacturer dans votre contrat de maintenance.
           </p>
         </div>
         <div className="flex flex-col gap-3">

@@ -14,7 +14,7 @@ export function Features() {
       </div>
       <div className="max-w-[1080px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-start relative z-10">
         <div>
-          <h2 className="text-[clamp(26px,3vw,34px)] font-bold mb-4">Le portefeuille, d'un coup d'œil</h2>
+          <h2 className="text-[clamp(26px,3vw,34px)] font-bold mb-4">Le portefeuille, d&apos;un coup d&apos;œil</h2>
           <p className="mb-6 text-[15px] opacity-90 leading-relaxed">
             Une ligne par domaine, le dernier verdict connu, la date du prochain scan. Le référencement IA devient une ligne défendable de votre contrat de maintenance.
           </p>

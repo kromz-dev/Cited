@@ -25,6 +25,27 @@ vi.mock('next/cache', () => ({
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import type { Session } from 'next-auth';
+
+// `auth` is exported by NextAuth v5 as an intersection of several call
+// signatures (middleware, route handler, plain session getter, ...). This
+// codebase only ever calls it with zero arguments to get the current
+// session, so we narrow the mock to that specific overload rather than
+// relying on `vi.mocked` picking a (mismatched) overload automatically.
+type SessionGetter = () => Promise<Session | null>;
+const mockedAuth = vi.mocked(auth as unknown as SessionGetter);
+
+function fakeSession(userId: string): Session {
+  return {
+    user: { id: userId },
+    expires: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+  };
+}
+
+type MonitoredSites = Awaited<ReturnType<typeof db.monitoredSite.findMany>>;
+type MaybeUser = Awaited<ReturnType<typeof db.user.findUnique>>;
+type CreatedSite = Awaited<ReturnType<typeof db.monitoredSite.create>>;
+type DeleteManyResult = Awaited<ReturnType<typeof db.monitoredSite.deleteMany>>;
 
 describe('sites actions', () => {
   beforeEach(() => {
@@ -33,14 +54,14 @@ describe('sites actions', () => {
 
   describe('getMonitoredSites', () => {
     it('returns error if no session', async () => {
-      vi.mocked(auth).mockResolvedValueOnce(null);
+      mockedAuth.mockResolvedValueOnce(null);
       const res = await getMonitoredSites();
       expect(res).toEqual({ error: 'Unauthorized' });
     });
 
     it('returns sites for logged in user', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
-      vi.mocked(db.monitoredSite.findMany).mockResolvedValueOnce([{ id: 'site-1' }] as any);
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      vi.mocked(db.monitoredSite.findMany).mockResolvedValueOnce([{ id: 'site-1' }] as unknown as MonitoredSites);
 
       const res = await getMonitoredSites();
       expect(res).toEqual({ data: [{ id: 'site-1' }] });
@@ -53,14 +74,14 @@ describe('sites actions', () => {
 
   describe('addMonitoredSite', () => {
     it('returns error if no session', async () => {
-      vi.mocked(auth).mockResolvedValueOnce(null);
+      mockedAuth.mockResolvedValueOnce(null);
       const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });
       expect(res).toEqual({ error: 'Unauthorized' });
     });
 
     it('returns error if user has no active subscription', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
-      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'FREE', stripeCurrentPeriodEnd: null } as any);
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'FREE', stripeCurrentPeriodEnd: null } as unknown as MaybeUser);
       
       const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });
       expect(res).toEqual({ error: 'Abonnement requis' });
@@ -68,10 +89,10 @@ describe('sites actions', () => {
     });
 
     it('returns error if user subscription is expired', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
       const pastDate = new Date();
       pastDate.setDate(pastDate.getDate() - 1);
-      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'PRO', stripeCurrentPeriodEnd: pastDate } as any);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'PRO', stripeCurrentPeriodEnd: pastDate } as unknown as MaybeUser);
       
       const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });
       expect(res).toEqual({ error: 'Abonnement requis' });
@@ -79,10 +100,10 @@ describe('sites actions', () => {
     });
 
     it('returns error if user plan is FREE despite future period end date', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 1);
-      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'FREE', stripeCurrentPeriodEnd: futureDate } as any);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'FREE', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
       
       const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });
       expect(res).toEqual({ error: 'Abonnement requis' });
@@ -90,11 +111,11 @@ describe('sites actions', () => {
     });
 
     it('creates a site and revalidates path if subscription is active and plan is not FREE', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 1);
-      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'PRO', stripeCurrentPeriodEnd: futureDate } as any);
-      vi.mocked(db.monitoredSite.create).mockResolvedValueOnce({ id: 'site-1', name: 'Test' } as any);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'PRO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.create).mockResolvedValueOnce({ id: 'site-1', name: 'Test' } as unknown as CreatedSite);
 
       const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });
       
@@ -113,22 +134,22 @@ describe('sites actions', () => {
 
   describe('deleteMonitoredSite', () => {
     it('returns error if no session', async () => {
-      vi.mocked(auth).mockResolvedValueOnce(null);
+      mockedAuth.mockResolvedValueOnce(null);
       const res = await deleteMonitoredSite('site-1');
       expect(res).toEqual({ error: 'Unauthorized' });
     });
 
     it('returns error if site not found or forbidden', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
-      vi.mocked(db.monitoredSite.deleteMany).mockResolvedValueOnce({ count: 0 } as any);
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      vi.mocked(db.monitoredSite.deleteMany).mockResolvedValueOnce({ count: 0 } as unknown as DeleteManyResult);
 
       const res = await deleteMonitoredSite('site-1');
       expect(res).toEqual({ error: 'Site not found or forbidden' });
     });
 
     it('deletes site and revalidates path', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({ user: { id: 'user-1' } } as any);
-      vi.mocked(db.monitoredSite.deleteMany).mockResolvedValueOnce({ count: 1 } as any);
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      vi.mocked(db.monitoredSite.deleteMany).mockResolvedValueOnce({ count: 1 } as unknown as DeleteManyResult);
 
       const result = await deleteMonitoredSite('site-1');
       
