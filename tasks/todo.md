@@ -1,5 +1,9 @@
 # Task List
 
+Obsolète — voir `tasks/mvp-tasks.md` pour le plan de tâches en cours (MVP Cited, septembre 2026).
+
+Cette liste couvrait le premier pivot (« Scanner Black-Box », plan ci-contre dans `tasks/plan.md`) et est entièrement terminée. Elle est conservée pour l'historique, sans être mise à jour davantage.
+
 - [x] Task 1: Update Prisma Schema for Scanner
 - [x] Task 2: Core Scanner Logic
 - [x] Checkpoint: Foundation

@@ -1,3 +1,5 @@
+Obsolète, voir `tasks/mvp-tasks.md`
+
 # Implementation Plan: Cited - Scanner Black-Box
 
 ## Overview

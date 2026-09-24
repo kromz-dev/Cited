@@ -1,24 +1,15 @@
 import type { Metadata } from "next";
-import { Nunito, Geist } from "next/font/google";
+import { sans, mono } from "@/lib/fonts";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const nunito = Nunito({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-nunito",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "Cited | Rendez votre site lisible par ChatGPT & Claude",
-  description: "80% des sites React & SPA apparaissent vides aux LLMs. Cited est un scanner technique et un proxy géré qui permet aux sites modernes d'être lus et cités par l'IA.",
-  keywords: ["LLM optimization", "AEO", "SEO pour IA", "ChatGPT lisibilité", "Perplexity bot", "Claude bot", "React SEO"],
+  title: "Cited | La lisibilité IA de tout votre portefeuille client",
+  description: "Cited vérifie chaque jour que les sites que vous maintenez restent lisibles par ChatGPT, Claude et Perplexity, et vous alerte avec la cause et le correctif dès qu'un site casse. Pour les agences de maintenance WordPress et les agences SEO/GEO.",
+  keywords: ["lisibilité IA", "GEO", "AEO", "robots.txt", "GPTBot", "ChatGPT bot", "Claude bot", "Perplexity bot", "maintenance WordPress", "agence SEO"],
   openGraph: {
-    title: "Cited | Rendez votre site lisible par ChatGPT & Claude",
-    description: "Cited est un scanner technique et un proxy géré qui permet aux sites modernes d'être lus et cités par l'IA.",
+    title: "Cited | La lisibilité IA de tout votre portefeuille client",
+    description: "Un scan quotidien, une alerte avec la cause et le correctif, et un rapport mensuel à votre marque. Pour les agences de maintenance WordPress et SEO/GEO.",
   },
 };
 
@@ -28,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={cn(nunito.variable, "font-sans", geist.variable)}>
+    <html lang="fr" className={cn(sans.variable, mono.variable, "font-sans")}>
       <body className="antialiased min-h-screen">
         {children}
       </body>
