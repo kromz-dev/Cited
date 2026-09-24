@@ -128,18 +128,21 @@ export async function deleteMonitoredSite(id: string) {
 }
 
 const BULK_LINE_CAP = 100;
+const HAS_PROTOCOL = /^https?:\/\//i;
+
+function withProtocol(value: string): string {
+  return HAS_PROTOCOL.test(value) ? value : `https://${value}`;
+}
 
 function parseBulkLine(line: string): { name: string; url: string } {
   const comma = line.indexOf(",");
   if (comma === -1) {
-    const url = /^https?:\/\//i.test(line) ? line : `https://${line}`;
-    const name = line.replace(/^https?:\/\//i, "").replace(/\/.*$/, "") || line;
-    return { name, url };
+    const name = line.replace(HAS_PROTOCOL, "").split("/")[0] || line;
+    return { name, url: withProtocol(line) };
   }
   const name = line.slice(0, comma).trim();
   const rawUrl = line.slice(comma + 1).trim();
-  const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
-  return { name: name || rawUrl, url };
+  return { name: name || rawUrl, url: withProtocol(rawUrl) };
 }
 
 export async function addMonitoredSitesBulk(raw: string) {
@@ -188,6 +191,10 @@ export async function addMonitoredSitesBulk(raw: string) {
       candidates.push({ line: row.line, name: row.name, url: row.safe });
     }
 
+    if (candidates.length === 0) {
+      return { data: { created: [], skipped } };
+    }
+
     const result = await db.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
         where: { id: userId },
@@ -216,26 +223,23 @@ export async function addMonitoredSitesBulk(raw: string) {
       });
 
       const maxSites = maxSitesFor(user.plan);
-      const count = await tx.monitoredSite.count({ where: { userId } });
-      const room = Math.max(0, maxSites - count);
+      const room = Math.max(0, maxSites - existing.length);
       const accepted = fresh.slice(0, room);
       for (const candidate of fresh.slice(room)) {
         heldBack.push({ line: candidate.line, reason: quotaReachedMessage(user.plan, maxSites) });
       }
 
-      const created = [];
-      for (const candidate of accepted) {
-        created.push(
-          await tx.monitoredSite.create({
-            data: {
-              name: candidate.name,
-              url: candidate.url,
-              userId,
-              status: "ACTIVE",
-            },
-          }),
-        );
-      }
+      const created =
+        accepted.length === 0
+          ? []
+          : await tx.monitoredSite.createManyAndReturn({
+              data: accepted.map((candidate) => ({
+                name: candidate.name,
+                url: candidate.url,
+                userId,
+                status: "ACTIVE",
+              })),
+            });
 
       return { data: { created, skipped: heldBack } };
     });
@@ -244,7 +248,9 @@ export async function addMonitoredSitesBulk(raw: string) {
       return result;
     }
 
-    revalidatePath("/dashboard");
+    if (result.data.created.length > 0) {
+      revalidatePath("/dashboard");
+    }
     return {
       data: {
         created: result.data.created,
