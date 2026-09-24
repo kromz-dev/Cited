@@ -36,12 +36,12 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
     startTransition(async () => {
       const response = await addMonitoredSite({ name, url });
 
-      if (response.error) {
+      if ("error" in response && response.error) {
         setError(response.error);
         return;
       }
 
-      if (response.data) {
+      if ("data" in response && response.data) {
         setSites([response.data as MonitoredSite, ...sites]);
         setName("");
         setUrl("");
