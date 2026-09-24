@@ -80,7 +80,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <Link href="#" className="mt-1 w-fit text-[13px] text-cobalt hover:underline">
+                <Link href="/forgot-password" className="mt-1 w-fit text-[13px] text-cobalt hover:underline">
                   Mot de passe oublié
                 </Link>
               </div>

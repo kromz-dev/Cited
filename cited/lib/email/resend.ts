@@ -44,10 +44,39 @@ export async function sendAuditReportEmail(
       subject: `Votre marque est citée ${mentionsCount} fois sur ${totalRuns} par ChatGPT`,
       html,
     });
-    
+
     return { success: true, id: response.data?.id };
   } catch (error) {
     console.error("Failed to send email:", error);
+    return { success: false, error };
+  }
+}
+
+export async function sendPasswordResetEmail(to: string, token: string) {
+  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <p>Bonjour,</p>
+      <p>Vous avez demandé la réinitialisation du mot de passe de votre compte Cited.</p>
+      <p><a href="${resetUrl}">Choisir un nouveau mot de passe</a></p>
+      <p>Ce lien est valable 1 heure. Ignorez cet e-mail si vous n'êtes pas à l'origine de la demande.</p>
+      <br />
+      <p>L'équipe Cited</p>
+    </div>
+  `;
+
+  try {
+    const response = await getResend().emails.send({
+      from: "Cited <bonjour@cited.app>", // Update with a verified domain
+      to,
+      subject: "Réinitialisation de votre mot de passe Cited",
+      html,
+    });
+
+    return { success: true, id: response.data?.id };
+  } catch (error) {
+    console.error("Failed to send password reset email:", error);
     return { success: false, error };
   }
 }

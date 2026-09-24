@@ -404,7 +404,7 @@
 
 ## Phase 9 : Qualité, sécurité transverse, observabilité, déploiement
 
-- [ ] **T052** [P] [QUAL] Réinitialisation de mot de passe par e-mail — `cited/app/api/auth/reset-password/route.ts` (nouveau), gabarit Resend
+- [x] **T052** [P] [QUAL] Réinitialisation de mot de passe par e-mail — `cited/app/api/auth/reset-password/route.ts` (nouveau), gabarit Resend
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-014
   - **Vérification** : test d'intégration — un jeton de réinitialisation à usage unique expire après un délai raisonnable et ne peut être rejoué
