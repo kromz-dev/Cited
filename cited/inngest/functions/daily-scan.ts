@@ -5,9 +5,9 @@ const BATCH_SIZE = 500;
 
 export const dailyScanJob = inngest.createFunction(
   { 
-    id: "daily-scan-dispatcher"
+    id: "daily-scan-dispatcher",
+    triggers: [{ cron: "0 3 * * *" }],
   },
-  { cron: "0 3 * * *" },
   async ({ step }) => {
     
     const allSites = await step.run("fetch-all-sites", async () => {

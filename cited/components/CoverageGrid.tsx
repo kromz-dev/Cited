@@ -5,7 +5,7 @@ import { captureLead } from "@/app/actions/lead";
 import { Badge, Panel } from "@/components/ui";
 import { CoverageMatrix } from "@/components/geo/CoverageMatrix";
 import { ShieldCheck, Mail, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { DEFAULT_SCAN_BOTS } from "@/lib/scanner/agents";
+import { DEFAULT_PROBE_BOTS } from "@/lib/scanner/agents";
 
 export interface RunData {
   agent: string;
@@ -46,8 +46,8 @@ export function CoverageGrid({ data }: CoverageGridProps) {
     setLoading(false);
   }
 
-  // Obtenir la liste des bots (sans le Browser de base)
-  const aiBots = DEFAULT_SCAN_BOTS.filter(b => b !== "Browser");
+  // Robots sondés par /api/audit (la requête de référence CitedBot n'est pas affichée)
+  const aiBots = DEFAULT_PROBE_BOTS;
   
   // Convertir les résultats de l'API pour le CoverageMatrix
   const matrixRows = pages.map((page) => {

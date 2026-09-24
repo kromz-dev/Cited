@@ -1,14 +1,37 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { POST } from "./route";
 import * as scannerCore from "@/lib/scanner/core";
+import * as crawler from "@/lib/scanner/crawler";
+import * as rateLimiter from "@/lib/rate-limit";
 
 vi.mock("@/lib/scanner/core", () => ({
   runCoreScan: vi.fn(),
 }));
 
+vi.mock("@/lib/scanner/crawler", () => ({
+  assertSafeUrl: vi.fn(async (url: string) => url),
+}));
+
+// Remplace la table RateLimit par un compteur local, même contrat que lib/rate-limit.
+const counters = new Map<string, number>();
+vi.mock("@/lib/rate-limit", () => ({
+  callerKey: (req: Request, prefix: string) =>
+    `${prefix}:${req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "inconnu"}`,
+  rateLimit: vi.fn(async (key: string, limit: number, windowMs: number) => {
+    const count = (counters.get(key) ?? 0) + 1;
+    counters.set(key, count);
+    return { allowed: count <= limit, remaining: Math.max(0, limit - count), resetAt: new Date(Date.now() + windowMs) };
+  }),
+}));
+
+type CoreScanOutput = Awaited<ReturnType<typeof scannerCore.runCoreScan>>;
+const scanOutput = (summary: Record<string, unknown>) =>
+  ({ report: { finalUrl: "https://example.com/" }, results: [summary] }) as unknown as CoreScanOutput;
+
 describe("POST /api/scan", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    counters.clear();
   });
 
   const createRequest = (body: any, ip: string = "127.0.0.1") => {
@@ -39,9 +62,9 @@ describe("POST /api/scan", () => {
   });
 
   it("should return 200 and scan results for a valid URL", async () => {
-    vi.mocked(scannerCore.runCoreScan).mockResolvedValueOnce([
-      { agent: "GPTBot", simpleStatus: "OK", httpStatus: 200, durationMs: 150, wordCount: 500 }
-    ]);
+    vi.mocked(scannerCore.runCoreScan).mockResolvedValueOnce(
+      scanOutput({ agent: "GPTBot", simpleStatus: "OK", httpStatus: 200, durationMs: 150, wordCount: 500 })
+    );
 
     const req = createRequest({ url: "https://example.com" }, "ip-valid-url");
     const res = await POST(req);
@@ -50,6 +73,7 @@ describe("POST /api/scan", () => {
     const data = await res.json();
     expect(data.agent).toBe("GPTBot");
     expect(data.simpleStatus).toBe("OK");
+    expect(data.report.finalUrl).toBe("https://example.com/");
     expect(scannerCore.runCoreScan).toHaveBeenCalledWith("https://example.com", ["GPTBot"]);
   });
 
@@ -57,9 +81,9 @@ describe("POST /api/scan", () => {
     const ip = "ip-rate-limit";
     const body = { url: "https://example.com" };
     
-    vi.mocked(scannerCore.runCoreScan).mockResolvedValue([
-      { agent: "GPTBot", simpleStatus: "OK", httpStatus: 200, durationMs: 100, wordCount: 100 }
-    ]);
+    vi.mocked(scannerCore.runCoreScan).mockResolvedValue(
+      scanOutput({ agent: "GPTBot", simpleStatus: "OK", httpStatus: 200, durationMs: 100, wordCount: 100 })
+    );
 
     const res1 = await POST(createRequest(body, ip));
     expect(res1.status).toBe(200);
@@ -74,6 +98,17 @@ describe("POST /api/scan", () => {
     expect(res4.status).toBe(429);
     const data = await res4.json();
     expect(data.error).toBe("Trop de requêtes. Veuillez réessayer dans quelques instants.");
+    expect(res4.headers.get("Retry-After")).toMatch(/^\d+$/);
+    expect(rateLimiter.rateLimit).toHaveBeenCalledWith("scan:ip-rate-limit", 3, 60_000);
+  });
+
+  it("should return 403 if the URL fails the SSRF check", async () => {
+    vi.mocked(crawler.assertSafeUrl).mockRejectedValueOnce(new Error("Forbidden IP resolved: 10.0.0.1"));
+
+    const res = await POST(createRequest({ url: "http://internal.example.com" }, "ip-ssrf"));
+
+    expect(res.status).toBe(403);
+    expect(scannerCore.runCoreScan).not.toHaveBeenCalled();
   });
 
   it("should return 500 if scan throws an error", async () => {
