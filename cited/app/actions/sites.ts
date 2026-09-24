@@ -60,13 +60,13 @@ export async function addMonitoredSite(data: { name: string; url: string }) {
         !user.stripeCurrentPeriodEnd ||
         user.stripeCurrentPeriodEnd.getTime() < Date.now()
       ) {
-        return { error: "Abonnement requis" as const };
+        return { error: "Abonnement requis" };
       }
 
       const maxSites = maxSitesFor(user.plan);
       const count = await tx.monitoredSite.count({ where: { userId } });
       if (count >= maxSites) {
-        return { error: quotaReachedMessage(user.plan, maxSites) as const };
+        return { error: quotaReachedMessage(user.plan, maxSites) };
       }
 
       const site = await tx.monitoredSite.create({
