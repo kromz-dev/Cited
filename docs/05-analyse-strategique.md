@@ -234,7 +234,7 @@ Principe (skill `pricing`) : l'unité de valeur reste **le site surveillé**. El
 | Au-delà | 2 €/site/mois | — | Grosses flottes WordPress |
 
 - **Annuel :** 2 mois offerts.
-- **Offre fondatrice :** −50 % à vie pour les 10 premières agences, en échange d'un appel mensuel et d'une étude de cas.
+- **Offre fondatrice :** −50 % à vie pour les 10 premières agences, en échange d'un retour écrit mensuel (5 questions par e-mail) et d'une étude de cas.
 - **Pourquoi 30 sites et non 20 au plan Agence :** l'agence WP type gère 20–150 sites. À 20, le plan paraît juste, et on pousse l'agence vers des arbitrages au lieu de l'adoption.
 - **Pourquoi pas 9 € :** la leçon de tes propres docs tient toujours. Les petits prix attirent des clients qui partent vite et donnent de faux signaux.
 - **Refacturation :** la page de prix doit dire « **refacturez 10 à 20 €/site** dans votre contrat ». L'agence gagne de l'argent avec Cited. C'est l'argument central.
@@ -281,7 +281,7 @@ Classés par rapport effet / effort pour un fondateur solo.
 | 1–2 | **Débloquer la mesure** | P1 à P8 corrigés, architecture du §3, 20 cas de test réels | 0 faux positif sur 50 sites vérifiés à la main |
 | 3–4 | **Fondations commerciales** | Landing réécrite (§9), plans Stripe (§8), rapport PDF en marque blanche, page de prix « refacturez » | Scan gratuit → inscription ≥ 10 % |
 | 3–5 | **Baromètre** | Scan de 400–600 sites, article, visuels, 10 envois presse | ≥ 5 backlinks, ≥ 300 scans gratuits |
-| 5–8 | **Prospection** | 150 agences scannées et contactées (75 WP, 75 SEO/GEO), 15 démos | ≥ 5 % de réponses, ≥ 5 essais |
+| 5–8 | **Prospection** | 150 agences scannées et contactées par écrit (75 WP, 75 SEO/GEO), essais en autonomie | ≥ 5 % de réponses, ≥ 15 essais |
 | 9–12 | **Accélérer** | 10 agences payantes, 2 études de cas, plugin WP.org soumis, programme partenaire | **~1 000 € MRR**, résiliation < 5 %/mois |
 
 **Décision à la semaine 6 :** on compare les taux de réponse et d'essai entre WordPress et SEO/GEO, puis on concentre tout sur le meilleur segment.
@@ -309,10 +309,10 @@ Classés par rapport effet / effort pour un fondateur solo.
 
 **Plan B (si le critère d'arrêt tombe) :** élargir vers la **visibilité IA pour agences**, en marque blanche (le client est-il cité, face à qui). Le dépôt contient déjà une base : `lib/analysis/mention-detector.ts`, `lib/scoring/share-of-voice.ts`, `lib/prompts/query-generator.ts`. Le scan technique devient alors le module gratuit d'entrée.
 
-**Questions ouvertes pour toi :**
-1. Budget pour un rendu headless (Browserless, environ 20–50 €/mois) ou Playwright auto-hébergé ?
-2. Es-tu prêt à faire 15 appels de découverte avant de coder davantage ?
-3. Marque « Cited » gardée ? Le nom évoque la citation (la visibilité), alors que le produit mesure l'accès. Ça reste cohérent si le plan B arrive.
+**Décisions prises (24 septembre 2026) :**
+1. **Rendu headless : 0 € au départ.** Le moteur mesure d'abord le HTML brut (texte utile, racine SPA vide, `noscript`). Le rendu headless n'est lancé que sur les pages suspectes, avec Playwright sur un petit VPS (environ 5 €/mois). On passe à un service payant au-delà de 20 agences clientes.
+2. **Vente 100 % écrite, sans appel.** L'essai est gratuit et sans carte, avec onboarding en autonomie. La découverte se fait par un questionnaire de 5 questions envoyé par e-mail (voir `06-kit-prospection.md` §5). Une démo écrite remplace la démo en direct : un exemple de rapport en marque blanche en PDF et une page « visite guidée ». Conséquence : le cycle de vente est plus long, la conversion plus faible. D'où l'objectif de 15 essais au lieu de 15 démos.
+3. **Nom : on garde « Cited ».** Il reste juste si le plan B (visibilité IA) arrive, et changer de nom coûte du temps. La promesse précise vient du slogan : « Cited — la lisibilité IA de tout votre portefeuille client ».
 
 ---
 

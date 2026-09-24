@@ -36,7 +36,7 @@
 
 **J+4 — Objet : `Une ligne de plus dans votre rapport de maintenance`**
 
-> Beaucoup de freelances WP ajoutent maintenant une ligne « lisibilité IA » à leur rapport mensuel et la facturent 10 à 20 € par site. Cited la surveille chaque jour sur tous vos sites et génère le rapport à votre logo. 15 minutes cette semaine pour le voir sur vos propres clients ?
+> Beaucoup de freelances WP ajoutent maintenant une ligne « lisibilité IA » à leur rapport mensuel et la facturent 10 à 20 € par site. Cited la surveille chaque jour sur tous vos sites et génère le rapport à votre logo. Essai gratuit, sans carte, sur vos propres sites : [lien]. Exemple de rapport : [lien PDF].
 
 **J+9 — Objet : `Je ferme le dossier`**
 
@@ -54,7 +54,7 @@
 
 **J+4 — Objet : `Le livrable technique de votre offre GEO`**
 
-> Vos outils de visibilité (Semrush, Peec, Otterly…) disent si le client est cité. Aucun ne vous alerte le jour où un pare-feu ou un plugin l'empêche de l'être. C'est la brique technique qui manque au livrable GEO. 15 minutes pour voir ?
+> Vos outils de visibilité (Semrush, Peec, Otterly…) disent si le client est cité. Aucun ne vous alerte le jour où un pare-feu ou un plugin l'empêche de l'être. C'est la brique technique qui manque au livrable GEO. Exemple de rapport à votre marque : [lien PDF]. Essai gratuit : [lien].
 
 **J+9 :** identique à la séquence WP.
 
@@ -70,12 +70,20 @@
 | « Je peux le faire moi-même. » | Oui, pour un site, une fois. Pour 40 sites chaque jour, avec 8 bots, le `robots.txt`, Cloudflare et un rapport client, non. |
 | « Pourquoi ne pas simplement utiliser Cloudflare AI Crawl Control ? » | Il est gratuit et excellent, mais seulement pour les sites derrière votre compte Cloudflare, un par un, sans rapport client. Cited couvre tout le portefeuille, quel que soit l'hébergeur. |
 
-## 5. Appel de découverte (15 minutes, 5 questions)
+## 5. Découverte par écrit (aucun appel)
 
-1. Combien de sites avez-vous sous contrat récurrent, et chez quels hébergeurs ?
-2. Que contient votre rapport mensuel aujourd'hui ? Combien de temps vous prend-il ?
-3. Un client vous a-t-il déjà parlé de ChatGPT ou de Perplexity ? Qu'avez-vous répondu ?
-4. Avez-vous déjà découvert un blocage (Cloudflare, plugin, hébergeur) *après* le client ?
-5. Si je vous montre demain un problème réel sur l'un de vos sites, qu'en feriez-vous ?
+Ce questionnaire part automatiquement par e-mail 3 jours après l'inscription à l'essai. On le renvoie aussi à toute agence qui répond à la prospection. Réponse libre, par retour d'e-mail ou via un formulaire (Tally, gratuit).
 
-On ne propose l'offre fondatrice (−50 % à vie, 10 places) qu'après la question 5.
+> Objet : `5 questions pour régler Cited sur votre parc`
+>
+> 1. Combien de sites avez-vous sous contrat récurrent, et chez quels hébergeurs ?
+> 2. Que contient votre rapport mensuel aujourd'hui ? Combien de temps vous prend-il ?
+> 3. Un client vous a-t-il déjà parlé de ChatGPT ou de Perplexity ? Qu'avez-vous répondu ?
+> 4. Avez-vous déjà découvert un blocage (Cloudflare, plugin, hébergeur) *après* le client ?
+> 5. Que devrait contenir le rapport pour que vous l'envoyiez tel quel à vos clients ?
+
+**Relance offre fondatrice** (seulement si au moins 3 réponses montrent un vrai besoin) :
+
+> Merci pour vos réponses. Vous faites partie des 10 premières agences : −50 % à vie sur le plan Agence si vous activez avant [date]. En échange : un retour écrit par mois et l'autorisation de citer votre agence. Lien : [checkout].
+
+**Démo écrite** : un PDF d'exemple de rapport (client fictif, marqué comme tel) et une page « visite guidée » en 5 captures annotées. Aucune réunion nécessaire.
