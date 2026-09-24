@@ -204,7 +204,8 @@ describe('sites actions', () => {
       vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'SOLO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
       vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(0);
       vi.mocked(db.monitoredSite.findMany).mockResolvedValueOnce([] as unknown as MonitoredSites);
-      vi.mocked(db.monitoredSite.create).mockImplementation(async (args) => ({ id: args.data.url }) as unknown as CreatedSite);
+      vi.mocked(db.monitoredSite.create).mockImplementation(((args: { data: { url?: string } }) =>
+        Promise.resolve({ id: args.data.url ?? "created" })) as unknown as typeof db.monitoredSite.create);
       vi.mocked(assertSafeUrl).mockImplementation(async (url: string) => {
         if (url.includes('10.0.0.1') || url.includes('notaurl')) {
           throw new Error('URL refusée');
