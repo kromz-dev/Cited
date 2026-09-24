@@ -33,7 +33,7 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 - [x] Nouvelle page d'accueil (angle diagnostic, portefeuille, `ScanForm` sur la nouvelle API) et nouvelle page de prix (39 / 99 / 249 €)
 - [x] Skills installés dans `cited/.claude/skills`, avec un lien symbolique à la racine du dépôt (design, rédaction, PRD, ingénierie) et 6 agents marketing dans `cited/.claude/agents`
 
-- [x] Plan technique 0 € : `docs/10-plan-technique.md`. Pile retenue : Render (offre gratuite) + Neon Postgres + Inngest + Resend + Sentry + `@react-pdf/renderer`. Les conditions de ces offres sont à confirmer (tâche T001).
+- [x] Plan technique 0 € : `docs/10-plan-technique.md`. Pile retenue : Render (offre gratuite) + Neon Postgres + Inngest + Resend + PostHog + `@react-pdf/renderer`. Les conditions de ces offres sont à confirmer (tâche T001).
 - [x] Liste des tâches du MVP, 57 tâches en 9 phases : `tasks/mvp-tasks.md` (**c'est elle qui fait foi pour le « quoi faire ensuite »**)
 - [x] T006 : Route de compteur d'audience RGPD-safe (pas de cookie, pas de tiers) — `app/api/beacon/route.ts`, appel `navigator.sendBeacon` depuis `app/(marketing)/layout.tsx`
 
@@ -44,7 +44,7 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 | Neon | Projet `cited`, Postgres 17, Francfort (`aws-eu-central-1`), base `cited`, rôle `cited` | projet `billowing-resonance-22258158`. La chaîne de connexion (secrète) est à récupérer dans la console Neon ou via le MCP, et à mettre directement dans Render (`DATABASE_URL`). |
 | Stripe (test) | 3 produits et prix mensuels HT en EUR | `STRIPE_PRICE_SOLO=price_1UJ459E0KhuxlY8kOXQkdsjH` (39 €), `STRIPE_PRICE_PRO=price_1UJ45LE0KhuxlY8k1kqASn38` (99 €), `STRIPE_PRICE_SCALE=price_1UJ45PE0KhuxlY8kI8hhUDP1` (249 €). Lookup keys `cited_{solo,pro,scale}_monthly`. |
 | Stripe (test) | Coupon fondateur | `FONDATEUR50` : −50 %, à vie, 10 utilisations maximum |
-| Sentry | Projet `cited-web` (Next.js), org `cited-0g`, région UE | `SENTRY_DSN=https://2d024724c6a27762e805e4c26f393241@o4512139371937792.ingest.de.sentry.io/4512139399528528` (public par conception) |
+| PostHog | Projet Analytics + Session Replay + Error Tracking | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` et `NEXT_PUBLIC_POSTHOG_HOST` |
 | Render | Espace « My Workspace » | Service web à créer après la fusion dans `main` (T003) |
 | Resend | Compte | Domaine d'envoi à ajouter (nécessite un domaine) |
 | Inngest | — | Compte et clés à créer (`INNGEST_SIGNING_KEY`, `INNGEST_EVENT_KEY`) |

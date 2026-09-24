@@ -122,7 +122,7 @@
 
 **But** : afficher un verdict honnête par assistant sur le diagnostic gratuit, condition de l'objectif "scan → inscription ≥ 10 %". Dépend du moteur de scan déjà livré dans `lib/scanner/*` (hors périmètre de ces tâches).
 
-- [ ] **T015** [P1] Adapter `POST /api/scan` pour retourner un rapport multi-bots (`runCoreScan(url, DEFAULT_PROBE_BOTS)` au lieu de `["GPTBot"]`) — `cited/app/api/scan/route.ts`
+- [x] **T015** [P1] Adapter `POST /api/scan` pour retourner un rapport multi-bots (`runCoreScan(url, DEFAULT_PROBE_BOTS)` au lieu de `["GPTBot"]`) — `cited/app/api/scan/route.ts`
   - **Dépendances** : Aucune (le moteur `runCoreScan` gère déjà plusieurs bots)
   - **EF/ENF** : EF-001, EF-002
   - **Vérification** : la réponse contient un tableau de résultats pour ChatGPT (GPTBot), Claude (ClaudeBot) et Perplexity (PerplexityBot), chacun avec ses propres `reasons`
@@ -140,7 +140,7 @@
   - **Vérification** : le PDF généré contient les trois verdicts et ne porte aucune marque blanche cliente
   - **Taille** : M
 
-- [ ] **T018** [P] [P1] Étendre le test de contrat de `/api/scan` à la forme multi-bots — `cited/app/api/scan/route.test.ts`
+- [x] **T018** [P] [P1] Étendre le test de contrat de `/api/scan` à la forme multi-bots — `cited/app/api/scan/route.test.ts`
   - **Dépendances** : T015
   - **EF/ENF** : EF-001, EF-002
   - **Vérification** : `npx vitest run app/api/scan/route.test.ts` vert, couvre au moins un cas "robots.txt bloque un bot mais pas les autres"

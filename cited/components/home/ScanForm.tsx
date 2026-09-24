@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { LoaderCircle } from "lucide-react";
+import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +11,7 @@ import { Verdict, type VerdictValue } from "@/components/ui/verdict";
 import type { BotAgent } from "@/lib/scanner/agents";
 import type { ScanCoreResult, ScanReport } from "@/lib/scanner/core";
 
-type ScanApiResponse = ScanCoreResult & { report: ScanReport };
+type ScanApiResponse = { results: ScanCoreResult[]; report: ScanReport };
 
 /**
  * Un assistant par bot de citation (pas d'entraînement) : c'est ce qui
@@ -308,6 +309,7 @@ export function ScanForm() {
 
       setSubmittedUrl(trimmed);
       setResult(data as ScanApiResponse);
+      posthog.capture("scan_completed");
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");

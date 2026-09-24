@@ -12,6 +12,10 @@ vi.mock("@/lib/scanner/crawler", () => ({
   assertSafeUrl: vi.fn(async (url: string) => url),
 }));
 
+vi.mock("@/lib/scanner/agents", () => ({
+  DEFAULT_PROBE_BOTS: ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot"],
+}));
+
 // Remplace la table RateLimit par un compteur local, même contrat que lib/rate-limit.
 const counters = new Map<string, number>();
 vi.mock("@/lib/rate-limit", () => ({
@@ -25,8 +29,8 @@ vi.mock("@/lib/rate-limit", () => ({
 }));
 
 type CoreScanOutput = Awaited<ReturnType<typeof scannerCore.runCoreScan>>;
-const scanOutput = (summary: Record<string, unknown>) =>
-  ({ report: { finalUrl: "https://example.com/" }, results: [summary] }) as unknown as CoreScanOutput;
+const scanOutput = (summaries: Record<string, unknown>[]) =>
+  ({ report: { finalUrl: "https://example.com/" }, results: summaries }) as unknown as CoreScanOutput;
 
 describe("POST /api/scan", () => {
   beforeEach(() => {
@@ -63,7 +67,11 @@ describe("POST /api/scan", () => {
 
   it("should return 200 and scan results for a valid URL", async () => {
     vi.mocked(scannerCore.runCoreScan).mockResolvedValueOnce(
-      scanOutput({ agent: "GPTBot", simpleStatus: "OK", httpStatus: 200, durationMs: 150, wordCount: 500 })
+      scanOutput([
+        { agent: "OAI-SearchBot", simpleStatus: "OK", httpStatus: 200, durationMs: 150, wordCount: 500 },
+        { agent: "Claude-SearchBot", simpleStatus: "OK", httpStatus: 200, durationMs: 150, wordCount: 500 },
+        { agent: "PerplexityBot", simpleStatus: "OK", httpStatus: 200, durationMs: 150, wordCount: 500 }
+      ])
     );
 
     const req = createRequest({ url: "https://example.com" }, "ip-valid-url");
@@ -71,10 +79,10 @@ describe("POST /api/scan", () => {
     
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data.agent).toBe("GPTBot");
-    expect(data.simpleStatus).toBe("OK");
+    expect(data.results[0].agent).toBe("OAI-SearchBot");
+    expect(data.results[0].simpleStatus).toBe("OK");
     expect(data.report.finalUrl).toBe("https://example.com/");
-    expect(scannerCore.runCoreScan).toHaveBeenCalledWith("https://example.com", ["GPTBot"]);
+    expect(scannerCore.runCoreScan).toHaveBeenCalledWith("https://example.com", ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot"]);
   });
 
   it("should rate limit after 3 requests from the same IP", async () => {
@@ -82,7 +90,7 @@ describe("POST /api/scan", () => {
     const body = { url: "https://example.com" };
     
     vi.mocked(scannerCore.runCoreScan).mockResolvedValue(
-      scanOutput({ agent: "GPTBot", simpleStatus: "OK", httpStatus: 200, durationMs: 100, wordCount: 100 })
+      scanOutput([{ agent: "OAI-SearchBot", simpleStatus: "OK", httpStatus: 200, durationMs: 100, wordCount: 100 }])
     );
 
     const res1 = await POST(createRequest(body, ip));

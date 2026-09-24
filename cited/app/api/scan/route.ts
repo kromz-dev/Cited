@@ -3,6 +3,7 @@ import { z } from "zod";
 import { runCoreScan } from "@/lib/scanner/core";
 import { assertSafeUrl } from "@/lib/scanner/crawler";
 import { callerKey, rateLimit } from "@/lib/rate-limit";
+import { DEFAULT_PROBE_BOTS } from "@/lib/scanner/agents";
 
 // 3 scans par minute et par IP, compteur partagé en base (voir lib/rate-limit).
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -52,10 +53,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Execute Scan for "GPTBot"
-    const { report, results } = await runCoreScan(url, ["GPTBot"]);
+    // 4. Execute Scan for multiple bots
+    const { report, results } = await runCoreScan(url, DEFAULT_PROBE_BOTS);
 
-    return NextResponse.json({ ...results[0], report });
+    return NextResponse.json({ results, report });
   } catch (error) {
     console.error("Scan API Error:", error);
     return NextResponse.json(
