@@ -268,3 +268,13 @@ model MonthlyReport {
 
   @@unique([clientId, period])
 }
+
+/// Vue de page marketing (compteur minimaliste sans cookie, RGPD-safe).
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  createdAt DateTime @default(now())
+
+  @@index([path, createdAt(sort: Desc)])
+}

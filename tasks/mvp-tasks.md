@@ -52,7 +52,7 @@
   - **Vérification** : une erreur provoquée manuellement en environnement de test apparaît dans le tableau de bord Sentry sous 1 minute
   - **Taille** : S
 
-- [ ] **T006** [P] [SETUP] Route de compteur d'audience RGPD-safe (pas de cookie, pas de tiers) — `app/api/beacon/route.ts`, appel `navigator.sendBeacon` depuis `app/(marketing)/layout.tsx`
+- [x] **T006** [P] [SETUP] Route de compteur d'audience RGPD-safe (pas de cookie, pas de tiers) — `app/api/beacon/route.ts`, appel `navigator.sendBeacon` depuis `app/(marketing)/layout.tsx`
   - **Dépendances** : Aucune
   - **EF/ENF** : —
   - **Vérification** : une visite sur une page marketing incrémente une ligne agrégée en base, aucune requête sortante vers un domaine tiers n'apparaît dans l'onglet réseau

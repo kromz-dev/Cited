@@ -35,6 +35,7 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 
 - [x] Plan technique 0 € : `docs/10-plan-technique.md`. Pile retenue : Render (offre gratuite) + Neon Postgres + Inngest + Resend + Sentry + `@react-pdf/renderer`. Les conditions de ces offres sont à confirmer (tâche T001).
 - [x] Liste des tâches du MVP, 57 tâches en 9 phases : `tasks/mvp-tasks.md` (**c'est elle qui fait foi pour le « quoi faire ensuite »**)
+- [x] T006 : Route de compteur d'audience RGPD-safe (pas de cookie, pas de tiers) — `app/api/beacon/route.ts`, appel `navigator.sendBeacon` depuis `app/(marketing)/layout.tsx`
 
 ### Services provisionnés (24/09, mode test, 0 €)
 
