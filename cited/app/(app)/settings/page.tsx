@@ -12,7 +12,7 @@ export default function SettingsPage() {
   const [copied, setCopied] = useState(false);
   const [brandName, setBrandName] = useState("Atelier Boréal");
   const [brandLogo, setBrandLogo] = useState("logo-atelier-boreal.svg");
-  const [brandColor, setBrandColor] = useState("#ec3013");
+  const [brandColor, setBrandColor] = useState("#18213a");
 
   const handleCopyKey = () => {
     navigator.clipboard.writeText("ct_live_9f3be48107ac1b992f44c7ac1");
