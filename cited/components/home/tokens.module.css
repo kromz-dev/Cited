@@ -1,0 +1,44 @@
+/*
+ * Jetons des pages marketing (accueil, tarifs).
+ * Appliquer la classe `.root` sur l'élément racine de la page.
+ * Les variables --color-* reprennent les noms attendus par ScanForm.
+ */
+.root {
+  --paper: #f7f9fb;
+  --surface: #ffffff;
+  --ink: #17202b;
+  --ink-2: #4a5563;
+  --line: #d9e0e7;
+  --ok: #0e7c66;
+  --ok-soft: #e3f2ee;
+  --stop: #b42318;
+  --stop-soft: #fbeae8;
+  --warn: #9a6700;
+  --warn-soft: #fbf3dc;
+  --radius: 6px;
+  --shell: 1120px;
+
+  --color-bg: var(--surface);
+  --color-text: var(--ink);
+  --color-accent: var(--ok);
+  --color-divider: var(--line);
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-marketing), system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.root :focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
