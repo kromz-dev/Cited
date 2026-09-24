@@ -386,7 +386,7 @@
   - **Vérification** : la page ne mentionne plus de "score de visibilité" agrégé ; elle affiche les mêmes verdicts par assistant que `ScanForm`
   - **Taille** : M
 
-- [ ] **T050** [P] [MOCK] Nettoyer les sections hors périmètre MVP de `app/(app)/settings/page.tsx` (Équipe, Accès API, canal Slack "Actif") : retirer ou marquer "en préparation" — `cited/app/(app)/settings/page.tsx`
+- [x] **T050** [P] [MOCK] Nettoyer les sections hors périmètre MVP de `app/(app)/settings/page.tsx` (Équipe, Accès API, canal Slack "Actif") : retirer ou marquer "en préparation" — `cited/app/(app)/settings/page.tsx`
   - **Dépendances** : T040, T041
   - **EF/ENF** : EF-038, §11 hors périmètre du PRD, principe II
   - **Vérification** : aucune section n'affiche une fonctionnalité inactive comme "Actif" (le badge Slack actuel, notamment) ; multi-utilisateur et clé API sont soit absents, soit "en préparation"
