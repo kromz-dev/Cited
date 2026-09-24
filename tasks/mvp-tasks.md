@@ -154,7 +154,7 @@
 
 **But** : la valeur payante centrale. **T019 ouvre cette phase avant tout confort d'interface**, conformément au risque n°1 du PRD (quota non appliqué = fuite de revenu).
 
-- [ ] **T019** [P2] **Appliquer le quota de sites par plan** — `cited/app/actions/sites.ts::addMonitoredSite`
+- [x] **T019** [P2] **Appliquer le quota de sites par plan** — `cited/app/actions/sites.ts::addMonitoredSite`
   - **Dépendances** : T008
   - **EF/ENF** : EF-018
   - **Vérification** : test `app/actions/sites.test.ts` — un compte `SOLO` avec 10 sites déjà actifs reçoit une erreur orientant vers le palier supérieur au 11ᵉ ajout, jamais une erreur technique générique
@@ -312,13 +312,13 @@
   - **Vérification** : un abonnement de test payé avec le coupon fondateur met à jour ces deux champs, un abonnement sans coupon ne les touche pas
   - **Taille** : M
 
-- [ ] **T040** [FACT] Raccorder la section Abonnement des paramètres au vrai plan/quota/date de prélèvement + bouton vers `createCustomerPortalSession` — `cited/app/(app)/settings/page.tsx`
+- [x] **T040** [FACT] Raccorder la section Abonnement des paramètres au vrai plan/quota/date de prélèvement + bouton vers `createCustomerPortalSession` — `cited/app/(app)/settings/page.tsx`
   - **Dépendances** : T008
   - **EF/ENF** : EF-059
   - **Vérification** : "Offre agence — 20 domaines" et "18/20" codés en dur disparaissent ; les valeurs affichées changent selon le compte connecté
   - **Taille** : M
 
-- [ ] **T041** [P] [FACT] Exposer l'export RGPD et la date de purge dans les paramètres — `cited/app/(app)/settings/page.tsx`, nouvelle action `cited/app/actions/gdpr.ts::exportUserData`
+- [x] **T041** [P] [FACT] Exposer l'export RGPD et la date de purge dans les paramètres — `cited/app/(app)/settings/page.tsx`, nouvelle action `cited/app/actions/gdpr.ts::exportUserData`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-015
   - **Vérification** : un utilisateur connecté peut déclencher un export et voir sa date de purge si son compte est résilié
@@ -360,7 +360,7 @@
   - **Vérification** : test — un compte créé il y a 3 jours reçoit l'événement, un compte créé il y a 1 jour ne le reçoit pas
   - **Taille** : M
 
-- [ ] **T047** [P] [ONB] Gabarit et déclenchement (semi-manuel, sur décision qualitative du fondateur) de l'e-mail d'offre fondatrice — `cited/lib/alerting/sendFounderOffer.ts` (nouveau), action déclenchable depuis un script ou une commande interne
+- [x] **T047** [P] [ONB] Gabarit et déclenchement (semi-manuel, sur décision qualitative du fondateur) de l'e-mail d'offre fondatrice — `cited/lib/alerting/sendFounderOffer.ts` (nouveau), action déclenchable depuis un script ou une commande interne
   - **Dépendances** : T037, T046
   - **EF/ENF** : EF-066
   - **Vérification** : l'e-mail envoyé affiche une date limite d'activation claire ; aucune automatisation de la lecture des réponses au questionnaire n'est requise (EF-065)
@@ -386,7 +386,7 @@
   - **Vérification** : la page ne mentionne plus de "score de visibilité" agrégé ; elle affiche les mêmes verdicts par assistant que `ScanForm`
   - **Taille** : M
 
-- [ ] **T050** [P] [MOCK] Nettoyer les sections hors périmètre MVP de `app/(app)/settings/page.tsx` (Équipe, Accès API, canal Slack "Actif") : retirer ou marquer "en préparation" — `cited/app/(app)/settings/page.tsx`
+- [x] **T050** [P] [MOCK] Nettoyer les sections hors périmètre MVP de `app/(app)/settings/page.tsx` (Équipe, Accès API, canal Slack "Actif") : retirer ou marquer "en préparation" — `cited/app/(app)/settings/page.tsx`
   - **Dépendances** : T040, T041
   - **EF/ENF** : EF-038, §11 hors périmètre du PRD, principe II
   - **Vérification** : aucune section n'affiche une fonctionnalité inactive comme "Actif" (le badge Slack actuel, notamment) ; multi-utilisateur et clé API sont soit absents, soit "en préparation"

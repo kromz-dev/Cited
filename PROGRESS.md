@@ -31,9 +31,9 @@ Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/
 - [x] **T056** : purge mensuelle de `ScanLog.payload` au-delà de 90 jours.
 - [x] Documentation : `docs/decisions/ADR-001-posthog-remplace-sentry.md`, budget de quotas gratuits Inngest/Neon/Resend recalculé et corrigé dans `docs/10-plan-technique.md`.
 
-21 tâches cochées sur 60 dans `tasks/mvp-tasks.md` — **c'est elle qui fait foi**, cette section n'est qu'un résumé.
+24 tâches cochées sur 60 dans `tasks/mvp-tasks.md` — **c'est elle qui fait foi**, cette section n'est qu'un résumé.
 
-Toujours ouvertes, à tort marquées faites dans une version précédente de ce fichier : **T040** (les réglages affichent encore « Offre agence — 20 domaines » et « 18/20 »), **T041** (pas d'export RGPD), **T047** (pas d'e-mail d'offre fondatrice), **T050** (badges « En préparation », mais Laura Bréa, une fausse clé API copiable et Atelier Boréal sont encore à l'écran).
+**T040, T041 et T050** étaient codées le 24/09 (PR #14, #15, #16), mais ces PR empilées ont été fusionnées dans leur branche de base au lieu de `main`. Elles sont restaurées par la branche `fix/restore-t040-t041-t050`. **T047** (e-mail d'offre fondatrice, PR #20) est dans le même cas : restauration par une PR séparée.
 
 ### Services provisionnés (24/09, mode test, 0 €)
 
@@ -54,12 +54,11 @@ Points non vérifiés (T001) : les CGU d'usage commercial de Render, Neon, Resen
 
 1. **T003/T004** (infra) : créer le service Render (région Francfort, `cited/` comme racine de build), puis baseliner et migrer la base Neon en production. Bloqué au 24/09 par deux permissions refusées en mode automatique (récupération de la chaîne de connexion Neon, génération locale d'un secret) — à relancer avec le fondateur présent, ou en autorisant ces actions.
 2. **Reprendre le cœur produit, dans l'ordre de `tasks/mvp-tasks.md`** : **T019 (quota par plan)** en premier — risque n°1 du PRD, rien n'est fait dessus. Puis T020-T036 (portefeuille, scan quotidien réel, alertes, rapports mensuels PDF).
-3. **Facturation restante** : T040 (abonnement réel dans les réglages), T041 (export RGPD).
-4. **Onboarding restant** : T043-T045, puis T047 (e-mail d'offre fondatrice). T048 attend le rapport mensuel (T032b).
-5. **Écrans fictifs restants** : T049, T050, T051.
-6. **Qualité** : T053-T055, puis T057 une fois le déploiement en place.
-7. **Déployer une préversion gratuite**, une fois T003/T004 faits.
-8. **Marketing** (0 €) : baromètre « les sites français bloquent-ils ChatGPT ? », puis prospection écrite de 150 agences (`docs/06-kit-prospection.md`). Ne publier que des constats vérifiés.
+3. **Onboarding restant** : T043-T045. T048 attend le rapport mensuel (T032b).
+4. **Écrans fictifs restants** : T049, T051.
+5. **Qualité** : T053-T055, puis T057 une fois le déploiement en place.
+6. **Déployer une préversion gratuite**, une fois T003/T004 faits.
+7. **Marketing** (0 €) : baromètre « les sites français bloquent-ils ChatGPT ? », puis prospection écrite de 150 agences (`docs/06-kit-prospection.md`). Ne publier que des constats vérifiés.
 
 Objectif à 90 jours : 10 agences payantes, environ 1 000 € de MRR. Critère d'arrêt : moins de 5 % des sites scannés présentent un problème vérifié (plan B : visibilité IA, voir `docs/05` §13).
 
