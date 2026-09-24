@@ -39,7 +39,7 @@ export function AuditForm({ onAuditComplete, initialDomain = "" }: AuditFormProp
       <div className="mb-6">
         <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-cited">Scanner Technique</div>
         <h2 className="text-2xl">Vérifiez la lisibilité de votre site</h2>
-        <p className="mt-2 text-sm leading-6 text-muted">Saisissez l'URL de votre site pour simuler la visite de ChatGPT et Claude.</p>
+        <p className="mt-2 text-sm leading-6 text-muted">Saisissez l&apos;URL de votre site pour simuler la visite de ChatGPT et Claude.</p>
       </div>
       <div className="space-y-4">
         <div>

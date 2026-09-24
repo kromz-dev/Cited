@@ -108,7 +108,7 @@ export function CoverageGrid({ data }: CoverageGridProps) {
       </div>
 
       <div className="border-t border-line bg-ink p-6 text-paper">
-        <h3 className="text-xl flex items-center gap-2"><Mail className="w-5 h-5"/> Recevez le guide d'installation</h3>
+        <h3 className="text-xl flex items-center gap-2"><Mail className="w-5 h-5"/> Recevez le guide d&apos;installation</h3>
         <p className="mt-2 max-w-lg text-sm leading-6 text-paper/70">Nous vous envoyons le code exact à copier-coller (Next.js, Cloudflare Worker ou Nginx) pour corriger ce problème.</p>
         {leadError && <div role="alert" className="mt-4 rounded-md border border-signal/50 bg-signal/10 p-3 text-sm text-signal-light">{leadError}</div>}
         {submitted ? (
