@@ -310,7 +310,8 @@ Classés par rapport effet / effort pour un fondateur solo.
 **Plan B (si le critère d'arrêt tombe) :** élargir vers la **visibilité IA pour agences**, en marque blanche (le client est-il cité, face à qui). Le dépôt contient déjà une base : `lib/analysis/mention-detector.ts`, `lib/scoring/share-of-voice.ts`, `lib/prompts/query-generator.ts`. Le scan technique devient alors le module gratuit d'entrée.
 
 **Décisions prises (24 septembre 2026) :**
-1. **Rendu headless : 0 € au départ.** Le moteur mesure d'abord le HTML brut (texte utile, racine SPA vide, `noscript`). Le rendu headless n'est lancé que sur les pages suspectes, avec Playwright sur un petit VPS (environ 5 €/mois). On passe à un service payant au-delà de 20 agences clientes.
+0. **Budget : 0 €, autofinancement à 100 %.** Aucune dépense fixe avant le premier revenu. Toute la pile technique et marketing repose sur des offres gratuites qui autorisent un usage commercial. Une dépense n'est engagée qu'une fois couverte par le MRR.
+1. **Rendu headless : 0 €.** Le moteur mesure le HTML brut (texte utile, racine SPA vide, `noscript`). Le rendu Playwright reste optionnel, et ne tourne que s'il est hébergé gratuitement. Aucun service payant avant que le MRR ne le finance.
 2. **Vente 100 % écrite, sans appel.** L'essai est gratuit et sans carte, avec onboarding en autonomie. La découverte se fait par un questionnaire de 5 questions envoyé par e-mail (voir `06-kit-prospection.md` §5). Une démo écrite remplace la démo en direct : un exemple de rapport en marque blanche en PDF et une page « visite guidée ». Conséquence : le cycle de vente est plus long, la conversion plus faible. D'où l'objectif de 15 essais au lieu de 15 démos.
 3. **Nom : on garde « Cited ».** Il reste juste si le plan B (visibilité IA) arrive, et changer de nom coûte du temps. La promesse précise vient du slogan : « Cited — la lisibilité IA de tout votre portefeuille client ».
 

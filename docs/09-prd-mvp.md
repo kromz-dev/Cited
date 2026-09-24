@@ -295,13 +295,17 @@ Reprises telles que décidées en §0 et §11 de l'analyse stratégique — ce P
 - Le premier lot de rapports mensuels en marque blanche (EF-047 à EF-051) peut être généré manuellement ou semi-automatiquement pour les tout premiers comptes fondateurs si l'automatisation complète prend du retard, sans que cela retarde l'encaissement des dix premiers abonnements.
 - Le code du plan B (`lib/analysis/`, `lib/scoring/`, `lib/prompts/`) n'est pas maintenu activement pendant le MVP ; il n'est ni supprimé ni testé en continu (ENF-010 s'applique au périmètre MVP, pas à ce code dormant).
 
-## 14. Questions ouvertes
+## 14. Décisions (24 septembre 2026)
 
-1. [À DÉCIDER : le regroupement des sites par « client final » de l'agence (EF-047, EF-052) doit-il être un champ simple sur `MonitoredSite` (ex. `clientName`) ou une entité `Client` à part entière avec ses propres paramètres de marque blanche ? Impacte directement le modèle de données du rapport mensuel.]
-2. [À DÉCIDER : le mécanisme technique du coupon fondateur (EF-058, EF-066) — coupon Stripe natif à usage limité (`max_redemptions: 10`) ou compteur applicatif avec code promo maison ? Le premier est plus simple à opérer seul (principe VI) mais moins flexible sur les conditions qualitatives (§5 du kit de prospection).]
-3. [À DÉCIDER : que faire de la page `/analyse/[domain]` et du code de suivi de citations (`lib/analysis/`, `lib/scoring/`, `lib/prompts/`) pendant le MVP — les retirer de la navigation publique immédiatement pour cohérence avec le principe II, ou les laisser inertes jusqu'à l'arbitrage de la semaine 6 (§11 du plan 90 jours) qui pourrait les réactiver comme plan B ?]
-4. [À DÉCIDER : quel service de rendu headless utiliser une fois le VPS Playwright (§13, décision 1) dépassé au-delà de 20 agences clientes — un service managé (ex. Browserless) ou une extension du même VPS ? Sans impact sur le MVP lui-même, mais conditionne l'architecture d'EF-029 si elle doit rester extensible sans réécriture.]
-5. [À DÉCIDER : Resend (déjà intégré pour les alertes de régression) suffit-il en volume et en délivrabilité pour le questionnaire J+3 (EF-064) et les relances de l'offre fondatrice (EF-066), ou faut-il un outil de séquences dédié pour la prospection écrite du kit `docs/06-kit-prospection.md` ?]
+Contrainte transverse : **budget de 0 €**. Le projet est autofinancé à 100 %. Aucune dépense fixe n'est engagée avant le premier revenu. Tout service doit avoir une offre gratuite qui autorise un usage commercial, ou être remplaçable par du code maison. Une dépense ne devient acceptable qu'une fois couverte par le MRR.
+
+1. **Regroupement par client (EF-047, EF-052) :** entité `Client` (nom, logo, lien facultatif depuis `MonitoredSite`). Un site sans client reste valide.
+2. **Coupon fondateur (EF-058, EF-066) :** coupon Stripe natif (`duration: forever`, `percent_off: 50`, `max_redemptions: 10`). Stripe ne facture aucun abonnement, seulement des frais par transaction encaissée.
+3. **`/analyse/[domain]` et le plan B :** `/analyse/[domain]` devient la page de résultat partageable du diagnostic gratuit (P1), sur le nouveau moteur. Le code du plan B (`lib/analysis/`, `lib/scoring/`, `lib/prompts/`) reste dans le dépôt, sans être exposé ni appelé.
+4. **Rendu headless (EF-029) :** aucun service payant. MVP : diagnostic sur le HTML brut, avec les heuristiques de dépendance au JavaScript. Le rendu Playwright est une interface optionnelle, activée seulement si elle tourne sur l'hébergement gratuit (voir ENF-016). Un service managé ne sera évalué qu'une fois financé par le MRR.
+5. **E-mails (EF-064, EF-066) :** Resend et un job planifié. Pas d'outil de séquences. La prospection du kit `06` part de la boîte e-mail du fondateur, à la main, sans outil payant.
+
+**ENF-016, budget :** le MVP s'exécute sur des offres gratuites qui autorisent un usage commercial. Les conditions exactes de chaque offre (quotas, usage commercial, mise en veille) sont à vérifier au moment de l'inscription et à consigner dans `docs/10-plan-technique.md`. Point d'attention connu : l'offre gratuite Hobby de Vercel est réservée à un usage non commercial. Elle ne convient donc pas pour encaisser des abonnements.
 
 ## 15. Critères de sortie du MVP
 
