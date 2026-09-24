@@ -33,10 +33,8 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 - [x] Nouvelle page d'accueil (angle diagnostic, portefeuille, `ScanForm` sur la nouvelle API) et nouvelle page de prix (39 / 99 / 249 €)
 - [x] Skills installés dans `cited/.claude/skills`, avec un lien symbolique à la racine du dépôt (design, rédaction, PRD, ingénierie) et 6 agents marketing dans `cited/.claude/agents`
 
-### En cours au moment de cette mise à jour
-
-- [ ] Plan technique 0 € : `docs/10-plan-technique.md`
-- [ ] Liste des tâches du MVP : `tasks/mvp-tasks.md` (**c'est elle qui fait foi pour le « quoi faire ensuite »**)
+- [x] Plan technique 0 € : `docs/10-plan-technique.md`. Pile retenue : Render (offre gratuite) + Neon Postgres + Inngest + Resend + Sentry + `@react-pdf/renderer`. Les conditions de ces offres sont à confirmer (tâche T001).
+- [x] Liste des tâches du MVP, 57 tâches en 9 phases : `tasks/mvp-tasks.md` (**c'est elle qui fait foi pour le « quoi faire ensuite »**)
 
 ---
 
