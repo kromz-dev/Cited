@@ -154,7 +154,7 @@
 
 **But** : la valeur payante centrale. **T019 ouvre cette phase avant tout confort d'interface**, conformément au risque n°1 du PRD (quota non appliqué = fuite de revenu).
 
-- [ ] **T019** [P2] **Appliquer le quota de sites par plan** — `cited/app/actions/sites.ts::addMonitoredSite`
+- [x] **T019** [P2] **Appliquer le quota de sites par plan** — `cited/app/actions/sites.ts::addMonitoredSite`
   - **Dépendances** : T008
   - **EF/ENF** : EF-018
   - **Vérification** : test `app/actions/sites.test.ts` — un compte `SOLO` avec 10 sites déjà actifs reçoit une erreur orientant vers le palier supérieur au 11ᵉ ajout, jamais une erreur technique générique
@@ -178,13 +178,13 @@
   - **Vérification** : aucun lien restant dans l'application vers `/sites/new` ; `npm run build` ne référence plus le dossier supprimé
   - **Taille** : S
 
-- [ ] **T023** [P2] Étendre le scan quotidien au jeu complet de bots de rapport et au `ScanLog` enrichi — `cited/inngest/functions/scan-site.ts`
+- [x] **T023** [P2] Étendre le scan quotidien au jeu complet de bots de rapport et au `ScanLog` enrichi — `cited/inngest/functions/scan-site.ts`
   - **Dépendances** : T013 (colonnes `ScanLog`)
   - **EF/ENF** : EF-026
   - **Vérification** : test `inngest/functions/scan-site.test.ts` — le `ScanLog` créé porte `simpleStatus` et `cause` pour chaque bot du rapport, pas seulement GPTBot
   - **Taille** : M
 
-- [ ] **T024** [P2] Distinguer `ERREUR` de `BLOQUÉ` dans `MonitoredSite.status` et son affichage — `cited/inngest/functions/scan-site.ts`, `cited/components/DashboardSites.tsx`
+- [x] **T024** [P2] Distinguer `ERREUR` de `BLOQUÉ` dans `MonitoredSite.status` et son affichage — `cited/inngest/functions/scan-site.ts`, `cited/components/DashboardSites.tsx`
   - **Dépendances** : T023
   - **EF/ENF** : EF-030
   - **Vérification** : un site en timeout DNS simulé prend le statut `ERREUR`, un site avec `robots.txt` disallow prend `BLOQUÉ`, avec un badge visuellement différent

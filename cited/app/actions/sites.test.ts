@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { getMonitoredSites, addMonitoredSite, deleteMonitoredSite } from './sites';
 
 vi.mock('@/auth', () => ({
@@ -7,13 +7,16 @@ vi.mock('@/auth', () => ({
 
 vi.mock('@/lib/db', () => ({
   db: {
+    $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(db)),
     user: {
       findUnique: vi.fn(),
     },
+    $executeRaw: vi.fn(async () => 0),
     monitoredSite: {
       findMany: vi.fn(),
       create: vi.fn(),
       deleteMany: vi.fn(),
+      count: vi.fn(),
     },
   },
 }));
@@ -115,6 +118,7 @@ describe('sites actions', () => {
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 1);
       vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'PRO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(0);
       vi.mocked(db.monitoredSite.create).mockResolvedValueOnce({ id: 'site-1', name: 'Test' } as unknown as CreatedSite);
 
       const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });
@@ -129,6 +133,78 @@ describe('sites actions', () => {
         },
       });
       expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
+    });
+
+    it('refuse un 11e site Freelance et nomme le palier Agence', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'SOLO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(10);
+
+      const res = await addMonitoredSite({ name: 'Onzième', url: 'https://test.com' });
+
+      expect(res).toEqual({
+        error: 'Vous surveillez déjà 10 sites, le maximum du palier Freelance. Passez au palier Agence (30 sites) pour en ajouter.',
+      });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+    });
+
+    it('refuse un 31e site Agence et nomme le palier Studio', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'PRO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(30);
+
+      const res = await addMonitoredSite({ name: 'Trente-et-unième', url: 'https://test.com' });
+
+      expect(res).toEqual({
+        error: 'Vous surveillez déjà 30 sites, le maximum du palier Agence. Passez au palier Studio (100 sites) pour en ajouter.',
+      });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+    });
+
+    it('refuse un 101e site Studio et indique le tarif au-delà', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'SCALE', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(100);
+
+      const res = await addMonitoredSite({ name: 'Cent-unième', url: 'https://test.com' });
+
+      expect(res).toEqual({
+        error: 'Vous surveillez déjà 100 sites, le maximum du palier Studio. Au-delà, chaque site coûte 2 € par mois : contactez-nous pour l\'activer.',
+      });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+    });
+
+    it('verrouille la ligne User avant de compter les sites', async () => {
+      const order: string[] = [];
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'SOLO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      const executeRaw = db.$executeRaw as unknown as Mock;
+      executeRaw.mockImplementation(async () => {
+        order.push('lock');
+        return 0;
+      });
+      const count = db.monitoredSite.count as unknown as Mock;
+      count.mockImplementationOnce(async () => {
+        order.push('count');
+        return 0;
+      });
+      vi.mocked(db.monitoredSite.create).mockResolvedValueOnce({ id: 'site-1' } as unknown as CreatedSite);
+
+      await addMonitoredSite({ name: 'Test', url: 'https://test.com' });
+
+      expect(order).toEqual(['lock', 'count']);
+      const [strings, id] = executeRaw.mock.calls[0] as [string[], string];
+      expect(strings.join('')).toContain('FOR UPDATE');
+      expect(strings.join('')).toContain('"User"');
+      expect(id).toBe('user-1');
     });
   });
 

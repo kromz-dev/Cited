@@ -1,11 +1,68 @@
 import { inngest } from "../client";
 import { db } from "@/lib/db";
-import { runCoreScan } from "@/lib/scanner/core";
+import { runCoreScan, type SimpleStatus } from "@/lib/scanner/core";
+import { DEFAULT_PROBE_BOTS } from "../../lib/scanner/agents";
 import { sendRegressionAlert } from "@/lib/alerting/sendAlert";
 import { NonRetriableError } from "inngest";
 
+/**
+ * Contrat stable pour le passage quotidien et pour T043 (premier scan).
+ *
+ * Événement `app/scan.site` :
+ * - `siteIds` : au plus 10 identifiants, un lot du passage quotidien ;
+ * - `siteId` : un seul site. Équivalent à `siteIds: [siteId]`.
+ *   Un déclenchement unitaire (onboarding) doit continuer à envoyer `siteId`.
+ *
+ * Budget Inngest Hobby : 50 000 exécutions par mois, une par lancement
+ * et une par step. Un lot de 10 sites = 1 lancement + 10 `step.run`
+ * = 11 exécutions, soit 1,1 par site et par jour (≤ 1,2). Sur 30 jours :
+ * 33 exécutions par site, donc 50 000 / 33 ≈ 1 515 sites. Le dispatcher
+ * ajoute 1 cron, 1 step de lecture et 1 `step.sendEvent` pour tous les
+ * lots. Aucun ping récurrent.
+ */
+const SCAN_BATCH_SIZE = 10;
+
+const STATUS_RANK: Record<SimpleStatus, number> = {
+  OK: 0,
+  "COQUILLE VIDE": 1,
+  "BLOQUÉ": 2,
+  ERREUR: 3,
+};
+
+interface ScanEventData {
+  siteId?: string;
+  siteIds?: string[];
+}
+
+export function causeForBot(agent: string, reasons: string[]): string {
+  const reason = reasons[0];
+  if (!reason) return `${agent} : aucune restriction détectée`;
+  const french = reason
+    .replace(/^robots\.txt disallows /, "robots.txt interdit ")
+    .replace(/^unreachable: .*/, "site injoignable")
+    .replace(/^http (\d+)$/, "réponse HTTP $1")
+    .replace(/^access challenged.*/, "page de challenge")
+    .replace(/^access blocked.*/, "accès bloqué")
+    .replace(/^js_dependent: .*/, "la page dépend de JavaScript")
+    .replace(/^likely_js_dependent: .*/, "la page dépend probablement de JavaScript")
+    .replace(/^noindex$/, "balise noindex");
+  return `${agent} : ${french}`;
+}
+
+function siteIdsFrom(data: ScanEventData): string[] {
+  const ids = data.siteIds?.length ? data.siteIds : data.siteId ? [data.siteId] : [];
+  return ids.slice(0, SCAN_BATCH_SIZE);
+}
+
+function worstStatus(statuses: SimpleStatus[]): SimpleStatus {
+  return statuses.reduce(
+    (worst, status) => (STATUS_RANK[status] > STATUS_RANK[worst] ? status : worst),
+    "OK",
+  );
+}
+
 export const scanSiteJob = inngest.createFunction(
-  { 
+  {
     id: "scan-single-site",
     concurrency: {
       limit: 10,
@@ -13,63 +70,92 @@ export const scanSiteJob = inngest.createFunction(
     triggers: [{ event: "app/scan.site" }],
   },
   async ({ event, step }) => {
-    const { siteId } = event.data;
-
-    const site = await step.run("fetch-site", async () => {
-      return await db.monitoredSite.findUnique({
-        where: { id: siteId },
-        include: { user: true }
-      });
-    });
-
-    if (!site) {
-      throw new NonRetriableError(`Site not found: ${siteId}`);
+    const siteIds = siteIdsFrom(event.data as ScanEventData);
+    if (siteIds.length === 0) {
+      throw new NonRetriableError("Aucun site à scanner");
     }
 
-    const scan = await step.run("run-scan", async () => {
-      const { report, results } = await runCoreScan(site.url, ["GPTBot"]);
-      const summary = results.find((r) => r.agent === "GPTBot") || results[0];
-      return { summary, report };
-    });
+    const scanned: { siteId: string; oldStatus: string; newStatus: string }[] = [];
 
-    const gptResult = scan.summary;
-    const newStatus = gptResult.simpleStatus;
-    
-    await step.run("log-scan", async () => {
-      await db.scanLog.create({
-        data: {
-          siteId: site.id,
-          httpStatus: gptResult.httpStatus,
-          // Les trois résultats (robots.txt, accès, JS) restent séparés dans le journal.
-          payload: JSON.stringify(scan)
-        }
-      });
-    });
-
-    const oldStatus = site.status;
-
-    if (oldStatus !== newStatus) {
-      await step.run("update-status-and-alert", async () => {
-        await db.monitoredSite.update({
-          where: { id: site.id },
-          data: { status: newStatus }
+    for (const siteId of siteIds) {
+      const outcome = await step.run(`scan-${siteId}`, async () => {
+        const site = await db.monitoredSite.findUnique({
+          where: { id: siteId },
+          include: { user: true },
         });
 
-        const isRegression = 
-          (oldStatus === "ACTIVE" || oldStatus === "OK") && 
-          (newStatus === "BLOQUÉ" || newStatus === "COQUILLE VIDE");
-
-        if (isRegression) {
-          await sendRegressionAlert(
-            site.user.email,
-            site.url,
-            oldStatus,
-            newStatus
-          );
+        if (!site) {
+          throw new NonRetriableError(`Site not found: ${siteId}`);
         }
+
+        const { report, results } = await runCoreScan(site.url, DEFAULT_PROBE_BOTS);
+        const history = await db.scanLog.findMany({
+          where: { siteId: site.id },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { simpleStatus: true, cause: true },
+        });
+
+        // Une ligne par scan : T032a retient le dernier ScanLog du jour.
+        // simpleStatus est toujours une valeur de SimpleStatus (core.ts).
+        const newStatus = results.length > 0
+          ? worstStatus(results.map((result) => result.simpleStatus))
+          : "ERREUR";
+        const perBot = results.map((result) => ({
+          agent: result.agent,
+          simpleStatus: result.simpleStatus,
+          httpStatus: result.httpStatus,
+          reasons: result.reasons ?? [],
+          cause: causeForBot(result.agent, result.reasons ?? []),
+        }));
+        const cause = perBot
+          .filter((result) => result.simpleStatus === newStatus)
+          .map((result) => result.cause)
+          .join(" ; ");
+        const previous = history[0];
+        const changed =
+          !previous ||
+          previous.simpleStatus !== newStatus ||
+          previous.cause !== cause;
+        const deciding = perBot.find((result) => result.simpleStatus === newStatus);
+
+        await db.scanLog.create({
+          data: {
+            siteId: site.id,
+            httpStatus: deciding?.httpStatus ?? 0,
+            simpleStatus: newStatus,
+            cause,
+            // Neon Free : 0,5 Go. Le JSON n'est réécrit que si le verdict
+            // du site change. simpleStatus et cause sont toujours remplis.
+            payload: changed
+              ? JSON.stringify({ results: perBot, report })
+              : null,
+          },
+        });
+
+        const oldStatus = site.status;
+
+        if (oldStatus !== newStatus) {
+          await db.monitoredSite.update({
+            where: { id: site.id },
+            data: { status: newStatus },
+          });
+
+          const isRegression =
+            (oldStatus === "ACTIVE" || oldStatus === "OK") &&
+            (newStatus === "BLOQUÉ" || newStatus === "COQUILLE VIDE");
+
+          if (isRegression) {
+            await sendRegressionAlert(site.user.email, site.url, oldStatus, newStatus);
+          }
+        }
+
+        return { siteId: site.id, oldStatus, newStatus };
       });
+
+      scanned.push(outcome);
     }
 
-    return { siteId, oldStatus, newStatus };
-  }
+    return { scanned };
+  },
 );

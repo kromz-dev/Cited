@@ -15,6 +15,7 @@ vi.mock("@/lib/db", () => ({
     },
     scanLog: {
       create: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
     },
   },
 }));
@@ -53,7 +54,7 @@ interface DailyScanStep {
   run: <T>(name: string, fn: () => Promise<T> | T) => Promise<T>;
   sendEvent: (
     name: string,
-    payloads: Array<{ name: string; data: { siteId: string } }>,
+    payloads: Array<{ name: string; data: { siteIds: string[] } }>,
   ) => unknown;
 }
 
@@ -82,10 +83,9 @@ describe("Fan-Out Inngest Scans", () => {
       await invokeHandler<{ step: DailyScanStep }>(dailyScanJob, { step });
 
       expect(step.sendEvent).toHaveBeenCalledWith(
-        "send-events-0",
+        "dispatch-scan-batches",
         [
-          { name: "app/scan.site", data: { siteId: "site-1" } },
-          { name: "app/scan.site", data: { siteId: "site-2" } }
+          { name: "app/scan.site", data: { siteIds: ["site-1", "site-2"] } },
         ]
       );
     });
@@ -122,10 +122,14 @@ describe("Fan-Out Inngest Scans", () => {
         { event: { data: { siteId: "site-4" } }, step },
       );
 
-      const logged = vi.mocked(db.scanLog.create).mock.calls[0][0];
-      expect(JSON.parse(String(logged.data.payload))).toMatchObject({
-        summary: { simpleStatus: "COQUILLE VIDE" },
-        report: { robots: {}, access: {}, jsDependency: {} },
+      const logged = vi.mocked(db.scanLog.create).mock.calls[0]?.[0]?.data;
+      if (!logged) throw new Error("create devait écrire un journal");
+      expect(logged).toMatchObject({
+        simpleStatus: "COQUILLE VIDE",
+        cause: "GPTBot : aucune restriction détectée",
+      });
+      expect(JSON.parse(String(logged.payload))).toMatchObject({
+        results: [{ agent: "GPTBot", simpleStatus: "COQUILLE VIDE" }],
       });
 
       expect(db.monitoredSite.update).toHaveBeenCalledWith({
