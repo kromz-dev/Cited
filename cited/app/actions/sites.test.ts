@@ -14,6 +14,7 @@ vi.mock('@/lib/db', () => ({
     monitoredSite: {
       findMany: vi.fn(),
       create: vi.fn(),
+      createManyAndReturn: vi.fn(),
       deleteMany: vi.fn(),
       count: vi.fn(),
     },
@@ -202,10 +203,9 @@ describe('sites actions', () => {
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 1);
       vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'SOLO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
-      vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(0);
       vi.mocked(db.monitoredSite.findMany).mockResolvedValueOnce([] as unknown as MonitoredSites);
-      vi.mocked(db.monitoredSite.create).mockImplementation(((args: { data: { url?: string } }) =>
-        Promise.resolve({ id: args.data.url ?? "created" })) as unknown as typeof db.monitoredSite.create);
+      vi.mocked(db.monitoredSite.createManyAndReturn).mockImplementation(((args: { data: { url: string }[] }) =>
+        Promise.resolve(args.data.map((row) => ({ id: row.url })))) as unknown as typeof db.monitoredSite.createManyAndReturn);
       vi.mocked(assertSafeUrl).mockImplementation(async (url: string) => {
         if (url.includes('10.0.0.1') || url.includes('notaurl')) {
           throw new Error('URL refusée');
@@ -224,7 +224,9 @@ describe('sites actions', () => {
 
       const res = await addMonitoredSitesBulk(lines.join('\n'));
 
-      expect(db.monitoredSite.create).toHaveBeenCalledTimes(10);
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+      expect(db.monitoredSite.createManyAndReturn).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(db.monitoredSite.createManyAndReturn).mock.calls[0]?.[0]?.data).toHaveLength(10);
       expect(res).toMatchObject({ data: { skipped: expect.any(Array) } });
       if (!('data' in res) || !res.data) throw new Error('expected data');
       expect(res.data.created).toHaveLength(10);
