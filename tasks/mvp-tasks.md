@@ -22,7 +22,7 @@
 
 **But** : rendre le dépôt déployable en continu sur la pile décrite dans `docs/10-plan-technique.md` §5, avant d'écrire la moindre fonctionnalité produit.
 
-- [ ] **T001** [P] [SETUP] Créer les comptes des services 0 € retenus (Render, Neon, Inngest, Resend, Sentry, Stripe en mode test) et consigner les identifiants de projet (pas les secrets) dans une note d'exploitation privée du fondateur — `docs/10-plan-technique.md` (mise à jour de la section "points non vérifiés" une fois confirmée)
+- [ ] **T001** [P] [SETUP] Créer les comptes des services 0 € retenus (Render, Neon, Inngest, Resend, PostHog, Stripe en mode test) et consigner les identifiants de projet (pas les secrets) dans une note d'exploitation privée du fondateur — `docs/10-plan-technique.md` (mise à jour de la section "points non vérifiés" une fois confirmée)
   - **Dépendances** : Aucune
   - **EF/ENF** : ENF-016
   - **Vérification** : chaque service confirme par écrit (support ou CGU consultées directement) l'autorisation d'usage commercial de son offre gratuite ; le plan technique est mis à jour si un chiffre diffère de ce qui y est documenté
@@ -46,10 +46,10 @@
   - **Vérification** : `npx prisma migrate status` ne signale aucune migration en attente sur l'environnement de production
   - **Taille** : S
 
-- [ ] **T005** [P] [SETUP] Intégrer Sentry (`@sentry/nextjs`) avec configuration minimale — `sentry.server.config.ts`, `sentry.client.config.ts`, `instrumentation.ts`
+- [ ] **T005** [P] [SETUP] Intégrer PostHog (Cloud UE) pour les exceptions client et serveur et la mesure produit, en remplacement de Sentry (`docs/decisions/ADR-001-posthog-remplace-sentry.md`) — `cited/app/providers.tsx`, `cited/app/global-error.tsx`, `cited/lib/posthog-ai.ts`, `cited/app/layout.tsx` (amorcé en local par le fondateur, non commité au 24/09)
   - **Dépendances** : T001
   - **EF/ENF** : ENF-009
-  - **Vérification** : une erreur provoquée manuellement en environnement de test apparaît dans le tableau de bord Sentry sous 1 minute
+  - **Vérification** : une erreur provoquée manuellement côté client et côté serveur apparaît dans PostHog sous 1 minute ; sur les pages marketing, aucun cookie ni `localStorage` PostHog n'est écrit avant consentement (ou le mode sans persistance est actif), comme le prévoit l'ADR-001
   - **Taille** : S
 
 - [x] **T006** [P] [SETUP] Route de compteur d'audience RGPD-safe (pas de cookie, pas de tiers) — `app/api/beacon/route.ts`, appel `navigator.sendBeacon` depuis `app/(marketing)/layout.tsx`
@@ -413,7 +413,7 @@
 - [ ] **T053** [P] [QUAL] Journalisation structurée des échecs de scan et d'envoi d'alerte (remplace les `console.error` isolés) — `cited/inngest/functions/scan-site.ts`, `cited/lib/alerting/sendAlert.ts`
   - **Dépendances** : T005
   - **EF/ENF** : ENF-009
-  - **Vérification** : un échec simulé d'envoi Resend apparaît dans Sentry avec `siteId` et cause, pas seulement un message générique
+  - **Vérification** : un échec simulé d'envoi Resend apparaît dans PostHog (`posthog-node`) avec `siteId` et cause, pas seulement un message générique
   - **Taille** : S
 
 - [ ] **T054** [P] [QUAL] Audit d'accessibilité AA des écrans raccordés au réel (contraste, clavier, cibles tactiles 44 px) — checklist `docs/07-design-system.md` §6, appliquée à `DashboardSites.tsx`, `alerts/page.tsx`, `reports/page.tsx`, `sites/[siteId]/page.tsx`, `settings/page.tsx`, `onboarding/page.tsx`

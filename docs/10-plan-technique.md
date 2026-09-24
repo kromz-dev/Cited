@@ -79,7 +79,7 @@ Le moteur de scan (`lib/scanner/*`), l'authentification, la base Prisma, le cron
                           └────────────────────────────────┘
 
      Services annexes (0 €, appelés en sortie, jamais de dépendance bloquante) :
-       Resend (e-mails)   Stripe (paiement + portail client)   Sentry (erreurs)
+       Resend (e-mails)   Stripe (paiement + portail client)   PostHog UE (erreurs, mesure)
        Rendu headless optionnel (Playwright), seulement si hébergé gratuitement (§5, §9)
 ```
 
@@ -104,7 +104,7 @@ Principe directeur (ENF-016) : chaque service a une offre gratuite qui autorise 
 | Rendu headless (dépendance JS) | **Aucun par défaut** ; interface `Renderer` optionnelle (`lib/scanner/renderer.ts`) activable sur une instance Playwright si elle tourne gratuitement | Décision §14.4 du PRD : pas de service payant au stade MVP | — | Oracle Cloud Always Free (Ampere A1) est le seul candidat gratuit capable de faire tourner Chromium, mais **la capacité Ampere A1 a été réduite de moitié (4 → 2 OCPU, 24 → 12 Go) le 15 juin 2026 et son allocation dépend de la disponibilité régionale**, non garantie à l'inscription — **statut à vérifier avant toute dépendance produit** | Passage à un service géré (Browserless, etc.) uniquement une fois financé par le MRR (décision déjà actée) |
 | PDF (rapport mensuel, export diagnostic) | **`@react-pdf/renderer`** (rendu par description de mise en page, sans navigateur) | Fonctionne sur un processus Node classique, donc sur l'hébergement retenu, sans dépendre du rendu headless incertain ci-dessus (§9) | Licence MIT, aucun coût | — | — |
 | CI / qualité | **GitHub Actions** | Dépôt déjà sur GitHub | Gratuit illimité sur dépôt public ; 2000 min/mois sur dépôt privé | À surveiller si le dépôt reste privé et que les builds s'allongent | — |
-| Observabilité / erreurs | **Sentry — Developer (gratuit)** | Un seul utilisateur (le fondateur), suffisant | Plafond d'usage, pas de restriction commerciale identifiée | 5000 événements/mois, rétention 30 j, 1 utilisateur | Palier payant (26 $/mois Team) si le volume d'erreurs dépasse 5000/mois (signal probable d'un problème plus grave à corriger avant de payer plus) |
+| Observabilité / erreurs / mesure produit | **PostHog Cloud UE — gratuit** (remplace Sentry, voir `docs/decisions/ADR-001-posthog-remplace-sentry.md`) | Un seul outil pour les exceptions client et serveur et le parcours produit | Non précisé sur la page de tarifs : **à confirmer (T001)** | Par mois : 1 M d'événements, 100 000 exceptions, 5 000 enregistrements de session | Palier payant à l'usage si un quota est dépassé ; consentement RGPD à trancher avant la mise en ligne (ADR-001) |
 | Mesure d'audience (marketing) | **Compteur maison** : route `app/api/beacon/route.ts` + table `PageView` minimaliste, sans cookie ni tiers | Respecte le principe VI (pas de nouvelle dépendance externe) et RGPD par construction (aucune donnée personnelle, pas de traceur tiers) | — | Rudimentaire : pas de tunnel de conversion détaillé | Umami auto-hébergé (MIT, léger, RGPD) dès qu'une instance dédiée existe (ex. si le rendu headless finit par justifier un VPS) |
 | Domaine | Sous-domaine gratuit de l'hébergeur (`*.onrender.com` en développement) | Coût nul le temps de valider la traction | — | Image de marque moindre pour la prospection écrite | Achat de `cited.app` (≈ 10-15 €/an) dès le premier client payant — seule dépense actée du plan |
 
@@ -119,12 +119,11 @@ Principe directeur (ENF-016) : chaque service a une offre gratuite qui autorise 
 - Inngest Hobby : 50 000 exécutions/mois, une exécution par lancement et par step, 5 steps concurrents : [Inngest — Pricing](https://www.inngest.com/pricing), consulté le 24/09/2026.
 - Neon Free (0,5 Go, 100 CU-h, veille à 5 min non réglable, suspension si CU-h épuisées) : [Neon — Plans](https://neon.com/docs/introduction/plans), consulté le 24/09/2026.
 - Resend Free (100 e-mails/jour, 3 000/mois, 10 requêtes/s) : [Resend — Account quotas and limits](https://resend.com/docs/knowledge-base/account-quotas-and-limits), consulté le 24/09/2026.
-- Resend Free : 3000 e-mails/mois, 100/jour : agrégation de sources tierces citant `resend.com/docs/knowledge-base/account-quotas-and-limits` (accès direct bloqué pendant la rédaction) — **à revérifier sur resend.com à l'inscription**.
 - Oracle Always Free — réduction de capacité Ampere A1 (4→2 OCPU, 24→12 Go) au 15 juin 2026 et dépendance à la disponibilité régionale : [InfoQ — "Oracle Quietly Halves Free Tier Ampere A1 Compute Limits"](https://www.infoq.com/news/2026/07/oracle-cloud-free-tier-limits/), [Oracle Docs — Always Free Resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm).
-- Sentry Developer (gratuit) : 5000 événements/mois, 1 utilisateur, rétention 30 j : agrégation de sources tierces (pas d'accès direct à sentry.io pendant la rédaction) — **à revérifier à l'inscription**.
+- PostHog (gratuit) : 1 M d'événements, 100 000 exceptions, 5 000 enregistrements de session, 100 000 événements LLM par mois : [PostHog — Pricing](https://posthog.com/pricing), consulté le 24/09/2026. Rétention et usage commercial non précisés sur cette page.
 - Koyeb : la recherche indique que Koyeb a fermé son palier gratuit "Starter" aux nouvelles inscriptions après son rachat par Mistral AI début 2026 — **écarté de ce plan pour cette raison, à ne pas retenir sans vérifier l'éligibilité d'un nouveau compte**.
 
-**Points non vérifiés à traiter avant l'inscription définitive (ENF-016, tâche dédiée dans `tasks/mvp-tasks.md`)** : les CGU exactes de Render sur l'usage commercial (rien d'officiel consulté directement, accès réseau restreint pendant la rédaction de ce plan), les chiffres précis Neon/Resend/Sentry ci-dessus (issus d'agrégateurs tiers plutôt que de la documentation officielle de premier niveau, malgré une tentative de lecture directe). Aucune décision produit ne doit supposer ces chiffres exacts avant confirmation écrite.
+**Points non vérifiés à traiter avant l'inscription définitive (ENF-016, tâche dédiée dans `tasks/mvp-tasks.md`)** : les CGU exactes de Render sur l'usage commercial (rien d'officiel consulté directement, accès réseau restreint pendant la rédaction de ce plan), l'usage commercial et la rétention du palier gratuit de PostHog. Les quotas Inngest, Neon, Resend et PostHog ont été relevés le 24/09/2026 sur les pages officielles.
 
 ## 6. Modèle de données cible
 
@@ -305,7 +304,7 @@ Inngest Hobby compte **une exécution par lancement de fonction et une par step*
 
 ## 11. Observabilité
 
-- **Erreurs** : Sentry (Developer, gratuit) sur le serveur et le client, capture des échecs de scan, d'envoi d'alerte et de génération de rapport (ENF-009).
+- **Erreurs** : PostHog (Cloud UE, gratuit) sur le serveur (`posthog-node`) et le client (`posthog-js`, `capture_exceptions`), capture des échecs de scan, d'envoi d'alerte et de génération de rapport (ENF-009, ADR-001).
 - **Journalisation applicative** : remplacer les `console.error`/`console.warn` isolés (`scan-site.ts`, `sendAlert.ts`) par un appel structuré incluant `siteId`, `bot`, `cause` — exploitable sans grep manuel.
 - **Suivi des jobs** : le tableau de bord Inngest (inclus dans l'offre gratuite) donne déjà l'historique d'exécution, les retries et les échecs par fonction — pas d'outil supplémentaire nécessaire (principe VI).
 - **Alerte sur soi-même** : le pinger externe gratuit qui empêche la mise en veille Render (§8, T003) sert aussi de sonde de disponibilité, avec son propre e-mail d'alerte en cas d'échec répété.
@@ -338,7 +337,7 @@ Inngest Hobby compte **une exécution par lancement de fonction et une par step*
 | Exécutions Inngest (50 000/mois, chaque step compte) épuisées par le scan quotidien | Plus aucun scan ni alerte jusqu'au mois suivant | Regrouper les scans par lots de 10 sites avec 1 step par site (§8.1) avant de dépasser 300 sites ; aucun job récurrent de confort sur Inngest |
 | CU-h Neon (100/mois) épuisées par une activité qui empêche la veille | Base suspendue jusqu'au mois suivant | Aucun ping récurrent vers une route qui lit la base ; surveiller la consommation CU-h dans la console Neon chaque semaine après le lancement |
 | Volume d'e-mails Resend (100/jour) dépassé par la combinaison alertes + J+3 + rapports mensuels à mesure que le portefeuille grandit | Alertes de régression retardées — risque direct pour le principe I (crédibilité de la mesure) | Un seul e-mail récapitulatif par agence et par passage du scan, jamais un par site (T025/T026) ; suivre le compteur mensuel Resend dès 5 agences actives ; palier payant (20 $/mois) largement couvert par le MRR cible (1000 €) |
-| Les chiffres de quotas gratuits (Neon, Resend, Sentry) proviennent d'agrégateurs tiers, pas de la documentation officielle consultée directement (réseau restreint pendant la rédaction) | Une limite réelle différente de celle documentée ici casserait une hypothèse de dimensionnement | Tâche dédiée de vérification à l'inscription (ENF-016) avant tout engagement produit sur ces chiffres |
+| L'usage commercial et la rétention du palier gratuit de PostHog ne sont pas précisés sur sa page de tarifs (les quotas Inngest, Neon, Resend et PostHog ont été relevés le 24/09/2026 sur les pages officielles) | Une restriction découverte tard obligerait à changer d'outil de mesure | Confirmation écrite dans le cadre de T001, avant tout encaissement Stripe réel |
 
 ## 15. Traçabilité exigences → sections
 
