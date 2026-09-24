@@ -14,7 +14,13 @@ import { Verdict } from "@/components/ui/verdict";
  * parent et injecté ici en `children` : elle a besoin de la session et de la
  * base, ce que ce composant client ne peut pas lire directement.
  */
-export function SettingsClient({ subscriptionSection }: { subscriptionSection: ReactNode }) {
+export function SettingsClient({
+  subscriptionSection,
+  personalDataSection,
+}: {
+  subscriptionSection: ReactNode;
+  personalDataSection: ReactNode;
+}) {
   const [activeTab, setActiveTab] = useState("abonnement");
   const [copied, setCopied] = useState(false);
   const [brandName, setBrandName] = useState("Atelier Boréal");
@@ -33,6 +39,7 @@ export function SettingsClient({ subscriptionSection }: { subscriptionSection: R
     { id: "equipe", label: "Équipe" },
     { id: "api", label: "Accès API" },
     { id: "marque-blanche", label: "Marque blanche" },
+    { id: "donnees", label: "Données personnelles" },
   ];
 
   const scrollToSection = (id: string) => {
@@ -189,7 +196,7 @@ export function SettingsClient({ subscriptionSection }: { subscriptionSection: R
           </div>
 
           {/* Marque blanche */}
-          <section id="marque-blanche" className="scroll-mt-8">
+          <section id="marque-blanche" className="scroll-mt-8 border-b border-line pb-8">
             <h2 className="text-xl font-semibold text-ink">Marque blanche</h2>
             <p className="mt-1.5 mb-4.5 text-sm text-ink-2">
               Les rapports clients portent votre identité, sans mention de Cited.
@@ -226,6 +233,8 @@ export function SettingsClient({ subscriptionSection }: { subscriptionSection: R
               </div>
             </div>
           </section>
+
+          {personalDataSection}
         </div>
       </div>
     </div>

@@ -318,7 +318,7 @@
   - **Vérification** : "Offre agence — 20 domaines" et "18/20" codés en dur disparaissent ; les valeurs affichées changent selon le compte connecté
   - **Taille** : M
 
-- [ ] **T041** [P] [FACT] Exposer l'export RGPD et la date de purge dans les paramètres — `cited/app/(app)/settings/page.tsx`, nouvelle action `cited/app/actions/gdpr.ts::exportUserData`
+- [x] **T041** [P] [FACT] Exposer l'export RGPD et la date de purge dans les paramètres — `cited/app/(app)/settings/page.tsx`, nouvelle action `cited/app/actions/gdpr.ts::exportUserData`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-015
   - **Vérification** : un utilisateur connecté peut déclencher un export et voir sa date de purge si son compte est résilié
