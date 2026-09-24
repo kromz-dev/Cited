@@ -324,7 +324,7 @@
   - **Vérification** : un utilisateur connecté peut déclencher un export et voir sa date de purge si son compte est résilié
   - **Taille** : S
 
-- [ ] **T042** [P] [FACT] Vérifier que la page de tarifs ne présente le dépassement 100 sites (EF-057) et la facturation annuelle (EF-060) que comme non actifs, jamais comme activables — `cited/app/(marketing)/pricing/page.tsx` (déjà largement conforme, vérification et ajustement de libellé)
+- [x] **T042** [P] [FACT] Vérifier que la page de tarifs ne présente le dépassement 100 sites (EF-057) et la facturation annuelle (EF-060) que comme non actifs, jamais comme activables — `cited/app/(marketing)/pricing/page.tsx` (déjà largement conforme, vérification et ajustement de libellé)
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-057, EF-060, principe II
   - **Vérification** : relecture manuelle de la page — aucun texte ne laisse croire à une activation en libre-service de ces deux mécanismes
