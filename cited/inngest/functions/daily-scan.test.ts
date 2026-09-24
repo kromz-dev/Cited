@@ -23,6 +23,8 @@ vi.mock("@/lib/scanner/core", () => ({
   runCoreScan: vi.fn(),
 }));
 
+type CoreScanOutput = Awaited<ReturnType<typeof runCoreScan>>;
+
 vi.mock("@/lib/alerting/sendAlert", () => ({
   sendRegressionAlert: vi.fn(),
 }));
@@ -59,6 +61,10 @@ describe("Fan-Out Inngest Scans", () => {
   });
 
   describe("scanSiteJob (Worker)", () => {
+    const step = {
+      run: vi.fn().mockImplementation(async (_name: string, fn: () => unknown) => await fn()),
+    };
+
     it("should process a site and trigger alert on regression", async () => {
       vi.mocked(db.monitoredSite.findUnique).mockResolvedValue({
         id: "site-4",
@@ -67,18 +73,27 @@ describe("Fan-Out Inngest Scans", () => {
         user: { email: "user@example.com" },
       } as any);
 
-      vi.mocked(runCoreScan).mockResolvedValue([
-        {
-          agent: "GPTBot",
-          simpleStatus: "COQUILLE VIDE",
-          httpStatus: 200,
-          durationMs: 100,
-          wordCount: 10,
-        } as any,
-      ]);
+      vi.mocked(runCoreScan).mockResolvedValue({
+        report: { robots: {}, access: {}, jsDependency: {} },
+        results: [
+          {
+            agent: "GPTBot",
+            simpleStatus: "COQUILLE VIDE",
+            httpStatus: 200,
+            durationMs: 100,
+            wordCount: 10,
+          },
+        ],
+      } as unknown as CoreScanOutput);
 
       // @ts-ignore
-      await scanSiteJob.fn({ event: { data: { siteId: "site-4" } } });
+      await scanSiteJob.fn({ event: { data: { siteId: "site-4" } }, step });
+
+      const logged = vi.mocked(db.scanLog.create).mock.calls[0][0];
+      expect(JSON.parse(String(logged.data.payload))).toMatchObject({
+        summary: { simpleStatus: "COQUILLE VIDE" },
+        report: { robots: {}, access: {}, jsDependency: {} },
+      });
 
       expect(db.monitoredSite.update).toHaveBeenCalledWith({
         where: { id: "site-4" },
@@ -100,20 +115,23 @@ describe("Fan-Out Inngest Scans", () => {
         user: { email: "error@example.com" },
       } as any);
 
-      vi.mocked(runCoreScan).mockResolvedValue([
-        {
-          agent: "GPTBot",
-          simpleStatus: "BLOQUÉ",
-          httpStatus: 403,
-          durationMs: 100,
-          wordCount: 0,
-        } as any,
-      ]);
+      vi.mocked(runCoreScan).mockResolvedValue({
+        report: {},
+        results: [
+          {
+            agent: "GPTBot",
+            simpleStatus: "BLOQUÉ",
+            httpStatus: 403,
+            durationMs: 100,
+            wordCount: 0,
+          },
+        ],
+      } as unknown as CoreScanOutput);
 
       vi.mocked(sendRegressionAlert).mockRejectedValue(new Error("Email crashed"));
 
       // @ts-ignore
-      await expect(scanSiteJob.fn({ event: { data: { siteId: "site-error" } } })).rejects.toThrow("Email crashed");
+      await expect(scanSiteJob.fn({ event: { data: { siteId: "site-error" } }, step })).rejects.toThrow("Email crashed");
       
       // The update still happened before the crash
       expect(db.monitoredSite.update).toHaveBeenCalled();

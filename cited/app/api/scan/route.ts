@@ -1,110 +1,51 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { runCoreScan } from "@/lib/scanner/core";
-import dns from "dns/promises";
+import { assertSafeUrl } from "@/lib/scanner/crawler";
+import { callerKey, rateLimit } from "@/lib/rate-limit";
 
-// Simple in-memory rate limiting (max 3 requests per IP per window)
-const rateLimitMap = new Map<string, { count: number; expiresAt: number }>();
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+// 3 scans par minute et par IP, compteur partagé en base (voir lib/rate-limit).
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS = 3;
 
-// Cleanup memory leak in rate limiter
-if (typeof setInterval !== "undefined") {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [ip, record] of rateLimitMap.entries()) {
-      if (now > record.expiresAt) {
-        rateLimitMap.delete(ip);
-      }
-    }
-  }, 5 * 60 * 1000).unref();
-}
-
-async function isSafeUrl(urlString: string): Promise<boolean> {
-  try {
-    const url = new URL(urlString);
-    const hostname = url.hostname;
-    
-    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") return false;
-    
-    const lookup = await dns.lookup(hostname);
-    const ip = lookup.address;
-    
-    if (lookup.family === 4) {
-      if (
-        ip.startsWith("127.") || 
-        ip.startsWith("10.") || 
-        ip.startsWith("192.168.") || 
-        ip.startsWith("169.254.")
-      ) return false;
-      const parts = ip.split(".");
-      if (parts[0] === "172") {
-        const second = parseInt(parts[1], 10);
-        if (second >= 16 && second <= 31) return false;
-      }
-    } else if (lookup.family === 6) {
-      const lowerIp = ip.toLowerCase();
-      if (
-        lowerIp === "::1" || 
-        lowerIp.startsWith("fc") || 
-        lowerIp.startsWith("fd") || 
-        lowerIp.startsWith("fe80")
-      ) return false;
-    }
-    
-    return true;
-  } catch (e) {
-    return false; // Reject on DNS failure
-  }
-}
+const INVALID_URL = "Veuillez fournir une URL valide, incluant http:// ou https://";
 
 const requestSchema = z.object({
-  url: z.string().url("Veuillez fournir une URL valide, incluant http:// ou https://")
-    .refine(val => val.startsWith('http://') || val.startsWith('https://'), { 
-      message: "Veuillez fournir une URL valide, incluant http:// ou https://" 
-    }),
+  url: z.string().url(INVALID_URL)
+    .refine(val => val.startsWith('http://') || val.startsWith('https://'), { message: INVALID_URL }),
 });
 
 export async function POST(request: Request) {
   try {
     // 1. Rate Limiting based on IP
-    const ip = request.headers.get("x-forwarded-for") || "unknown";
-    const now = Date.now();
-    
-    if (ip !== "unknown") {
-      const record = rateLimitMap.get(ip);
-      if (record) {
-        if (now > record.expiresAt) {
-          rateLimitMap.set(ip, { count: 1, expiresAt: now + RATE_LIMIT_WINDOW_MS });
-        } else if (record.count >= MAX_REQUESTS) {
-          return NextResponse.json(
-            { error: "Trop de requêtes. Veuillez réessayer dans quelques instants." },
-            { status: 429 }
-          );
-        } else {
-          record.count += 1;
+    const quota = await rateLimit(callerKey(request, "scan"), MAX_REQUESTS, RATE_LIMIT_WINDOW_MS);
+    if (!quota.allowed) {
+      return NextResponse.json(
+        { error: "Trop de requêtes. Veuillez réessayer dans quelques instants." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.max(1, Math.ceil((quota.resetAt.getTime() - Date.now()) / 1000))) },
         }
-      } else {
-        rateLimitMap.set(ip, { count: 1, expiresAt: now + RATE_LIMIT_WINDOW_MS });
-      }
+      );
     }
 
     // 2. Parse and Validate Request
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
     const parsed = requestSchema.safeParse(body);
-    
+
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.errors[0]?.message || "URL invalide" },
+        { error: parsed.error.issues[0]?.message || "URL invalide" },
         { status: 400 }
       );
     }
 
     const { url } = parsed.data;
 
-    // 3. SSRF Protection
-    const isSafe = await isSafeUrl(url);
-    if (!isSafe) {
+    // 3. SSRF Protection (le crawler la refait sur chaque redirection)
+    try {
+      await assertSafeUrl(url);
+    } catch {
       return NextResponse.json(
         { error: "Cette URL ne peut pas être scannée pour des raisons de sécurité." },
         { status: 403 }
@@ -112,10 +53,9 @@ export async function POST(request: Request) {
     }
 
     // 4. Execute Scan for "GPTBot"
-    const results = await runCoreScan(url, ["GPTBot"]);
-    const result = results[0];
+    const { report, results } = await runCoreScan(url, ["GPTBot"]);
 
-    return NextResponse.json(result);
+    return NextResponse.json({ ...results[0], report });
   } catch (error) {
     console.error("Scan API Error:", error);
     return NextResponse.json(
