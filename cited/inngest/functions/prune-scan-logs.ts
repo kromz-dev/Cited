@@ -17,7 +17,7 @@ export function pruneCutoff(now: Date): Date {
 // Purge mensuelle des payloads de ScanLog de plus de 90 jours, pour protéger
 // le quota de stockage gratuit de Neon (§14 docs/10-plan-technique.md) sans
 // gonfler la facture Inngest : cron à heure creuse, un seul step, une seule
-// requête `updateMany` indexée (jamais de boucle ni de step par ligne, même
+// requête `updateMany` (jamais de boucle ni de step par ligne, même
 // si le volume de logs devient important).
 // simpleStatus et cause sont conservés pour l'historique : seul payload,
 // potentiellement volumineux, est vidé.
