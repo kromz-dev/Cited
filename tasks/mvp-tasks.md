@@ -1,0 +1,473 @@
+# Tâches : MVP Cited
+
+**Entrées** : `docs/09-prd-mvp.md` (exigences EF-xxx/ENF-xxx), `docs/10-plan-technique.md` (architecture, pile 0 €, contrats), `docs/08-constitution.md` (portes de qualité)
+**Constitution** : quatre portes obligatoires avant toute fusion — `npx tsc --noEmit`, `npm run lint`, `npx vitest run`, `npm run build`.
+**Hors périmètre** : le moteur de scan de bas niveau (`lib/scanner/crawler.ts`, `robots.ts`, `analyzer.ts`, `agents.ts`) est corrigé par un autre ingénieur (statut *En cours* du PRD) — aucune tâche ci-dessous ne le modifie, seulement les points d'appel (`runCoreScan`, nombre de bots demandés).
+
+## Format
+
+`[ID] [P?] [PHASE] Description` — `fichier(s) principaux`
+- **Dépendances** : tâches devant être terminées avant celle-ci, ou "Aucune"
+- **EF/ENF** : exigences du PRD couvertes
+- **Vérification** : ce qui prouve que la tâche est faite
+- **Taille** : S (1-2 fichiers) / M (3-5 fichiers) / L (5-8 fichiers, à éviter — déjà scindée ci-dessous si besoin)
+
+`[P]` = parallélisable (fichiers différents, aucune dépendance entre elles).
+
+**Priorité annoncée par le PRD (risque n°1)** : le quota de sites non appliqué (EF-018) et les écrans à données fictives perçus comme fonctionnels sont le risque de crédibilité et de fuite de revenu le plus immédiat. En conséquence : **T019 (quota)** ouvre la phase P2 avant toute tâche de confort, et chaque écran à données fictives est raccordé au réel **dans la même phase que la fonctionnalité qu'il affiche** plutôt que reporté à la fin — la Phase 8 ne couvre que les écrans restants qui ne rentrent dans aucune fonctionnalité verticale.
+
+---
+
+## Phase 1 : Setup / infra 0 €
+
+**But** : rendre le dépôt déployable en continu sur la pile décrite dans `docs/10-plan-technique.md` §5, avant d'écrire la moindre fonctionnalité produit.
+
+- [ ] **T001** [P] [SETUP] Créer les comptes des services 0 € retenus (Render, Neon, Inngest, Resend, Sentry, Stripe en mode test) et consigner les identifiants de projet (pas les secrets) dans une note d'exploitation privée du fondateur — `docs/10-plan-technique.md` (mise à jour de la section "points non vérifiés" une fois confirmée)
+  - **Dépendances** : Aucune
+  - **EF/ENF** : ENF-016
+  - **Vérification** : chaque service confirme par écrit (support ou CGU consultées directement) l'autorisation d'usage commercial de son offre gratuite ; le plan technique est mis à jour si un chiffre diffère de ce qui y est documenté
+  - **Taille** : S
+
+- [ ] **T002** [P] [SETUP] Pipeline CI GitHub Actions exécutant les quatre portes de qualité — `.github/workflows/ci.yml`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : ENF-010
+  - **Vérification** : une pull request avec une erreur de typage volontaire échoue le job CI ; une PR propre passe les quatre étapes (`tsc --noEmit`, `lint`, `vitest run`, `build`)
+  - **Taille** : S
+
+- [ ] **T003** [SETUP] Déploiement continu Render (région Francfort) branché sur `main` — `render.yaml` (ou configuration via tableau de bord, documentée dans `docs/10-plan-technique.md`)
+  - **Dépendances** : T001
+  - **EF/ENF** : ENF-016
+  - **Vérification** : un push sur `main` déclenche un déploiement visible et le service répond sur son URL `*.onrender.com`
+  - **Taille** : S
+
+- [ ] **T004** [P] [SETUP] Provisionner la base Neon et pointer `DATABASE_URL` de production, exécuter `npx prisma migrate deploy` — variables d'environnement Render
+  - **Dépendances** : T001
+  - **EF/ENF** : —
+  - **Vérification** : `npx prisma migrate status` ne signale aucune migration en attente sur l'environnement de production
+  - **Taille** : S
+
+- [ ] **T005** [P] [SETUP] Intégrer Sentry (`@sentry/nextjs`) avec configuration minimale — `sentry.server.config.ts`, `sentry.client.config.ts`, `instrumentation.ts`
+  - **Dépendances** : T001
+  - **EF/ENF** : ENF-009
+  - **Vérification** : une erreur provoquée manuellement en environnement de test apparaît dans le tableau de bord Sentry sous 1 minute
+  - **Taille** : S
+
+- [ ] **T006** [P] [SETUP] Route de compteur d'audience RGPD-safe (pas de cookie, pas de tiers) — `app/api/beacon/route.ts`, appel `navigator.sendBeacon` depuis `app/(marketing)/layout.tsx`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : —
+  - **Vérification** : une visite sur une page marketing incrémente une ligne agrégée en base, aucune requête sortante vers un domaine tiers n'apparaît dans l'onglet réseau
+  - **Taille** : S
+
+**Point de contrôle Phase 1** : le dépôt se déploie automatiquement sur Render à chaque push sur `main`, la base de production est migrée, les erreurs et le trafic marketing sont visibles quelque part. Aucune fonctionnalité produit n'a encore été touchée.
+
+---
+
+## Phase 2 : Fondations données
+
+**But** : faire exister en base les entités qui manquent avant que les phases fonctionnelles ne puissent les utiliser.
+
+- [ ] **T007** [FONDATIONS] Ajouter le modèle `Client` et le lien optionnel `MonitoredSite.clientId` — `cited/prisma/schema.prisma`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-047, EF-052
+  - **Vérification** : `npx prisma format` et `npx prisma validate` passent ; un site sans client reste valide (champ optionnel)
+  - **Taille** : S
+
+- [ ] **T008** [FONDATIONS] Table de correspondance quota par plan — `cited/lib/billing/plans.ts` (`PLAN_LIMITS: Record<Plan, { maxSites: number; whiteLabel: boolean }>`)
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-018
+  - **Vérification** : test unitaire `lib/billing/plans.test.ts` couvrant `FREE` (0 site), `SOLO` (10), `PRO` (30), `SCALE` (100)
+  - **Taille** : S
+
+- [ ] **T009** [P] [FONDATIONS] Ajouter le modèle `BrandSettings` (1-1 avec `User`) — `cited/prisma/schema.prisma`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-048, EF-050
+  - **Vérification** : `npx prisma validate` passe
+  - **Taille** : S
+
+- [ ] **T010** [P] [FONDATIONS] Ajouter les champs `isFounderMember`/`founderOfferAt` sur `User` — `cited/prisma/schema.prisma`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-058, EF-067
+  - **Vérification** : `npx prisma validate` passe
+  - **Taille** : S
+
+- [ ] **T011** [FONDATIONS] Ajouter le modèle `AlertEvent` (type régression/résolution, cause, correctif, canal, date) — `cited/prisma/schema.prisma`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-036, EF-037
+  - **Vérification** : `npx prisma validate` passe ; un index `(siteId, sentAt desc)` existe pour l'historique
+  - **Taille** : S
+
+- [ ] **T012** [FONDATIONS] Ajouter le modèle `MonthlyReport` (rapport par client/période, PDF en `Bytes`, disponibilité, incidents) — `cited/prisma/schema.prisma`
+  - **Dépendances** : T007
+  - **EF/ENF** : EF-047, EF-049, EF-051
+  - **Vérification** : `npx prisma validate` passe
+  - **Taille** : S
+
+- [ ] **T013** [FONDATIONS] Étendre `ScanLog` avec `simpleStatus` et `cause` dérivés du `CoreScanOutput` — `cited/prisma/schema.prisma`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-043, EF-044, EF-045
+  - **Vérification** : `npx prisma validate` passe ; les colonnes sont nullables (compatibles avec les lignes existantes)
+  - **Taille** : S
+
+- [ ] **T014** [FONDATIONS] Migration Prisma unique regroupant T007-T013 et application en local puis en production — `cited/prisma/migrations/`
+  - **Dépendances** : T007, T008, T009, T010, T011, T012, T013
+  - **EF/ENF** : —
+  - **Vérification** : `npx prisma migrate dev --name mvp-entities` en local sans erreur ; `npx prisma migrate deploy` en production (via T004) sans perte de données existantes
+  - **Taille** : S
+
+**Point de contrôle Phase 2** : le schéma cible existe en base, en local et en production, sans qu'aucune fonctionnalité ne l'utilise encore. Les quatre portes de qualité passent toujours.
+
+---
+
+## Phase 3 : P1 — Diagnostic public
+
+**But** : afficher un verdict honnête par assistant sur le diagnostic gratuit, condition de l'objectif "scan → inscription ≥ 10 %". Dépend du moteur de scan déjà livré dans `lib/scanner/*` (hors périmètre de ces tâches).
+
+- [ ] **T015** [P1] Adapter `POST /api/scan` pour retourner un rapport multi-bots (`runCoreScan(url, DEFAULT_PROBE_BOTS)` au lieu de `["GPTBot"]`) — `cited/app/api/scan/route.ts`
+  - **Dépendances** : Aucune (le moteur `runCoreScan` gère déjà plusieurs bots)
+  - **EF/ENF** : EF-001, EF-002
+  - **Vérification** : la réponse contient un tableau de résultats pour ChatGPT (GPTBot), Claude (ClaudeBot) et Perplexity (PerplexityBot), chacun avec ses propres `reasons`
+  - **Taille** : S
+
+- [ ] **T016** [P1] Afficher un verdict par assistant avec cause et correctif sur la page de résultat — `cited/components/landing/ScanForm.tsx`, `cited/app/(marketing)/analyse/[domain]/page.tsx`
+  - **Dépendances** : T015
+  - **EF/ENF** : EF-001, EF-002, décision §14.3 du PRD
+  - **Vérification** : test manuel sur un site avec `robots.txt` bloquant un seul bot — les trois verdicts restent visuellement distincts (composant `Verdict`, jamais fondus)
+  - **Taille** : M
+
+- [ ] **T017** [P1] Export PDF du diagnostic public, au logo Cited — `cited/app/actions/publicReport.ts`, `cited/lib/reports/renderDiagnosticPdf.ts`
+  - **Dépendances** : T016, T031 (moteur PDF partagé — voir Phase 5, réutilisé ici en avance)
+  - **EF/ENF** : EF-011
+  - **Vérification** : le PDF généré contient les trois verdicts et ne porte aucune marque blanche cliente
+  - **Taille** : M
+
+- [ ] **T018** [P] [P1] Étendre le test de contrat de `/api/scan` à la forme multi-bots — `cited/app/api/scan/route.test.ts`
+  - **Dépendances** : T015
+  - **EF/ENF** : EF-001, EF-002
+  - **Vérification** : `npx vitest run app/api/scan/route.test.ts` vert, couvre au moins un cas "robots.txt bloque un bot mais pas les autres"
+  - **Taille** : S
+
+**Point de contrôle Phase 3** : un visiteur anonyme obtient un verdict honnête par assistant, exportable en PDF, sans compte. Scénarios d'acceptation P1 du PRD vérifiables manuellement.
+
+---
+
+## Phase 4 : P2 — Portefeuille, scan quotidien, alertes
+
+**But** : la valeur payante centrale. **T019 ouvre cette phase avant tout confort d'interface**, conformément au risque n°1 du PRD (quota non appliqué = fuite de revenu).
+
+- [ ] **T019** [P2] **Appliquer le quota de sites par plan** — `cited/app/actions/sites.ts::addMonitoredSite`
+  - **Dépendances** : T008
+  - **EF/ENF** : EF-018
+  - **Vérification** : test `app/actions/sites.test.ts` — un compte `SOLO` avec 10 sites déjà actifs reçoit une erreur orientant vers le palier supérieur au 11ᵉ ajout, jamais une erreur technique générique
+  - **Taille** : S
+
+- [ ] **T020** [P2] Valider l'URL (format + garde SSRF, réutilisation de `assertSafeUrl`) avant création d'un `MonitoredSite` — `cited/app/actions/sites.ts`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-022
+  - **Vérification** : test — une URL résolvant vers une IP privée est refusée sans créer de ligne en base
+  - **Taille** : S
+
+- [ ] **T021** [P2] Ajout en masse (collage de domaines ou CSV), dé-duplication, quota — `cited/app/actions/sites.ts::addMonitoredSitesBulk`
+  - **Dépendances** : T019, T020
+  - **EF/ENF** : EF-019
+  - **Vérification** : test — 25 lignes dont 3 doublons et 2 invalides sur un plan à 10 sites restants ajoute exactement 10 sites valides et rapporte les 15 lignes ignorées avec leur raison
+  - **Taille** : M
+
+- [ ] **T022** [P2] Unifier le point d'entrée d'ajout : supprimer `app/(app)/sites/new/` (doublon sur l'ancien modèle `Site`) au profit du formulaire de `DashboardSites` + import en masse — `cited/app/(app)/sites/new/` (suppression), `cited/components/DashboardSites.tsx`
+  - **Dépendances** : T021
+  - **EF/ENF** : EF-021
+  - **Vérification** : aucun lien restant dans l'application vers `/sites/new` ; `npm run build` ne référence plus le dossier supprimé
+  - **Taille** : S
+
+- [ ] **T023** [P2] Étendre le scan quotidien au jeu complet de bots de rapport et au `ScanLog` enrichi — `cited/inngest/functions/scan-site.ts`
+  - **Dépendances** : T013 (colonnes `ScanLog`)
+  - **EF/ENF** : EF-026
+  - **Vérification** : test `inngest/functions/scan-site.test.ts` — le `ScanLog` créé porte `simpleStatus` et `cause` pour chaque bot du rapport, pas seulement GPTBot
+  - **Taille** : M
+
+- [ ] **T024** [P2] Distinguer `ERREUR` de `BLOQUÉ` dans `MonitoredSite.status` et son affichage — `cited/inngest/functions/scan-site.ts`, `cited/components/DashboardSites.tsx`
+  - **Dépendances** : T023
+  - **EF/ENF** : EF-030
+  - **Vérification** : un site en timeout DNS simulé prend le statut `ERREUR`, un site avec `robots.txt` disallow prend `BLOQUÉ`, avec un badge visuellement différent
+  - **Taille** : S
+
+- [ ] **T025** [P2] Cause et correctif dans l'e-mail d'alerte, gabarit distinct régression/retour au vert — `cited/lib/alerting/sendAlert.ts`
+  - **Dépendances** : T023
+  - **EF/ENF** : EF-035, EF-036
+  - **Vérification** : deux gabarits testés (`sendAlert.test.ts`, nouveau) — objet et ton différents entre régression et résolution ; le corps cite la cause identifiée (ex. "robots.txt interdit GPTBot") et un correctif
+  - **Taille** : M
+
+- [ ] **T026** [P2] Journaliser chaque alerte envoyée dans `AlertEvent` et raccorder `app/(app)/alerts/page.tsx` au réel — `cited/lib/alerting/sendAlert.ts`, `cited/app/(app)/alerts/page.tsx`
+  - **Dépendances** : T011, T025
+  - **EF/ENF** : EF-037
+  - **Vérification** : la page n'importe plus `initialAlerts` (tableau fictif) ; une alerte envoyée en test apparaît dans la liste au rechargement
+  - **Taille** : M
+
+- [ ] **T027** [P2] Remplacer les indicateurs fictifs du tableau de bord (quota "/20" en dur, "texte utile", "prochain scan") par les données réelles — `cited/components/DashboardSites.tsx`
+  - **Dépendances** : T008, T023
+  - **EF/ENF** : EF-040, EF-041
+  - **Vérification** : le quota affiché change réellement selon le plan de l'utilisateur connecté (vérifié avec deux comptes de plans différents en test manuel)
+  - **Taille** : M
+
+- [ ] **T028** [P2] Retirer le bouton "Exporter" du tableau de bord ou lui donner un effet réel — `cited/components/DashboardSites.tsx`
+  - **Dépendances** : Aucune (retrait) ou T031 (si implémenté)
+  - **EF/ENF** : EF-042
+  - **Vérification** : aucun bouton sans effet ne subsiste dans l'interface authentifiée (principe II)
+  - **Taille** : S
+
+- [ ] **T029a** [P2] Historique réel des scans sur la page de détail (remplace le graphique en barres fictif) — `cited/app/(app)/sites/[siteId]/page.tsx`
+  - **Dépendances** : T023
+  - **EF/ENF** : EF-043
+  - **Vérification** : la série affichée correspond aux vrais `ScanLog` du site consulté, pas à une donnée commune à tous les sites
+  - **Taille** : M
+
+- [ ] **T029b** [P2] Détail par assistant (dernier code HTTP, cause, correctif) relié aux vrais `ScanLog` — `cited/app/(app)/sites/[siteId]/page.tsx`
+  - **Dépendances** : T029a
+  - **EF/ENF** : EF-044
+  - **Vérification** : les codes HTTP et la trace affichés changent selon le dernier scan réel, plus de valeurs `403`/`200` codées en dur
+  - **Taille** : M
+
+- [ ] **T029c** [P] [P2] Jours consécutifs en état dégradé, calculé depuis l'historique réel — `cited/app/(app)/sites/[siteId]/page.tsx`
+  - **Dépendances** : T029a
+  - **EF/ENF** : EF-045
+  - **Vérification** : test unitaire de la fonction de calcul (`lib/reports/consecutiveDaysDown.ts` ou équivalent) sur une série de statuts connue
+  - **Taille** : S
+
+- [ ] **T030** [P] [P2] Test d'intégration du parcours P2 complet (ajout → scan → changement de statut → une seule alerte) — `cited/inngest/functions/scan-site.test.ts`
+  - **Dépendances** : T019, T023, T025, T026
+  - **EF/ENF** : EF-034 (non-régression du dédoublonnage déjà en place)
+  - **Vérification** : `npx vitest run` — deux scans identiques consécutifs après une régression ne produisent qu'une seule ligne `AlertEvent`
+  - **Taille** : M
+
+**Point de contrôle Phase 4** : une agence abonnée gère son portefeuille dans la limite de son plan, voit un état réel et à jour, et reçoit une alerte exploitable en cas de régression — sans aucune donnée fictive dans ce chemin.
+
+---
+
+## Phase 5 : P3 — Rapport mensuel en marque blanche
+
+**But** : la fonctionnalité anti-résiliation numéro un du PRD (§12).
+
+- [ ] **T031** [P3] Moteur de génération PDF (`@react-pdf/renderer`), fonction pure — `cited/lib/reports/renderMonthlyReportPdf.ts`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-047 à EF-051 (fondation)
+  - **Vérification** : test unitaire — à partir de données figées, le PDF généré contient les sections attendues (verdict actuel, historique, incidents, annexe technique)
+  - **Taille** : M
+
+- [ ] **T032a** [P3] Agrégation des données d'un client sur une période (`ScanLog`, `AlertEvent`) — `cited/app/actions/reports.ts`
+  - **Dépendances** : T007, T011, T023, T026
+  - **EF/ENF** : EF-047
+  - **Vérification** : test — un client avec deux sites et un incident résolu produit une disponibilité et une liste d'incidents cohérentes avec les données de test
+  - **Taille** : M
+
+- [ ] **T032b** [P3] Génération et persistance du `MonthlyReport` (appel du moteur PDF, écriture en base) — `cited/app/actions/reports.ts::generateMonthlyReport`, `cited/inngest/functions/monthly-report.ts`
+  - **Dépendances** : T012, T031, T032a
+  - **EF/ENF** : EF-049, EF-051
+  - **Vérification** : l'action peut être appelée à la demande (pas seulement le 1ᵉʳ du mois) et produit un `MonthlyReport` téléchargeable
+  - **Taille** : M
+
+- [ ] **T033** [P3] Appliquer `BrandSettings` (logo, couleur, nom) au rendu PDF, restreint aux plans `PRO`/`SCALE` — `cited/lib/reports/renderMonthlyReportPdf.ts`, `cited/app/actions/settings.ts::updateBrandSettings`
+  - **Dépendances** : T009, T031
+  - **EF/ENF** : EF-048, EF-050
+  - **Vérification** : un compte `SOLO` ne peut pas générer de rapport en marque blanche (erreur explicite) ; un compte `PRO` voit son logo dans le PDF généré
+  - **Taille** : M
+
+- [ ] **T034** [P3] Raccorder `app/(app)/reports/page.tsx` aux vraies données (`Client`, `MonthlyReport`), export réel au lieu de `window.print()` — `cited/app/(app)/reports/page.tsx`
+  - **Dépendances** : T032b, T033
+  - **EF/ENF** : EF-049
+  - **Vérification** : la liste "six clients fictifs" disparaît du code source ; le bouton télécharge un vrai fichier PDF
+  - **Taille** : M
+
+- [ ] **T035** [P] [P3] Regroupement des sites par `Client` depuis les paramètres ou le portefeuille — `cited/app/actions/clients.ts` (nouveau), UI d'association dans `DashboardSites.tsx`
+  - **Dépendances** : T007
+  - **EF/ENF** : EF-052
+  - **Vérification** : un site peut être associé à un client existant ou rester sans client (champ optionnel respecté)
+  - **Taille** : M
+
+- [ ] **T036** [P] [P3] Tests du moteur PDF et test d'intégration bout-en-bout de génération de rapport — `cited/lib/reports/renderMonthlyReportPdf.test.ts`, `cited/inngest/functions/monthly-report.test.ts`
+  - **Dépendances** : T031, T032b
+  - **EF/ENF** : EF-047 à EF-051
+  - **Vérification** : `npx vitest run` vert sur les deux fichiers
+  - **Taille** : M
+
+**Point de contrôle Phase 5** : un compte Agence/Studio de démonstration génère un rapport mensuel à son logo, à la demande, avec de vraies données — condition de sortie n°5 du PRD.
+
+---
+
+## Phase 6 : Facturation, plans, quotas, coupon fondateur
+
+- [ ] **T037** [FACT] Créer le coupon Stripe natif `founder-50` (`duration: forever`, `percent_off: 50`, `max_redemptions: 10`) — opération dans le tableau de bord Stripe, référence documentée dans `docs/10-plan-technique.md`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-058
+  - **Vérification** : le coupon existe côté Stripe et refuse toute application au-delà de 10 utilisations (comportement natif Stripe)
+  - **Taille** : S
+
+- [ ] **T038** [FACT] Accepter un code promo optionnel dans `createCheckoutSession` — `cited/lib/billing/actions.ts`
+  - **Dépendances** : T037
+  - **EF/ENF** : EF-058, EF-066
+  - **Vérification** : un Checkout créé avec le coupon affiche bien la réduction côté Stripe (test manuel en mode test Stripe)
+  - **Taille** : S
+
+- [ ] **T039** [FACT] Marquer `isFounderMember`/`founderOfferAt` au moment du webhook si un coupon a été appliqué — `cited/app/api/webhooks/stripe/route.ts`
+  - **Dépendances** : T010, T037
+  - **EF/ENF** : EF-067
+  - **Vérification** : un abonnement de test payé avec le coupon fondateur met à jour ces deux champs, un abonnement sans coupon ne les touche pas
+  - **Taille** : M
+
+- [ ] **T040** [FACT] Raccorder la section Abonnement des paramètres au vrai plan/quota/date de prélèvement + bouton vers `createCustomerPortalSession` — `cited/app/(app)/settings/page.tsx`
+  - **Dépendances** : T008
+  - **EF/ENF** : EF-059
+  - **Vérification** : "Offre agence — 20 domaines" et "18/20" codés en dur disparaissent ; les valeurs affichées changent selon le compte connecté
+  - **Taille** : M
+
+- [ ] **T041** [P] [FACT] Exposer l'export RGPD et la date de purge dans les paramètres — `cited/app/(app)/settings/page.tsx`, nouvelle action `cited/app/actions/gdpr.ts::exportUserData`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-015
+  - **Vérification** : un utilisateur connecté peut déclencher un export et voir sa date de purge si son compte est résilié
+  - **Taille** : S
+
+- [ ] **T042** [P] [FACT] Vérifier que la page de tarifs ne présente le dépassement 100 sites (EF-057) et la facturation annuelle (EF-060) que comme non actifs, jamais comme activables — `cited/app/(marketing)/pricing/page.tsx` (déjà largement conforme, vérification et ajustement de libellé)
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-057, EF-060, principe II
+  - **Vérification** : relecture manuelle de la page — aucun texte ne laisse croire à une activation en libre-service de ces deux mécanismes
+  - **Taille** : S
+
+**Point de contrôle Phase 6** : le paiement Stripe débloque réellement l'ajout de sites dans la limite du plan (condition de sortie n°4 du PRD), le coupon fondateur fonctionne de bout en bout en mode test.
+
+---
+
+## Phase 7 : Onboarding self-serve et e-mails automatisés
+
+- [ ] **T043** [ONB] Raccorder l'onboarding à `addMonitoredSitesBulk` et au lancement d'un vrai premier scan (événement Inngest) — `cited/app/(app)/onboarding/page.tsx`
+  - **Dépendances** : T021
+  - **EF/ENF** : EF-061, EF-062
+  - **Vérification** : le délai artificiel (`setTimeout(800ms)`) disparaît ; les domaines collés créent réellement des `MonitoredSite` et un scan est déclenché
+  - **Taille** : M
+
+- [ ] **T044** [ONB] N'afficher que les canaux d'alerte réellement actifs (e-mail) dans l'onboarding, retirer ou marquer "en préparation" Slack/webhook — `cited/app/(app)/onboarding/page.tsx`
+  - **Dépendances** : T043
+  - **EF/ENF** : EF-038, principe II
+  - **Vérification** : aucune case à cocher sans effet réel ne subsiste (cohérent avec T050)
+  - **Taille** : S
+
+- [ ] **T045** [ONB] Choix du plan pendant l'onboarding, redirection Stripe Checkout — `cited/app/(app)/onboarding/page.tsx`
+  - **Dépendances** : T038
+  - **EF/ENF** : EF-063
+  - **Vérification** : un utilisateur sans abonnement actif est redirigé vers Checkout avant de pouvoir dépasser le scan gratuit
+  - **Taille** : S
+
+- [ ] **T046** [ONB] Job planifié `send-discovery-email` (5 questions du kit de prospection, à J+3) — `cited/inngest/functions/discovery-email.ts`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-064
+  - **Vérification** : test — un compte créé il y a 3 jours reçoit l'événement, un compte créé il y a 1 jour ne le reçoit pas
+  - **Taille** : M
+
+- [ ] **T047** [P] [ONB] Gabarit et déclenchement (semi-manuel, sur décision qualitative du fondateur) de l'e-mail d'offre fondatrice — `cited/lib/alerting/sendFounderOffer.ts` (nouveau), action déclenchable depuis un script ou une commande interne
+  - **Dépendances** : T037, T046
+  - **EF/ENF** : EF-066
+  - **Vérification** : l'e-mail envoyé affiche une date limite d'activation claire ; aucune automatisation de la lecture des réponses au questionnaire n'est requise (EF-065)
+  - **Taille** : S
+
+- [ ] **T048** [P] [ONB] E-mail "votre rapport mensuel est disponible" à la génération d'un `MonthlyReport` — `cited/lib/alerting/sendReportReady.ts` (nouveau)
+  - **Dépendances** : T032b
+  - **EF/ENF** : —
+  - **Vérification** : test — la génération d'un rapport en test déclenche l'envoi (mock Resend)
+  - **Taille** : S
+
+**Point de contrôle Phase 7** : une agence peut s'inscrire, importer son portefeuille, payer et recevoir le questionnaire de découverte sans intervention humaine (condition de sortie liée au parcours P3 du PRD).
+
+---
+
+## Phase 8 : Écrans maquettes restants et cohérence produit
+
+**Note** : la plupart des écrans à données fictives ont déjà été raccordés au réel dans les phases fonctionnelles ci-dessus (alertes en Phase 4, rapports en Phase 5, abonnement en Phase 6, onboarding en Phase 7) — délibérément, pour ne pas laisser cette dette en fin de parcours. Cette phase couvre ce qui reste : la double expérience de scan public et les sections de paramètres hors périmètre MVP.
+
+- [ ] **T049** [MOCK] Faire de `/analyse/[domain]` la page de résultat partageable du diagnostic (réutilise T015/T016), retirer toute trace visible de l'ancien positionnement "visibilité de marque" — `cited/app/(marketing)/analyse/[domain]/page.tsx`
+  - **Dépendances** : T016
+  - **EF/ENF** : décision §14.3 du PRD
+  - **Vérification** : la page ne mentionne plus de "score de visibilité" agrégé ; elle affiche les mêmes verdicts par assistant que `ScanForm`
+  - **Taille** : M
+
+- [ ] **T050** [P] [MOCK] Nettoyer les sections hors périmètre MVP de `app/(app)/settings/page.tsx` (Équipe, Accès API, canal Slack "Actif") : retirer ou marquer "en préparation" — `cited/app/(app)/settings/page.tsx`
+  - **Dépendances** : T040, T041
+  - **EF/ENF** : EF-038, §11 hors périmètre du PRD, principe II
+  - **Vérification** : aucune section n'affiche une fonctionnalité inactive comme "Actif" (le badge Slack actuel, notamment) ; multi-utilisateur et clé API sont soit absents, soit "en préparation"
+  - **Taille** : M
+
+- [ ] **T051** [MOCK] Audit final "aucune donnée fictive dans le chemin critique" — recherche des chaînes de démonstration restantes (`Atelier Boréal`, `client-vitrine`, `Laura Bréa`, etc.) hors fixtures de test, dans toute l'application authentifiée
+  - **Dépendances** : T026, T027, T029a, T029b, T029c, T034, T040, T043, T049, T050
+  - **EF/ENF** : principe II
+  - **Vérification** : `grep -r "Atelier Boréal\|client-vitrine\|Laura Bréa" cited/app cited/components` ne retourne plus rien en dehors de `cited/**/*.test.ts` et des fixtures explicitement documentées comme telles
+  - **Taille** : S
+
+**Point de contrôle Phase 8** : condition de sortie n°3 du PRD — le parcours P2 fonctionne de bout en bout "sans page à données fictives dans le chemin critique".
+
+---
+
+## Phase 9 : Qualité, sécurité transverse, observabilité, déploiement
+
+- [ ] **T052** [P] [QUAL] Réinitialisation de mot de passe par e-mail — `cited/app/api/auth/reset-password/route.ts` (nouveau), gabarit Resend
+  - **Dépendances** : Aucune
+  - **EF/ENF** : EF-014
+  - **Vérification** : test d'intégration — un jeton de réinitialisation à usage unique expire après un délai raisonnable et ne peut être rejoué
+  - **Taille** : M
+
+- [ ] **T053** [P] [QUAL] Journalisation structurée des échecs de scan et d'envoi d'alerte (remplace les `console.error` isolés) — `cited/inngest/functions/scan-site.ts`, `cited/lib/alerting/sendAlert.ts`
+  - **Dépendances** : T005
+  - **EF/ENF** : ENF-009
+  - **Vérification** : un échec simulé d'envoi Resend apparaît dans Sentry avec `siteId` et cause, pas seulement un message générique
+  - **Taille** : S
+
+- [ ] **T054** [P] [QUAL] Audit d'accessibilité AA des écrans raccordés au réel (contraste, clavier, cibles tactiles 44 px) — checklist `docs/07-design-system.md` §6, appliquée à `DashboardSites.tsx`, `alerts/page.tsx`, `reports/page.tsx`, `sites/[siteId]/page.tsx`, `settings/page.tsx`, `onboarding/page.tsx`
+  - **Dépendances** : T026, T027, T029a-c, T034, T040, T043
+  - **EF/ENF** : ENF-007
+  - **Vérification** : navigation clavier complète sur chaque écran listé, contrôle de contraste ≥ 4.5:1 sur le texte courant
+  - **Taille** : M
+
+- [ ] **T055** [QUAL] Revérifier le budget ENF-005 (1000 sites/heure) une fois EF-026 (multi-bots) livré, ajuster la concurrence Inngest si besoin — `cited/inngest/functions/scan-site.ts`
+  - **Dépendances** : T023
+  - **EF/ENF** : ENF-005, EF-028
+  - **Vérification** : un test de charge simulé (ou un calcul documenté à partir de la durée moyenne observée par site) montre que 1000 sites tiennent dans une fenêtre d'une heure avec la concurrence configurée
+  - **Taille** : S
+
+- [ ] **T056** [QUAL] Purge/compression de `ScanLog.payload` au-delà de 90 jours (protection du quota de stockage Neon, §14 du plan technique) — `cited/inngest/functions/prune-scan-logs.ts` (nouveau), cron mensuel
+  - **Dépendances** : T004
+  - **EF/ENF** : ENF-016 (budget), risque §14 du plan technique
+  - **Vérification** : test — un `ScanLog` de plus de 90 jours voit son `payload` vidé, ses colonnes dérivées (`simpleStatus`, `cause`) restent intactes pour l'historique
+  - **Taille** : S
+
+- [ ] **T057** [QUAL] Vérification de bout en bout du pipeline de déploiement (CI → migration → déploiement Render) sur un environnement de préproduction — pas de nouveau fichier, exécution documentée
+  - **Dépendances** : T002, T003, T004
+  - **EF/ENF** : —
+  - **Vérification** : un déploiement complet depuis une PR de test jusqu'à la disponibilité en préproduction, sans intervention manuelle autre que la fusion de la PR
+  - **Taille** : M
+
+**Point de contrôle final** : les quatre portes de qualité passent sur l'ensemble du dépôt (condition de sortie n°6 du PRD) ; les six conditions de sortie du MVP (§15 du PRD) sont vérifiables.
+
+---
+
+## Dépendances entre phases
+
+```
+Phase 1 (Setup)  ──▶  Phase 2 (Fondations données)  ──▶  Phase 3 (P1)
+                                                     ├──▶  Phase 4 (P2)  ──▶  Phase 5 (P3)
+                                                     │                         │
+                                                     └──▶  Phase 6 (Facturation) ┘
+                                                                    │
+                                                     Phase 7 (Onboarding) ◀────┘
+                                                                    │
+                                                     Phase 8 (Écrans restants)
+                                                                    │
+                                                     Phase 9 (Qualité + déploiement)
+```
+
+Les phases 3 (P1), 4 (P2) et 6 (Facturation) peuvent être menées en parallèle par des sessions différentes une fois la Phase 2 terminée — elles touchent des fichiers disjoints à l'exception de `lib/billing/plans.ts` (T008, lu par T019). La Phase 5 (P3) dépend de la Phase 4 (données de scan réelles à agréger). La Phase 9 s'applique en continu mais son point de contrôle final vient après tout le reste.
+
+## Stratégie de livraison
+
+1. **Socle** : Phases 1-2. Rien de visible pour un utilisateur, mais le dépôt est déployable et le schéma cible existe.
+2. **MVP minimal démontrable** : Phase 3 (P1) seule — le diagnostic public honnête peut déjà être montré à un prospect.
+3. **Produit payant** : Phases 4 et 6 — portefeuille borné par un vrai quota, alertes réelles, paiement qui débloque réellement.
+4. **Anti-résiliation** : Phase 5 — rapport mensuel en marque blanche.
+5. **Vente autonome** : Phase 7 — onboarding et e-mails sans intervention humaine.
+6. **Fermeture** : Phases 8-9 — plus aucune donnée fictive, qualité et déploiement vérifiés avant la prospection à grande échelle (critères de sortie du MVP, PRD §15).
+
+Chaque phase se termine par son point de contrôle avant de passer à la suivante ; les quatre portes de qualité (`tsc`, `eslint`, `vitest`, `build`) sont vérifiées après chaque tâche qui touche du code, pas seulement en fin de phase.
