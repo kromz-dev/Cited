@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { getMonitoredSites, addMonitoredSite, deleteMonitoredSite } from './sites';
 
 vi.mock('@/auth', () => ({
@@ -11,6 +11,7 @@ vi.mock('@/lib/db', () => ({
     user: {
       findUnique: vi.fn(),
     },
+    $executeRaw: vi.fn(async () => 0),
     monitoredSite: {
       findMany: vi.fn(),
       create: vi.fn(),
@@ -174,9 +175,36 @@ describe('sites actions', () => {
       const res = await addMonitoredSite({ name: 'Cent-unième', url: 'https://test.com' });
 
       expect(res).toEqual({
-        error: 'Au-delà, chaque site coûte 2 € par mois : contactez-nous pour l\'activer.',
+        error: 'Vous surveillez déjà 100 sites, le maximum du palier Studio. Au-delà, chaque site coûte 2 € par mois : contactez-nous pour l\'activer.',
       });
       expect(db.monitoredSite.create).not.toHaveBeenCalled();
+    });
+
+    it('verrouille la ligne User avant de compter les sites', async () => {
+      const order: string[] = [];
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'SOLO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      const executeRaw = db.$executeRaw as unknown as Mock;
+      executeRaw.mockImplementation(async () => {
+        order.push('lock');
+        return 0;
+      });
+      const count = db.monitoredSite.count as unknown as Mock;
+      count.mockImplementationOnce(async () => {
+        order.push('count');
+        return 0;
+      });
+      vi.mocked(db.monitoredSite.create).mockResolvedValueOnce({ id: 'site-1' } as unknown as CreatedSite);
+
+      await addMonitoredSite({ name: 'Test', url: 'https://test.com' });
+
+      expect(order).toEqual(['lock', 'count']);
+      const [strings, id] = executeRaw.mock.calls[0] as [string[], string];
+      expect(strings.join('')).toContain('FOR UPDATE');
+      expect(strings.join('')).toContain('"User"');
+      expect(id).toBe('user-1');
     });
   });
 
