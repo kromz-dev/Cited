@@ -43,7 +43,8 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
       }
 
       if ("data" in response && response.data) {
-        setSites([response.data as MonitoredSite, ...sites]);
+        const created = response.data;
+        setSites((prev) => [created as MonitoredSite, ...prev]);
         setName("");
         setUrl("");
         setShowAddForm(false);
