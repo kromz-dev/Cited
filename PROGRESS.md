@@ -17,7 +17,7 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 | Branche | Rôle | État |
 |---|---|---|
 | `main` | Référence. La CI (tsc, eslint, vitest, build) tourne sur chaque PR. | Vert |
-| `claude/focused-gates-fav90h` | Travail en cours : docs, skills, landing, prix, design system | À jour avec `main`, **pas encore de PR** |
+| `claude/focused-gates-fav90h` | Fusionnée dans `main` (PR #3, 24/09) | Réutilisable pour la suite, à repartir de `main` |
 
 À supprimer quand tu veux (déjà dans `main`) : `chore/ci-quality-gates`.
 
@@ -40,8 +40,8 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 
 ## 2. À faire ensuite, dans l'ordre
 
-1. **Ouvrir une PR** de `claude/focused-gates-fav90h` vers `main` et la fusionner quand la CI est verte.
-2. **Suivre `tasks/mvp-tasks.md`** dans l'ordre. Priorités (risque n°1 du PRD) :
+1. ~~Fusionner le travail du 24/09~~ : fait (PR #3).
+2. **Commencer par T001** (confirmer par écrit les offres gratuites), puis **suivre `tasks/mvp-tasks.md`** dans l'ordre. Priorités (risque n°1 du PRD) :
    - brancher les écrans maquettes sur la base (rapports, alertes, réglages, fiche site, onboarding : aujourd'hui des données fictives) ;
    - appliquer les quotas par plan (10 / 30 / 100 sites).
 3. **Passe unique par écran :** données réelles, puis migration au design system, puis réécriture des textes. Écrans concernés : `login`, `register`, `app/(app)/*`, `/analyse/[domain]`, `components/DashboardSites.tsx`, `components/ui.tsx`. Ensuite, supprimer les alias legacy de `globals.css`, `app/ds/` et `app/_ds/`.
