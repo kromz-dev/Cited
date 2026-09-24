@@ -360,7 +360,7 @@
   - **Vérification** : test — un compte créé il y a 3 jours reçoit l'événement, un compte créé il y a 1 jour ne le reçoit pas
   - **Taille** : M
 
-- [ ] **T047** [P] [ONB] Gabarit et déclenchement (semi-manuel, sur décision qualitative du fondateur) de l'e-mail d'offre fondatrice — `cited/lib/alerting/sendFounderOffer.ts` (nouveau), action déclenchable depuis un script ou une commande interne
+- [x] **T047** [P] [ONB] Gabarit et déclenchement (semi-manuel, sur décision qualitative du fondateur) de l'e-mail d'offre fondatrice — `cited/lib/alerting/sendFounderOffer.ts` (nouveau), action déclenchable depuis un script ou une commande interne
   - **Dépendances** : T037, T046
   - **EF/ENF** : EF-066
   - **Vérification** : l'e-mail envoyé affiche une date limite d'activation claire ; aucune automatisation de la lecture des réponses au questionnaire n'est requise (EF-065)
