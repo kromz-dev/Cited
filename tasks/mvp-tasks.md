@@ -312,7 +312,7 @@
   - **Vérification** : un abonnement de test payé avec le coupon fondateur met à jour ces deux champs, un abonnement sans coupon ne les touche pas
   - **Taille** : M
 
-- [ ] **T040** [FACT] Raccorder la section Abonnement des paramètres au vrai plan/quota/date de prélèvement + bouton vers `createCustomerPortalSession` — `cited/app/(app)/settings/page.tsx`
+- [x] **T040** [FACT] Raccorder la section Abonnement des paramètres au vrai plan/quota/date de prélèvement + bouton vers `createCustomerPortalSession` — `cited/app/(app)/settings/page.tsx`
   - **Dépendances** : T008
   - **EF/ENF** : EF-059
   - **Vérification** : "Offre agence — 20 domaines" et "18/20" codés en dur disparaissent ; les valeurs affichées changent selon le compte connecté
