@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getMonitoredSites, addMonitoredSite, deleteMonitoredSite } from './sites';
+import { getMonitoredSites, addMonitoredSite, addMonitoredSitesBulk, deleteMonitoredSite } from './sites';
 
 vi.mock('@/auth', () => ({
   auth: vi.fn(),
@@ -57,6 +57,7 @@ type DeleteManyResult = Awaited<ReturnType<typeof db.monitoredSite.deleteMany>>;
 describe('sites actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(assertSafeUrl).mockImplementation(async (url: string) => url);
   });
 
   describe('getMonitoredSites', () => {
@@ -192,6 +193,44 @@ describe('sites actions', () => {
         where: { id: 'site-1', userId: 'user-1' } 
       });
       expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
+    });
+  });
+
+  describe('addMonitoredSitesBulk', () => {
+    it('ajoute les 10 places restantes et explique les 15 lignes ignorées', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'SOLO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(0);
+      vi.mocked(db.monitoredSite.findMany).mockResolvedValueOnce([] as unknown as MonitoredSites);
+      vi.mocked(db.monitoredSite.create).mockImplementation(async (args) => ({ id: args.data.url }) as unknown as CreatedSite);
+      vi.mocked(assertSafeUrl).mockImplementation(async (url: string) => {
+        if (url.includes('10.0.0.1') || url.includes('notaurl')) {
+          throw new Error('URL refusée');
+        }
+        return url;
+      });
+
+      const lines = [
+        ...Array.from({ length: 20 }, (_, i) => `https://ok${i + 1}.example`),
+        'https://ok1.example',
+        'https://ok2.example',
+        'https://ok3.example',
+        'http://10.0.0.1/secret',
+        'notaurl',
+      ];
+
+      const res = await addMonitoredSitesBulk(lines.join('\n'));
+
+      expect(db.monitoredSite.create).toHaveBeenCalledTimes(10);
+      expect(res).toMatchObject({ data: { skipped: expect.any(Array) } });
+      if (!('data' in res) || !res.data) throw new Error('expected data');
+      expect(res.data.created).toHaveLength(10);
+      expect(res.data.skipped).toHaveLength(15);
+      expect(res.data.skipped.filter((row) => row.reason === 'Doublon dans la liste.')).toHaveLength(3);
+      expect(res.data.skipped.filter((row) => row.reason === 'URL refusée')).toHaveLength(2);
+      expect(res.data.skipped.filter((row) => row.reason.includes('plan Pro'))).toHaveLength(10);
     });
   });
 });
