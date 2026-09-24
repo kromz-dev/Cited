@@ -354,7 +354,7 @@
   - **Vérification** : un utilisateur sans abonnement actif est redirigé vers Checkout avant de pouvoir dépasser le scan gratuit
   - **Taille** : S
 
-- [ ] **T046** [ONB] Job planifié `send-discovery-email` (5 questions du kit de prospection, à J+3) — `cited/inngest/functions/discovery-email.ts`
+- [x] **T046** [ONB] Job planifié `send-discovery-email` (5 questions du kit de prospection, à J+3) — `cited/inngest/functions/discovery-email.ts`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-064
   - **Vérification** : test — un compte créé il y a 3 jours reçoit l'événement, un compte créé il y a 1 jour ne le reçoit pas
