@@ -6,6 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { SiteActions } from "./SiteActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Verdict } from "@/components/ui/verdict";
+import { consecutiveDaysDown } from "@/lib/sites/consecutive-days";
 import { assistantSnapshots } from "@/lib/sites/latest-bots";
 import { buildScanHistory } from "@/lib/sites/scan-history";
 
@@ -50,17 +51,12 @@ export default async function SiteDetailPage(props: { params: Promise<{ siteId: 
     ? "client-vitrine.bubbleapps.io"
     : siteId;
 
-  const clientName = monitoredSite?.name || legacySite?.name || "Cabinet Vitrine";
-  const isBlocked =
-    monitoredSite?.status === "ERROR" ||
-    monitoredSite?.status === "BLOCKED" ||
-    (!monitoredSite && !legacySite) ||
-    domainName.includes("bubbleapps");
+  const clientName = monitoredSite?.name || legacySite?.name || "Ce domaine";
 
   const history = buildScanHistory(monitoredSite?.scanLogs ?? []);
   const latest = monitoredSite?.scanLogs?.[0] ?? null;
   const bots = assistantSnapshots(latest);
-  const daysInRed = isBlocked ? 6 : 0;
+  const daysInRed = consecutiveDaysDown(history);
 
   return (
     <div className="mx-auto max-w-[1240px] pb-16 text-ink">
