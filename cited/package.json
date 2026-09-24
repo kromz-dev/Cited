@@ -6,8 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "test": "vitest run"
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "check:fast": "npx tsc --noEmit && npm run lint",
+    "check:task": "npm run check:fast && npm run test:coverage",
+    "check:full": "npm run check:task && npm audit --audit-level=high && npm run build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
@@ -43,6 +47,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.186.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",

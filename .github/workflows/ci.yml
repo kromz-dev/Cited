@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -23,10 +24,63 @@ defaults:
   run:
     working-directory: cited
 
+# ─── Shared setup ────────────────────────────────────────────────────
+# Each job installs independently so they can run in parallel.
+# Node 22 + npm cache keeps install time under 15 s.
+
 jobs:
-  quality:
+  # ──────────────────────────────────────────────────────────────────
+  # 1. LINT — fastest gate, catches style + import issues
+  # ──────────────────────────────────────────────────────────────────
+  lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: cited/package-lock.json
+
+      - run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: ESLint
+        run: npx eslint .
+
+  # ──────────────────────────────────────────────────────────────────
+  # 2. TYPECHECK — catches type errors across the whole codebase
+  # ──────────────────────────────────────────────────────────────────
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: cited/package-lock.json
+
+      - run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: TypeScript strict check
+        run: npx tsc --noEmit
+
+  # ──────────────────────────────────────────────────────────────────
+  # 3. TEST — unit + integration tests with coverage
+  # ──────────────────────────────────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     services:
       postgres:
         image: postgres:17-alpine
@@ -59,21 +113,15 @@ jobs:
       GEMINI_BILLING_TIER: free
       ENGINE_CACHE_SECRET: ci
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Setup Node
-        uses: actions/setup-node@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: cited/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Validate Prisma schema
-        run: npx prisma validate
+      - run: npm ci
 
       - name: Generate Prisma client
         run: npx prisma generate
@@ -81,23 +129,348 @@ jobs:
       - name: Push schema to CI database
         run: npx prisma db push --skip-generate --accept-data-loss
 
-      - name: Report migration drift
-        continue-on-error: true
+      - name: Run tests with coverage
+        run: npx vitest run --coverage --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=lcov
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: cited/coverage/
+          retention-days: 14
+
+      - name: Report coverage in PR comment
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: cited
+          json-summary-path: coverage/coverage-summary.json
+          json-final-path: coverage/coverage-final.json
+
+  # ──────────────────────────────────────────────────────────────────
+  # 4. BUILD — verifies the production build compiles
+  # ──────────────────────────────────────────────────────────────────
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/cited
+      AUTH_SECRET: ci-placeholder-secret-value-32-chars
+      AUTH_GOOGLE_ID: ci
+      AUTH_GOOGLE_SECRET: ci
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      INNGEST_SIGNING_KEY: ci
+      STRIPE_SECRET_KEY: sk_test_ci
+      STRIPE_WEBHOOK_SECRET: whsec_ci
+      STRIPE_PRICE_SOLO: price_ci
+      STRIPE_PRICE_PRO: price_ci
+      STRIPE_PRICE_SCALE: price_ci
+      RESEND_API_KEY: ci
+      GEMINI_API_KEY: ci
+      GROQ_API_KEY: ci
+      GEMINI_BILLING_TIER: free
+      ENGINE_CACHE_SECRET: ci
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: cited/package-lock.json
+
+      - run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Production build
+        run: npm run build
+
+      - name: Report bundle size
         run: |
-          echo "T004: migrate deploy is expected to fail until Neon is baselined."
-          npx prisma migrate deploy
+          echo "## 📦 Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          du -sh .next/ | awk '{print "**Total build:** " $1}' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Top 10 largest chunks" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          find .next -name "*.js" -type f -exec du -h {} + | sort -rh | head -20 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
-      - name: Type check
-        run: npx tsc --noEmit
+  # ──────────────────────────────────────────────────────────────────
+  # 5. SECURITY — dependency audit + secret scanning + code patterns
+  # ──────────────────────────────────────────────────────────────────
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # needed for gitleaks to scan history
 
-      - name: Lint
-        run: npx eslint .
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: cited/package-lock.json
 
-      - name: Test
-        run: npx vitest run
+      - run: npm ci
 
-      - name: Security audit
+      # Dependency vulnerabilities
+      - name: npm audit (high + critical)
         run: npm audit --audit-level=high
 
-      - name: Build
-        run: npm run build
+      # Secret scanning — catches leaked keys in the diff
+      - name: Scan for secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Dangerous code patterns
+      - name: Check for dangerous patterns
+        run: |
+          echo "## 🔍 Security Pattern Check" >> $GITHUB_STEP_SUMMARY
+
+          FOUND=0
+
+          # Check for eval() usage
+          if grep -rn "eval(" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=.next .; then
+            echo "❌ Found eval() usage" >> $GITHUB_STEP_SUMMARY
+            FOUND=1
+          fi
+
+          # Check for innerHTML with dynamic content
+          if grep -rn "innerHTML\s*=" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=.next .; then
+            echo "❌ Found innerHTML assignment" >> $GITHUB_STEP_SUMMARY
+            FOUND=1
+          fi
+
+          # Check for console.log in production code (not test files)
+          CONSOLE_COUNT=$(grep -rn "console\.\(log\|debug\)" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=.next --exclude="*.test.*" --exclude="*.spec.*" . | wc -l || true)
+          if [ "$CONSOLE_COUNT" -gt 0 ]; then
+            echo "⚠️  Found $CONSOLE_COUNT console.log/debug statements (prefer structured logging)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "$FOUND" -eq 0 ]; then
+            echo "✅ No dangerous patterns found" >> $GITHUB_STEP_SUMMARY
+          else
+            exit 1
+          fi
+
+  # ──────────────────────────────────────────────────────────────────
+  # 6. PRISMA — schema validation + migration drift detection
+  # ──────────────────────────────────────────────────────────────────
+  prisma:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: cited
+          POSTGRES_PASSWORD: cited
+          POSTGRES_DB: cited
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cited -d cited"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://cited:cited@127.0.0.1:5432/cited
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: cited/package-lock.json
+
+      - run: npm ci
+
+      - name: Validate Prisma schema
+        run: npx prisma validate
+
+      - name: Format check (no drift)
+        run: |
+          npx prisma format
+          if ! git diff --quiet cited/prisma/schema.prisma; then
+            echo "❌ Prisma schema is not formatted. Run 'npx prisma format' locally."
+            git diff cited/prisma/schema.prisma
+            exit 1
+          fi
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply migrations to CI database
+        run: npx prisma migrate deploy
+
+      - name: Check for schema-migration drift
+        run: |
+          npx prisma migrate diff \
+            --from-migrations ./prisma/migrations \
+            --to-schema-datamodel ./prisma/schema.prisma \
+            --exit-code || {
+              echo "⚠️  Schema has drifted from migrations. Run 'npx prisma migrate dev' to generate a migration."
+              exit 1
+            }
+
+  # ──────────────────────────────────────────────────────────────────
+  # 7. QUALITY GUARD — catches mock data, suppression comments, etc.
+  # ──────────────────────────────────────────────────────────────────
+  quality-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check for mock data in production code
+        run: |
+          echo "## 🧹 Quality Guard" >> $GITHUB_STEP_SUMMARY
+
+          FAIL=0
+
+          # Check for known mock data strings (from T051)
+          MOCK_PATTERNS="Atelier Boréal|client-vitrine|Laura Bréa|Agence Lumière|placeholder@example"
+          MOCK_HITS=$(grep -rn "$MOCK_PATTERNS" \
+            --include="*.ts" --include="*.tsx" \
+            --exclude-dir=node_modules --exclude-dir=.next \
+            --exclude="*.test.*" --exclude="*.spec.*" \
+            --exclude="*.fixture.*" \
+            cited/app cited/components cited/lib 2>/dev/null || true)
+
+          if [ -n "$MOCK_HITS" ]; then
+            echo "⚠️  Mock data found in production code:" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$MOCK_HITS" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            # Warning only — will become a hard failure after T051
+          fi
+
+          # Check for new @ts-ignore / @ts-expect-error
+          if git diff origin/main...HEAD -- '*.ts' '*.tsx' ':(exclude)*.test.*' | grep -E '^\+.*@ts-(ignore|expect-error)'; then
+            echo "❌ New @ts-ignore or @ts-expect-error added" >> $GITHUB_STEP_SUMMARY
+            FAIL=1
+          fi
+
+          # Check for new eslint-disable
+          if git diff origin/main...HEAD -- '*.ts' '*.tsx' ':(exclude)*.test.*' | grep -E '^\+.*eslint-disable'; then
+            echo "❌ New eslint-disable added" >> $GITHUB_STEP_SUMMARY
+            FAIL=1
+          fi
+
+          # Check for skipped tests
+          if git diff origin/main...HEAD -- '*.test.*' | grep -E '^\+.*(\.skip|xit\(|xdescribe\()'; then
+            echo "❌ New skipped tests detected" >> $GITHUB_STEP_SUMMARY
+            FAIL=1
+          fi
+
+          # Check for unimplemented stubs
+          if git diff origin/main...HEAD -- '*.ts' '*.tsx' ':(exclude)*.test.*' | grep -E '^\+.*throw new Error\(.*(not implemented|TODO|FIXME)'; then
+            echo "❌ Unimplemented stubs found" >> $GITHUB_STEP_SUMMARY
+            FAIL=1
+          fi
+
+          # Check for empty catch blocks
+          if git diff origin/main...HEAD -- '*.ts' '*.tsx' | grep -P '^\+.*catch\s*\(.*\)\s*\{\s*\}'; then
+            echo "❌ Empty catch block found — errors should be handled" >> $GITHUB_STEP_SUMMARY
+            FAIL=1
+          fi
+
+          if [ "$FAIL" -eq 0 ]; then
+            echo "✅ Quality guard passed" >> $GITHUB_STEP_SUMMARY
+          else
+            exit 1
+          fi
+
+  # ──────────────────────────────────────────────────────────────────
+  # 8. LOCKFILE INTEGRITY — ensures package-lock.json is in sync
+  # ──────────────────────────────────────────────────────────────────
+  lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: cited/package-lock.json
+
+      - name: Verify lockfile integrity
+        run: npm ci --ignore-scripts
+        # npm ci fails if package-lock.json is out of sync with package.json
+
+  # ──────────────────────────────────────────────────────────────────
+  # ──────────────────────────────────────────────────────────────────
+  # SAST — GitHub CodeQL for application security (XSS, Injection)
+  # ──────────────────────────────────────────────────────────────────
+  codeql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+  # FINAL GATE — all jobs must pass before merge
+  # ──────────────────────────────────────────────────────────────────
+  ci-passed:
+    if: always()
+    needs: [lint, typecheck, test, build, security, prisma, quality-guard, lockfile, codeql]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check all jobs passed
+        run: |
+          echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          FAILED=0
+
+          check_job() {
+            local job_name=$1
+            local result=$2
+            if [ "$result" = "success" ]; then
+              echo "✅ $job_name" >> $GITHUB_STEP_SUMMARY
+            elif [ "$result" = "skipped" ]; then
+              echo "⏭️  $job_name (skipped)" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ $job_name — **$result**" >> $GITHUB_STEP_SUMMARY
+              FAILED=1
+            fi
+          }
+
+          check_job "Lint" "${{ needs.lint.result }}"
+          check_job "Type Check" "${{ needs.typecheck.result }}"
+          check_job "Tests" "${{ needs.test.result }}"
+          check_job "Build" "${{ needs.build.result }}"
+          check_job "Security" "${{ needs.security.result }}"
+          check_job "Prisma" "${{ needs.prisma.result }}"
+          check_job "Quality Guard" "${{ needs.quality-guard.result }}"
+          check_job "Lockfile" "${{ needs.lockfile.result }}"
+          check_job "CodeQL (SAST)" "${{ needs.codeql.result }}"
+
+          if [ "$FAILED" -eq 1 ]; then
+            echo ""
+            echo "**❌ CI failed — fix the issues above before merging.**" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo ""
+            echo "**✅ All gates passed — ready for review.**" >> $GITHUB_STEP_SUMMARY
+          fi
