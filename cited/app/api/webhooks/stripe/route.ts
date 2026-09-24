@@ -26,6 +26,25 @@ function planOf(subscription: Stripe.Subscription) {
   return planForPriceId(subscription.items?.data?.[0]?.price?.id);
 }
 
+/**
+ * Le coupon fondateur a-t-il été appliqué à cette session de paiement ?
+ *
+ * `session.discounts` est déjà présent sur l'objet reçu par le webhook (pas
+ * besoin d'un appel réseau supplémentaire ni d'un `expand`) ; le coupon n'y
+ * est pas développé par défaut, donc `discount.coupon` est directement
+ * l'identifiant à comparer à la variable serveur.
+ */
+function founderCouponApplied(session: Stripe.Checkout.Session): boolean {
+  const founderCoupon = process.env.STRIPE_FOUNDER_COUPON;
+  if (!founderCoupon) return false;
+
+  return (session.discounts ?? []).some((discount) => {
+    const coupon = discount.coupon;
+    const couponId = typeof coupon === "string" ? coupon : coupon?.id;
+    return couponId === founderCoupon;
+  });
+}
+
 export async function POST(req: Request) {
   if (!webhookSecret) {
     console.error("STRIPE_WEBHOOK_SECRET absente : webhook refusé.");
@@ -79,6 +98,8 @@ export async function POST(req: Request) {
             break;
           }
 
+          const isFounder = founderCouponApplied(session);
+
           await tx.user.update({
             where: { id: userId },
             data: {
@@ -89,6 +110,9 @@ export async function POST(req: Request) {
               stripeCurrentPeriodEnd: periodEndOf(fetchedSubscription),
               cancelledAt: null,
               purgeAt: null,
+              ...(isFounder
+                ? { isFounderMember: true, founderOfferAt: new Date() }
+                : {}),
             },
           });
           break;
