@@ -1,8 +1,10 @@
 import { Resend } from "resend";
+import { db } from "@/lib/db";
 
 export type AlertKind = "REGRESSION" | "RESOLUTION";
 
 export interface AlertSiteChange {
+  siteId?: string;
   domain: string;
   cause: string;
   fix: string;
@@ -71,6 +73,96 @@ export function renderAlertEmail(input: {
   </div>`;
 
   return { subject, text, html };
+}
+
+export function renderDigest(input: {
+  regressions: AlertSiteChange[];
+  resolutions: AlertSiteChange[];
+}): { subject: string; text: string; html: string } {
+  if (input.regressions.length > 0 && input.resolutions.length === 0) {
+    return renderAlertEmail({ kind: "REGRESSION", domains: input.regressions });
+  }
+  if (input.resolutions.length > 0 && input.regressions.length === 0) {
+    return renderAlertEmail({ kind: "RESOLUTION", domains: input.resolutions });
+  }
+  const text = [
+    renderAlertEmail({ kind: "REGRESSION", domains: input.regressions }).text,
+    renderAlertEmail({ kind: "RESOLUTION", domains: input.resolutions }).text,
+  ].join("\n");
+  return {
+    subject: "Cited — changements de lisibilité",
+    text,
+    html: `<div style="font-family: sans-serif; max-width: 600px;"><pre>${escapeHtml(text)}</pre></div>`,
+  };
+}
+
+async function deliver(to: string, email: { subject: string; text: string; html: string }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn("RESEND_API_KEY is not defined. Skipping alert email.");
+    return { success: false as const, error: "No API Key" };
+  }
+  try {
+    const response = await new Resend(apiKey).emails.send({
+      from: FROM,
+      to,
+      subject: email.subject,
+      html: email.html,
+      text: email.text,
+    });
+    return { success: true as const, id: response.data?.id };
+  } catch (error) {
+    console.error("Failed to send alert digest:", error);
+    return { success: false as const, error };
+  }
+}
+
+async function recordAlerts(kind: AlertKind, domains: AlertSiteChange[]) {
+  const rows = domains.filter((item) => item.siteId);
+  if (rows.length === 0) return;
+  await db.alertEvent.createMany({
+    data: rows.map((item) => ({
+      siteId: item.siteId as string,
+      type: kind,
+      cause: item.cause,
+      fix: item.fix,
+      channel: "EMAIL",
+    })),
+  });
+}
+
+/**
+ * Un seul e-mail par compte pour un passage du scan, puis une ligne
+ * AlertEvent par domaine concerné.
+ */
+export async function sendDailyDigest(
+  to: string,
+  input: { regressions: AlertSiteChange[]; resolutions: AlertSiteChange[] },
+) {
+  if (input.regressions.length + input.resolutions.length === 0) {
+    return { success: true as const, skipped: true as const };
+  }
+  const sent = await deliver(to, renderDigest(input));
+  if (!sent.success) return sent;
+  await recordAlerts("REGRESSION", input.regressions);
+  await recordAlerts("RESOLUTION", input.resolutions);
+  return sent;
+}
+
+export async function listRecentAlerts(userId: string) {
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  return db.alertEvent.findMany({
+    where: { site: { userId }, sentAt: { gte: since } },
+    orderBy: { sentAt: "desc" },
+    select: {
+      id: true,
+      type: true,
+      cause: true,
+      fix: true,
+      sentAt: true,
+      site: { select: { id: true, url: true } },
+    },
+  });
 }
 
 /**

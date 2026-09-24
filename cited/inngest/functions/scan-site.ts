@@ -1,7 +1,6 @@
 import { inngest } from "../client";
 import { db } from "@/lib/db";
 import { runCoreScan } from "@/lib/scanner/core";
-import { sendRegressionAlert } from "@/lib/alerting/sendAlert";
 import { NonRetriableError } from "inngest";
 
 export const scanSiteJob = inngest.createFunction(
@@ -55,18 +54,6 @@ export const scanSiteJob = inngest.createFunction(
           data: { status: newStatus }
         });
 
-        const isRegression = 
-          (oldStatus === "ACTIVE" || oldStatus === "OK") && 
-          (newStatus === "BLOQUÉ" || newStatus === "COQUILLE VIDE");
-
-        if (isRegression) {
-          await sendRegressionAlert(
-            site.user.email,
-            site.url,
-            oldStatus,
-            newStatus
-          );
-        }
       });
     }
 

@@ -1,4 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/db", () => ({
+  db: { alertEvent: { createMany: vi.fn(), findMany: vi.fn() } },
+}));
+
 import { renderAlertEmail, suggestFix } from "./sendAlert";
 
 describe("renderAlertEmail", () => {
