@@ -49,3 +49,21 @@ export function planForPriceId(priceId: string | null | undefined): Plan | null 
   }
   return null;
 }
+
+/**
+ * Quota de sites surveillés et accès à la marque blanche par plan.
+ *
+ * Seule autorité pour l'application du quota (EF-018) : jamais recalculée
+ * ni contournable côté client.
+ */
+export const PLAN_LIMITS: Record<Plan, { maxSites: number; whiteLabel: boolean }> = {
+  FREE: { maxSites: 0, whiteLabel: false },
+  SOLO: { maxSites: 10, whiteLabel: false },
+  PRO: { maxSites: 30, whiteLabel: true },
+  SCALE: { maxSites: 100, whiteLabel: true },
+};
+
+/** Quota de sites pour un plan. Un plan inconnu n'a droit à aucun site. */
+export function maxSitesFor(plan: string): number {
+  return (PLAN_LIMITS as Record<string, { maxSites: number; whiteLabel: boolean }>)[plan]?.maxSites ?? 0;
+}
