@@ -220,7 +220,7 @@
   - **Vérification** : la série affichée correspond aux vrais `ScanLog` du site consulté, pas à une donnée commune à tous les sites
   - **Taille** : M
 
-- [ ] **T029b** [P2] Détail par assistant (dernier code HTTP, cause, correctif) relié aux vrais `ScanLog` — `cited/app/(app)/sites/[siteId]/page.tsx`
+- [x] **T029b** [P2] Détail par assistant (dernier code HTTP, cause, correctif) relié aux vrais `ScanLog` — `cited/app/(app)/sites/[siteId]/page.tsx`
   - **Dépendances** : T029a
   - **EF/ENF** : EF-044
   - **Vérification** : les codes HTTP et la trace affichés changent selon le dernier scan réel, plus de valeurs `403`/`200` codées en dur
