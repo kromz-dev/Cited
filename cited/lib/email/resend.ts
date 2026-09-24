@@ -44,10 +44,46 @@ export async function sendAuditReportEmail(
       subject: `Votre marque est citée ${mentionsCount} fois sur ${totalRuns} par ChatGPT`,
       html,
     });
-    
+
     return { success: true, id: response.data?.id };
   } catch (error) {
     console.error("Failed to send email:", error);
+    return { success: false, error };
+  }
+}
+
+// T046 (EF-064/EF-065) : découverte écrite envoyée 3 jours après l'inscription.
+// Réponse par simple retour d'e-mail, pas de formulaire — voir docs/06-kit-prospection.md §5.
+export async function sendDiscoveryEmail(to: string, name?: string | null) {
+  const greeting = name ? `Bonjour ${name},` : "Bonjour,";
+
+  const html = `
+    <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;">
+      <p>${greeting}</p>
+      <p>Pour régler Cited au plus près de votre usage, j'aurais besoin de 5 réponses courtes. Vous pouvez simplement répondre à cet e-mail.</p>
+      <ol>
+        <li>Combien de sites avez-vous sous contrat récurrent, et chez quels hébergeurs ?</li>
+        <li>Que contient votre rapport mensuel aujourd'hui ? Combien de temps vous prend-il ?</li>
+        <li>Un client vous a-t-il déjà parlé de ChatGPT ou de Perplexity ? Qu'avez-vous répondu ?</li>
+        <li>Avez-vous déjà découvert un blocage (Cloudflare, plugin, hébergeur) <em>après</em> le client ?</li>
+        <li>Que devrait contenir le rapport pour que vous l'envoyiez tel quel à vos clients ?</li>
+      </ol>
+      <br />
+      <p>À bientôt,<br/>L'équipe Cited</p>
+    </div>
+  `;
+
+  try {
+    const response = await getResend().emails.send({
+      from: "Cited <bonjour@cited.app>", // Update with a verified domain
+      to,
+      subject: "5 questions pour régler Cited sur votre parc",
+      html,
+    });
+
+    return { success: true, id: response.data?.id };
+  } catch (error) {
+    console.error("Failed to send discovery email:", error);
     return { success: false, error };
   }
 }
