@@ -92,41 +92,47 @@ export const scanSiteJob = inngest.createFunction(
         const history = await db.scanLog.findMany({
           where: { siteId: site.id },
           orderBy: { createdAt: "desc" },
-          take: 30,
+          take: 1,
           select: { simpleStatus: true, cause: true },
         });
 
-        const rows = results.map((result) => {
-          const cause = causeForBot(result.agent, result.reasons ?? []);
-          const previous = history.find((row) => row.cause?.startsWith(`${result.agent} :`));
-          const changed =
-            !previous ||
-            previous.simpleStatus !== result.simpleStatus ||
-            previous.cause !== cause;
-          return {
+        // Une ligne par scan : T032a retient le dernier ScanLog du jour.
+        // simpleStatus est toujours une valeur de SimpleStatus (core.ts).
+        const newStatus = results.length > 0
+          ? worstStatus(results.map((result) => result.simpleStatus))
+          : "ERREUR";
+        const perBot = results.map((result) => ({
+          agent: result.agent,
+          simpleStatus: result.simpleStatus,
+          httpStatus: result.httpStatus,
+          reasons: result.reasons ?? [],
+          cause: causeForBot(result.agent, result.reasons ?? []),
+        }));
+        const cause = perBot
+          .filter((result) => result.simpleStatus === newStatus)
+          .map((result) => result.cause)
+          .join(" ; ");
+        const previous = history[0];
+        const changed =
+          !previous ||
+          previous.simpleStatus !== newStatus ||
+          previous.cause !== cause;
+        const deciding = perBot.find((result) => result.simpleStatus === newStatus);
+
+        await db.scanLog.create({
+          data: {
             siteId: site.id,
-            httpStatus: result.httpStatus,
-            simpleStatus: result.simpleStatus,
+            httpStatus: deciding?.httpStatus ?? 0,
+            simpleStatus: newStatus,
             cause,
-            // Neon Free : 0,5 Go. Le JSON complet n'est réécrit que si le
-            // verdict de ce bot change. Sinon la colonne reste nulle.
+            // Neon Free : 0,5 Go. Le JSON n'est réécrit que si le verdict
+            // du site change. simpleStatus et cause sont toujours remplis.
             payload: changed
-              ? JSON.stringify({
-                  agent: result.agent,
-                  simpleStatus: result.simpleStatus,
-                  cause,
-                  reasons: result.reasons,
-                  report,
-                })
+              ? JSON.stringify({ results: perBot, report })
               : null,
-          };
+          },
         });
 
-        if (rows.length > 0) {
-          await db.scanLog.createMany({ data: rows });
-        }
-
-        const newStatus = results.length > 0 ? worstStatus(results.map((result) => result.simpleStatus)) : site.status;
         const oldStatus = site.status;
 
         if (oldStatus !== newStatus) {

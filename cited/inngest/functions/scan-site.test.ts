@@ -12,7 +12,7 @@ vi.mock("@/lib/db", () => ({
     },
     scanLog: {
       findMany: vi.fn(),
-      createMany: vi.fn(),
+      create: vi.fn(),
     },
   },
 }));
@@ -38,11 +38,7 @@ interface ScanSiteStep {
 }
 
 function createdRows() {
-  const data = vi.mocked(db.scanLog.createMany).mock.calls[0]?.[0]?.data;
-  if (!Array.isArray(data)) {
-    throw new Error("createMany devait recevoir une liste de journaux");
-  }
-  return data;
+  return vi.mocked(db.scanLog.create).mock.calls.map((call) => call[0].data);
 }
 
 function stepThatRuns(): ScanSiteStep {
@@ -86,22 +82,24 @@ describe("scanSiteJob", () => {
       "PerplexityBot",
     ]);
     const rows = createdRows();
-    expect(rows).toEqual([
-      expect.objectContaining({
-        siteId: "site-1",
-        simpleStatus: "OK",
-        cause: "GPTBot : aucune restriction détectée",
-      }),
-      expect.objectContaining({
-        siteId: "site-1",
-        simpleStatus: "BLOQUÉ",
-        cause: "ClaudeBot : robots.txt interdit ClaudeBot",
-      }),
-      expect.objectContaining({
-        siteId: "site-1",
-        simpleStatus: "COQUILLE VIDE",
-        cause: "PerplexityBot : la page dépend de JavaScript",
-      }),
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      siteId: "site-1",
+      simpleStatus: "BLOQUÉ",
+      cause: "ClaudeBot : robots.txt interdit ClaudeBot",
+    });
+    const payload = JSON.parse(String(rows[0]?.payload)) as {
+      results: { agent: string; simpleStatus: string; cause: string }[];
+    };
+    expect(payload.results.map((result) => result.simpleStatus)).toEqual([
+      "OK",
+      "BLOQUÉ",
+      "COQUILLE VIDE",
+    ]);
+    expect(payload.results.map((result) => result.agent)).toEqual([
+      "GPTBot",
+      "ClaudeBot",
+      "PerplexityBot",
     ]);
   });
 
@@ -114,8 +112,6 @@ describe("scanSiteJob", () => {
     } as unknown as MonitoredSiteWithUser);
     vi.mocked(db.scanLog.findMany).mockResolvedValue([
       { simpleStatus: "BLOQUÉ", cause: "ClaudeBot : robots.txt interdit ClaudeBot" },
-      { simpleStatus: "OK", cause: "GPTBot : aucune restriction détectée" },
-      { simpleStatus: "COQUILLE VIDE", cause: "PerplexityBot : la page dépend de JavaScript" },
     ] as unknown as ScanLogRows);
     vi.mocked(runCoreScan).mockResolvedValue({
       report: {},
@@ -128,7 +124,12 @@ describe("scanSiteJob", () => {
     });
 
     const rows = createdRows();
-    expect(rows.map((row) => row.payload)).toEqual([null, null, null]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      simpleStatus: "BLOQUÉ",
+      cause: "ClaudeBot : robots.txt interdit ClaudeBot",
+      payload: null,
+    });
     expect(db.monitoredSite.update).not.toHaveBeenCalled();
   });
 
@@ -153,11 +154,13 @@ describe("scanSiteJob", () => {
     });
 
     const rows = createdRows();
-    expect(rows[0]?.payload).toBeNull();
-    expect(JSON.parse(String(rows[1]?.payload))).toMatchObject({
-      agent: "ClaudeBot",
-      simpleStatus: "BLOQUÉ",
-      cause: "ClaudeBot : robots.txt interdit ClaudeBot",
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.simpleStatus).toBe("BLOQUÉ");
+    expect(JSON.parse(String(rows[0]?.payload))).toMatchObject({
+      results: [
+        { agent: "GPTBot", simpleStatus: "OK" },
+        { agent: "ClaudeBot", simpleStatus: "BLOQUÉ" },
+      ],
     });
   });
 

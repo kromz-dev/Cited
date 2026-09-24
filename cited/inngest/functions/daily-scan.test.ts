@@ -15,7 +15,6 @@ vi.mock("@/lib/db", () => ({
     },
     scanLog: {
       create: vi.fn(),
-      createMany: vi.fn(),
       findMany: vi.fn().mockResolvedValue([]),
     },
   },
@@ -123,18 +122,14 @@ describe("Fan-Out Inngest Scans", () => {
         { event: { data: { siteId: "site-4" } }, step },
       );
 
-      const loggedData = vi.mocked(db.scanLog.createMany).mock.calls[0]?.[0]?.data;
-      if (!Array.isArray(loggedData) || !loggedData[0]) {
-        throw new Error("createMany devait recevoir une liste");
-      }
-      const logged = loggedData[0];
+      const logged = vi.mocked(db.scanLog.create).mock.calls[0]?.[0]?.data;
+      if (!logged) throw new Error("create devait écrire un journal");
       expect(logged).toMatchObject({
         simpleStatus: "COQUILLE VIDE",
         cause: "GPTBot : aucune restriction détectée",
       });
       expect(JSON.parse(String(logged.payload))).toMatchObject({
-        agent: "GPTBot",
-        simpleStatus: "COQUILLE VIDE",
+        results: [{ agent: "GPTBot", simpleStatus: "COQUILLE VIDE" }],
       });
 
       expect(db.monitoredSite.update).toHaveBeenCalledWith({
