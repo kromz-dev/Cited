@@ -128,7 +128,7 @@
   - **Vérification** : la réponse contient un tableau de résultats pour ChatGPT (GPTBot), Claude (ClaudeBot) et Perplexity (PerplexityBot), chacun avec ses propres `reasons`
   - **Taille** : S
 
-- [ ] **T016** [P1] Afficher un verdict par assistant avec cause et correctif sur la page de résultat — `cited/components/landing/ScanForm.tsx`, `cited/app/(marketing)/analyse/[domain]/page.tsx`
+- [x] **T016** [P1] Afficher un verdict par assistant avec cause et correctif sur la page de résultat — `cited/components/home/ScanForm.tsx`
   - **Dépendances** : T015
   - **EF/ENF** : EF-001, EF-002, décision §14.3 du PRD
   - **Vérification** : test manuel sur un site avec `robots.txt` bloquant un seul bot — les trois verdicts restent visuellement distincts (composant `Verdict`, jamais fondus)
