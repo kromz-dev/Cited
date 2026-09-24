@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { db } from "@/lib/db";
+import { logFailure } from "../log";
 
 export type AlertKind = "REGRESSION" | "RESOLUTION";
 
@@ -99,7 +100,7 @@ export function renderDigest(input: {
 async function deliver(to: string, email: { subject: string; text: string; html: string }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.warn("RESEND_API_KEY is not defined. Skipping alert email.");
+    logFailure("alert.missing_api_key", { to });
     return { success: false as const, error: "No API Key" };
   }
   try {
@@ -112,7 +113,7 @@ async function deliver(to: string, email: { subject: string; text: string; html:
     });
     return { success: true as const, id: response.data?.id };
   } catch (error) {
-    console.error("Failed to send alert digest:", error);
+    logFailure("alert.send_failed", { to, message: error instanceof Error ? error.message : "unknown" });
     return { success: false as const, error };
   }
 }
@@ -177,7 +178,7 @@ export async function sendUserDigest(
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.warn("RESEND_API_KEY is not defined. Skipping alert email.");
+    logFailure("alert.missing_api_key", { to });
     return { success: false, error: "No API Key" };
   }
 
@@ -192,7 +193,7 @@ export async function sendUserDigest(
     });
     return { success: true, id: response.data?.id };
   } catch (error) {
-    console.error("Failed to send alert digest:", error);
+    logFailure("alert.send_failed", { to, message: error instanceof Error ? error.message : "unknown" });
     return { success: false, error };
   }
 }

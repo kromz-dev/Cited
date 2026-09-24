@@ -2,6 +2,7 @@ import { inngest } from "../client";
 import { db } from "@/lib/db";
 import { runCoreScan } from "@/lib/scanner/core";
 import { NonRetriableError } from "inngest";
+import { logFailure } from "../../lib/log";
 
 export const scanSiteJob = inngest.createFunction(
   { 
@@ -22,6 +23,7 @@ export const scanSiteJob = inngest.createFunction(
     });
 
     if (!site) {
+      logFailure("scan.site_missing", { siteId });
       throw new NonRetriableError(`Site not found: ${siteId}`);
     }
 
