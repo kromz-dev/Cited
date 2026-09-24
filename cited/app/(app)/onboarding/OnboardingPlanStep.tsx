@@ -1,0 +1,113 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useFormStatus } from "react-dom";
+import { Loader2 } from "lucide-react";
+import { createCheckoutSession } from "@/lib/billing/actions";
+import { Button } from "@/components/ui/button";
+import { ONBOARDING_PLANS } from "./onboarding-plan";
+
+/**
+ * Étape « Choisir un palier » de l'onboarding (EF-063, T045).
+ *
+ * Affichée uniquement pour un compte sans abonnement actif (voir
+ * `shouldSkipPlanStep` dans `onboarding-plan.ts`, appelé côté serveur dans
+ * `page.tsx`). Chaque palier soumet son propre formulaire vers
+ * `createCheckoutSession`, qui redirige vers Stripe Checkout ; il n'y a rien
+ * d'autre à faire ici que déclencher ce paiement.
+ */
+export function OnboardingPlanStep() {
+  const [couponCode, setCouponCode] = useState("");
+
+  return (
+    <div className="-m-6 flex min-h-screen flex-col bg-paper text-ink md:-m-10">
+      <header className="bg-ink text-paper">
+        <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 py-3.5">
+          <Link href="/" className="mr-auto inline-flex items-center text-[19px] font-semibold tracking-tight">
+            Cited<span className="text-cobalt">.</span>
+          </Link>
+          <span className="type-caption font-medium opacity-70">Étape 2 sur 3</span>
+        </div>
+      </header>
+
+      <div className="flex h-1.5 bg-ink/15">
+        <span className="flex-1 bg-cobalt" />
+        <span className="flex-[2]" />
+      </div>
+
+      <main className="flex flex-1 justify-center bg-paper p-6 sm:p-12">
+        <div className="w-full max-w-[760px]">
+          <p className="mb-2.5 text-sm font-medium text-ink-2">Étape 2 · Choisir un palier</p>
+          <h1 className="mb-2.5 text-[28px] leading-[1.1] font-semibold tracking-[-0.02em] text-ink sm:text-[32px]">
+            Le scan gratuit s&apos;arrête à un site
+          </h1>
+          <p className="mb-[22px] text-sm leading-6 text-ink-2">
+            Choisissez un palier pour surveiller votre portefeuille en continu. Le paiement se fait sur
+            Stripe ; vous revenez ensuite directement sur Cited.
+          </p>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="o-coupon" className="text-sm font-medium text-ink">
+              Code fondateur (optionnel)
+            </label>
+            <input
+              id="o-coupon"
+              type="text"
+              autoComplete="off"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value)}
+              className="w-full max-w-[280px] rounded-sm border border-line-strong bg-surface p-2.5 text-sm text-ink outline-none transition-colors focus-visible:border-cobalt focus-visible:ring-3 focus-visible:ring-cobalt/25"
+              placeholder="Reçu par e-mail si applicable"
+            />
+          </div>
+
+          <div className="mt-[22px] grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+            {ONBOARDING_PLANS.map((plan) => (
+              <div
+                key={plan.id}
+                className={
+                  "flex flex-col rounded-lg border bg-surface p-4.5 " +
+                  (plan.id === "PRO" ? "border-cobalt" : "border-line")
+                }
+              >
+                {plan.id === "PRO" && (
+                  <span className="mb-2.5 self-start rounded-xs bg-cobalt-soft px-2 py-0.5 type-caption font-medium text-cobalt">
+                    Recommandé
+                  </span>
+                )}
+                <span className="text-sm font-semibold text-ink">{plan.name}</span>
+                <span className="mt-1 text-2xl font-semibold tracking-[-0.01em] text-ink">
+                  {plan.price}
+                  <span className="text-sm font-normal text-ink-2">{plan.priceUnit}</span>
+                </span>
+                <span className="mt-1.5 text-[13px] text-ink-2">{plan.maxSites} sites surveillés</span>
+
+                <form action={createCheckoutSession.bind(null, plan.id, couponCode)} className="mt-4">
+                  <PlanSubmitButton label={plan.ctaLabel} primary={plan.id === "PRO"} />
+                </form>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function PlanSubmitButton({ label, primary }: { label: string; primary: boolean }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" variant={primary ? "default" : "outline"} disabled={pending} className="w-full">
+      {pending ? (
+        <>
+          <Loader2 className="size-4 animate-spin" />
+          Redirection vers Stripe…
+        </>
+      ) : (
+        label
+      )}
+    </Button>
+  );
+}
