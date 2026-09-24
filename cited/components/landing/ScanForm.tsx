@@ -62,8 +62,8 @@ export function ScanForm() {
       }
 
       setResult(data);
-    } catch (err: any) {
-      if (err.name === "AbortError") return;
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");
     } finally {
       setLoading(false);

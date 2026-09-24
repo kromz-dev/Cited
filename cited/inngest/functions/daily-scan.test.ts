@@ -24,10 +24,42 @@ vi.mock("@/lib/scanner/core", () => ({
 }));
 
 type CoreScanOutput = Awaited<ReturnType<typeof runCoreScan>>;
+type MonitoredSiteRows = Awaited<ReturnType<typeof db.monitoredSite.findMany>>;
+type MonitoredSiteWithUser = Awaited<ReturnType<typeof db.monitoredSite.findUnique>>;
 
 vi.mock("@/lib/alerting/sendAlert", () => ({
   sendRegressionAlert: vi.fn(),
 }));
+
+/**
+ * `inngest.createFunction()` returns an `InngestFunction` whose handler is a
+ * private class field (see node_modules/inngest/components/InngestFunction.d.ts),
+ * so it isn't reachable from the public type surface. These tests call the
+ * handler directly to unit test its logic without Inngest's step-orchestration
+ * runtime. Rather than suppressing the compiler with @ts-ignore/@ts-expect-error
+ * at each call site, we go through one narrow, explicitly typed accessor that
+ * describes exactly the context shape each handler destructures.
+ */
+function invokeHandler<TContext>(
+  inngestFunction: object,
+  context: TContext,
+): unknown {
+  return (
+    inngestFunction as unknown as { fn: (ctx: TContext) => unknown }
+  ).fn(context);
+}
+
+interface DailyScanStep {
+  run: <T>(name: string, fn: () => Promise<T> | T) => Promise<T>;
+  sendEvent: (
+    name: string,
+    payloads: Array<{ name: string; data: { siteId: string } }>,
+  ) => unknown;
+}
+
+interface ScanSiteStep {
+  run: <T>(name: string, fn: () => Promise<T> | T) => Promise<T>;
+}
 
 describe("Fan-Out Inngest Scans", () => {
   beforeEach(() => {
@@ -40,15 +72,14 @@ describe("Fan-Out Inngest Scans", () => {
       vi.mocked(db.monitoredSite.findMany).mockResolvedValue([
         { id: "site-1" },
         { id: "site-2" },
-      ] as any);
+      ] as unknown as MonitoredSiteRows);
 
-      const step = {
+      const step: DailyScanStep = {
         run: vi.fn().mockImplementation(async (name, fn) => await fn()),
         sendEvent: vi.fn(),
       };
 
-      // @ts-ignore
-      await dailyScanJob.fn({ step });
+      await invokeHandler<{ step: DailyScanStep }>(dailyScanJob, { step });
 
       expect(step.sendEvent).toHaveBeenCalledWith(
         "send-events-0",
@@ -61,7 +92,7 @@ describe("Fan-Out Inngest Scans", () => {
   });
 
   describe("scanSiteJob (Worker)", () => {
-    const step = {
+    const step: ScanSiteStep = {
       run: vi.fn().mockImplementation(async (_name: string, fn: () => unknown) => await fn()),
     };
 
@@ -71,7 +102,7 @@ describe("Fan-Out Inngest Scans", () => {
         url: "https://example4.com",
         status: "ACTIVE",
         user: { email: "user@example.com" },
-      } as any);
+      } as unknown as MonitoredSiteWithUser);
 
       vi.mocked(runCoreScan).mockResolvedValue({
         report: { robots: {}, access: {}, jsDependency: {} },
@@ -86,8 +117,10 @@ describe("Fan-Out Inngest Scans", () => {
         ],
       } as unknown as CoreScanOutput);
 
-      // @ts-ignore
-      await scanSiteJob.fn({ event: { data: { siteId: "site-4" } }, step });
+      await invokeHandler<{ event: { data: { siteId: string } }; step: ScanSiteStep }>(
+        scanSiteJob,
+        { event: { data: { siteId: "site-4" } }, step },
+      );
 
       const logged = vi.mocked(db.scanLog.create).mock.calls[0][0];
       expect(JSON.parse(String(logged.data.payload))).toMatchObject({
@@ -113,7 +146,7 @@ describe("Fan-Out Inngest Scans", () => {
         url: "https://error.com",
         status: "OK",
         user: { email: "error@example.com" },
-      } as any);
+      } as unknown as MonitoredSiteWithUser);
 
       vi.mocked(runCoreScan).mockResolvedValue({
         report: {},
@@ -130,8 +163,12 @@ describe("Fan-Out Inngest Scans", () => {
 
       vi.mocked(sendRegressionAlert).mockRejectedValue(new Error("Email crashed"));
 
-      // @ts-ignore
-      await expect(scanSiteJob.fn({ event: { data: { siteId: "site-error" } }, step })).rejects.toThrow("Email crashed");
+      await expect(
+        invokeHandler<{ event: { data: { siteId: string } }; step: ScanSiteStep }>(
+          scanSiteJob,
+          { event: { data: { siteId: "site-error" } }, step },
+        ),
+      ).rejects.toThrow("Email crashed");
       
       // The update still happened before the crash
       expect(db.monitoredSite.update).toHaveBeenCalled();

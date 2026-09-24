@@ -15,7 +15,7 @@ export function SiteActions({ siteId }: { siteId: string }) {
         await launchAuditCampaign(siteId);
         setFeedbackMessage("Scan lancé avec succès !");
         setTimeout(() => setFeedbackMessage(null), 4000);
-      } catch (err: any) {
+      } catch {
         // Even if mock site or campaign error, simulate success for UI feedback
         setFeedbackMessage("Scan terminé ! Données actualisées.");
         setTimeout(() => setFeedbackMessage(null), 4000);

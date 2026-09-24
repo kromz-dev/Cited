@@ -303,7 +303,7 @@ export default function ReportsPage() {
             </h2>
             <div className="flex flex-col gap-3 text-sm text-ink/90 border-t border-line pt-4 mt-4 leading-relaxed">
               <div>Verdict actuel et historique de chaque domaine du client.</div>
-              <div>Liste des incidents, avec date d'apparition et de résolution.</div>
+              <div>Liste des incidents, avec date d&apos;apparition et de résolution.</div>
               <div>Réponse brute des bots IA, en annexe technique.</div>
               <div>Logo de votre agence en en-tête, sans mention de Cited.</div>
             </div>
@@ -314,7 +314,7 @@ export default function ReportsPage() {
               href="/settings"
               className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 border border-line rounded-lg bg-white text-ink text-sm font-semibold hover:bg-paper-deep transition-colors shadow-xs"
             >
-              Personnaliser l'en-tête
+              Personnaliser l&apos;en-tête
             </Link>
           </div>
         </div>
