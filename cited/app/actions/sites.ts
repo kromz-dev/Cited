@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { maxSitesFor } from "@/lib/billing/plans";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
@@ -22,6 +23,16 @@ export async function getMonitoredSites() {
   }
 }
 
+function quotaReachedMessage(plan: string, maxSites: number): string {
+  if (plan === "SOLO") {
+    return `Limite du plan Solo atteinte (${maxSites} sites). Passez au plan Pro pour continuer.`;
+  }
+  if (plan === "PRO") {
+    return `Limite du plan Pro atteinte (${maxSites} sites). Passez au plan Scale pour continuer.`;
+  }
+  return `Plafond du plan Scale atteint (${maxSites} sites).`;
+}
+
 export async function addMonitoredSite(data: { name: string; url: string }) {
   try {
     const session = await auth();
@@ -33,31 +44,49 @@ export async function addMonitoredSite(data: { name: string; url: string }) {
       return { error: "Name and URL are required" };
     }
 
-    const user = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: { stripeCurrentPeriodEnd: true, plan: true },
+    const userId = session.user.id;
+
+    // Le décompte et l'insertion sont dans la même transaction : deux ajouts
+    // simultanés ne peuvent pas tous les deux passer sous la limite.
+    const result = await db.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { stripeCurrentPeriodEnd: true, plan: true },
+      });
+
+      if (
+        !user ||
+        user.plan === "FREE" ||
+        !user.stripeCurrentPeriodEnd ||
+        user.stripeCurrentPeriodEnd.getTime() < Date.now()
+      ) {
+        return { error: "Abonnement requis" as const };
+      }
+
+      const maxSites = maxSitesFor(user.plan);
+      const count = await tx.monitoredSite.count({ where: { userId } });
+      if (count >= maxSites) {
+        return { error: quotaReachedMessage(user.plan, maxSites) as const };
+      }
+
+      const site = await tx.monitoredSite.create({
+        data: {
+          name: data.name,
+          url: data.url,
+          userId,
+          status: "ACTIVE",
+        },
+      });
+
+      return { data: site };
     });
 
-    if (
-      !user ||
-      user.plan === "FREE" ||
-      !user.stripeCurrentPeriodEnd ||
-      user.stripeCurrentPeriodEnd.getTime() < Date.now()
-    ) {
-      return { error: "Abonnement requis" };
+    if ("error" in result) {
+      return result;
     }
 
-    const site = await db.monitoredSite.create({
-      data: {
-        name: data.name,
-        url: data.url,
-        userId: session.user.id,
-        status: "ACTIVE",
-      },
-    });
-
     revalidatePath("/dashboard");
-    return { data: site };
+    return result;
   } catch (error) {
     return { error: "Internal server error" };
   }

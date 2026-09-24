@@ -7,6 +7,7 @@ vi.mock('@/auth', () => ({
 
 vi.mock('@/lib/db', () => ({
   db: {
+    $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(db)),
     user: {
       findUnique: vi.fn(),
     },
@@ -14,6 +15,7 @@ vi.mock('@/lib/db', () => ({
       findMany: vi.fn(),
       create: vi.fn(),
       deleteMany: vi.fn(),
+      count: vi.fn(),
     },
   },
 }));
@@ -115,6 +117,7 @@ describe('sites actions', () => {
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 1);
       vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'PRO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(0);
       vi.mocked(db.monitoredSite.create).mockResolvedValueOnce({ id: 'site-1', name: 'Test' } as unknown as CreatedSite);
 
       const res = await addMonitoredSite({ name: 'Test', url: 'http://test.com' });
@@ -129,6 +132,21 @@ describe('sites actions', () => {
         },
       });
       expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
+    });
+
+    it('refuse un 11e site Solo et nomme le palier Pro', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'SOLO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.count).mockResolvedValueOnce(10);
+
+      const res = await addMonitoredSite({ name: 'Onzième', url: 'https://test.com' });
+
+      expect(res).toEqual({
+        error: 'Limite du plan Solo atteinte (10 sites). Passez au plan Pro pour continuer.',
+      });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
     });
   });
 
