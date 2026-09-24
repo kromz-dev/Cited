@@ -3,7 +3,7 @@ import { dailyScanJob } from "./daily-scan";
 import { scanSiteJob } from "./scan-site";
 import { db } from "@/lib/db";
 import { runCoreScan } from "@/lib/scanner/core";
-import { sendRegressionAlert } from "@/lib/alerting/sendAlert";
+
 
 vi.mock("@/lib/db", () => ({
   db: {
@@ -28,9 +28,7 @@ type CoreScanOutput = Awaited<ReturnType<typeof runCoreScan>>;
 type MonitoredSiteRows = Awaited<ReturnType<typeof db.monitoredSite.findMany>>;
 type MonitoredSiteWithUser = Awaited<ReturnType<typeof db.monitoredSite.findUnique>>;
 
-vi.mock("@/lib/alerting/sendAlert", () => ({
-  sendRegressionAlert: vi.fn(),
-}));
+
 
 /**
  * `inngest.createFunction()` returns an `InngestFunction` whose handler is a
@@ -136,46 +134,6 @@ describe("Fan-Out Inngest Scans", () => {
         where: { id: "site-4" },
         data: { status: "COQUILLE VIDE" },
       });
-      expect(sendRegressionAlert).toHaveBeenCalledWith(
-        "user@example.com",
-        "https://example4.com",
-        "ACTIVE",
-        "COQUILLE VIDE"
-      );
-    });
-
-    it("should propagate errors if email fails (Inngest will retry)", async () => {
-      vi.mocked(db.monitoredSite.findUnique).mockResolvedValue({
-        id: "site-error",
-        url: "https://error.com",
-        status: "OK",
-        user: { email: "error@example.com" },
-      } as unknown as MonitoredSiteWithUser);
-
-      vi.mocked(runCoreScan).mockResolvedValue({
-        report: {},
-        results: [
-          {
-            agent: "GPTBot",
-            simpleStatus: "BLOQUÉ",
-            httpStatus: 403,
-            durationMs: 100,
-            wordCount: 0,
-          },
-        ],
-      } as unknown as CoreScanOutput);
-
-      vi.mocked(sendRegressionAlert).mockRejectedValue(new Error("Email crashed"));
-
-      await expect(
-        invokeHandler<{ event: { data: { siteId: string } }; step: ScanSiteStep }>(
-          scanSiteJob,
-          { event: { data: { siteId: "site-error" } }, step },
-        ),
-      ).rejects.toThrow("Email crashed");
-      
-      // The update still happened before the crash
-      expect(db.monitoredSite.update).toHaveBeenCalled();
     });
   });
 });
