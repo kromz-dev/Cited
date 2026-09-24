@@ -1,4 +1,4 @@
-import { ScanForm } from "./ScanForm";
+import { ScanForm } from "@/components/home/ScanForm";
 
 export function Hero() {
   return (

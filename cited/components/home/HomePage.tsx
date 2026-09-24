@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ScanForm } from "@/components/landing/ScanForm";
+import { ScanForm } from "./ScanForm";
 import { PortfolioPanel } from "./PortfolioPanel";
 import { schibsted } from "./fonts";
 import tokens from "./tokens.module.css";
