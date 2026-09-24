@@ -246,7 +246,7 @@
 
 **But** : la fonctionnalité anti-résiliation numéro un du PRD (§12).
 
-- [ ] **T031** [P3] Moteur de génération PDF (`@react-pdf/renderer`), fonction pure — `cited/lib/reports/renderMonthlyReportPdf.ts`
+- [x] **T031** [P3] Moteur de génération PDF (`@react-pdf/renderer`), fonction pure — `cited/lib/reports/renderMonthlyReportPdf.tsx`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-047 à EF-051 (fondation)
   - **Vérification** : test unitaire — à partir de données figées, le PDF généré contient les sections attendues (verdict actuel, historique, incidents, annexe technique)
