@@ -62,6 +62,6 @@ Une pull request qui ne satisfait pas les quatre portes n'est pas fusionnée, y 
 - Cette constitution prime sur toute pratique contraire observée dans le code existant : un écart constaté (par exemple un User-Agent imité non étiqueté, un correctif marqué « en préparation » qui s'affiche comme actif) est une dette à corriger, pas un précédent à suivre.
 - **Amendement** : toute modification d'un principe est écrite dans ce fichier, avec la date, la raison du changement et son impact sur les documents qui en dépendent (`docs/09-prd-mvp.md` notamment). Un amendement silencieux (changement de pratique sans mise à jour de ce texte) n'a pas de valeur.
 - **Revue** : toute pull request touchant à la mesure du scanner, à la sécurité, à la facturation ou à une donnée personnelle est relue à la lumière des principes I, III et IV avant d'être fusionnée.
-- Ce document est à la racine de `docs/` et fait autorité sur `PROGRESS.md`, `tasks/plan.md` et tout autre document opérationnel en cas de contradiction.
+- Ce document est à la racine de `docs/` et fait autorité sur `PROGRESS.md`, `tasks/mvp-tasks.md` et tout autre document opérationnel en cas de contradiction.
 
 **Version** : 1.0.0 | **Ratifiée** : 24 septembre 2026 | **Dernier amendement** : 24 septembre 2026

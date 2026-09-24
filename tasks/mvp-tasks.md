@@ -300,13 +300,13 @@
   - **Vérification** : le coupon existe côté Stripe et refuse toute application au-delà de 10 utilisations (comportement natif Stripe)
   - **Taille** : S
 
-- [ ] **T038** [FACT] Accepter un code promo optionnel dans `createCheckoutSession` — `cited/lib/billing/actions.ts`
+- [x] **T038** [FACT] Accepter un code promo optionnel dans `createCheckoutSession` — `cited/lib/billing/actions.ts` (livré sur `main`, PR #13, tests dans `lib/billing/actions.test.ts`)
   - **Dépendances** : T037
   - **EF/ENF** : EF-058, EF-066
   - **Vérification** : un Checkout créé avec le coupon affiche bien la réduction côté Stripe (test manuel en mode test Stripe)
   - **Taille** : S
 
-- [ ] **T039** [FACT] Marquer `isFounderMember`/`founderOfferAt` au moment du webhook si un coupon a été appliqué — `cited/app/api/webhooks/stripe/route.ts`
+- [x] **T039** [FACT] Marquer `isFounderMember`/`founderOfferAt` au moment du webhook si un coupon a été appliqué — `cited/app/api/webhooks/stripe/route.ts` (livré sur `main`, PR #13, tests dans `app/api/webhooks/stripe/route.test.ts`)
   - **Dépendances** : T010, T037
   - **EF/ENF** : EF-067
   - **Vérification** : un abonnement de test payé avec le coupon fondateur met à jour ces deux champs, un abonnement sans coupon ne les touche pas

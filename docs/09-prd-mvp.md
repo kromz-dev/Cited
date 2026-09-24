@@ -15,7 +15,7 @@ Légende des états utilisés dans les exigences fonctionnelles :
 
 Cited est un diagnostic gratuit qui explique, cause à l'appui, pourquoi ChatGPT, Claude ou Perplexity ne lisent pas ou ne citent pas un site — en commençant par ce qui bloque techniquement (pare-feu, `robots.txt`, dépendance JavaScript). Ce diagnostic sert d'aimant à prospects pour un produit payant : la surveillance quotidienne, en marque blanche, du portefeuille client complet d'une agence de maintenance WordPress ou d'une agence SEO/GEO. L'agence est alertée par e-mail dès qu'un site régresse, avec la cause et le correctif, et reçoit chaque mois un rapport PDF à son logo à glisser dans son propre reporting client.
 
-Le moteur d'audit technique et l'infrastructure (authentification, base de données, tâche planifiée, Stripe, alerting) sont déjà largement construits dans le dépôt `cited/`, à la suite d'un premier pivot (« Scanner Black-Box », voir `docs/01-04`). Ce PRD ne repart pas de zéro : il documente ce qui est solide, ce qui est en cours de correction par ailleurs, et ce qui manque pour atteindre le positionnement et la cible décidés en septembre 2026 (`docs/05-analyse-strategique.md`).
+Le moteur d'audit technique et l'infrastructure (authentification, base de données, tâche planifiée, Stripe, alerting) sont déjà largement construits dans le dépôt `cited/`, à la suite d'un premier pivot (« Scanner Black-Box »). Ce PRD ne repart pas de zéro : il documente ce qui est solide, ce qui est en cours de correction par ailleurs, et ce qui manque pour atteindre le positionnement et la cible décidés en septembre 2026 (`docs/05-analyse-strategique.md`).
 
 ## 2. Contexte et problème
 

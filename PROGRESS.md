@@ -3,7 +3,7 @@
 Source de vérité pour reprendre le travail, avec un humain ou un agent.
 **Dernière mise à jour :** 24 septembre 2026.
 
-**Stack :** Next.js 16 · React 19 · TypeScript strict · Prisma 5 · PostgreSQL · Tailwind 4 · NextAuth v5 · Stripe · Inngest · Resend
+**Stack :** Next.js 16 · React 19 · TypeScript strict · Prisma 5 · PostgreSQL · Tailwind 4 · NextAuth v5 · Stripe · Inngest · Resend · PostHog
 **Contrainte absolue :** budget 0 €, autofinancé. Uniquement des offres gratuites qui autorisent un usage commercial (voir `docs/09-prd-mvp.md` §14, ENF-016).
 
 ---
@@ -16,59 +16,50 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 
 | Branche | Rôle | État |
 |---|---|---|
-| `main` | Référence. La CI (tsc, eslint, vitest, build) tourne sur chaque PR. | Vert |
-| `claude/focused-gates-fav90h` | Fusionnée dans `main` (PR #3, 24/09) | Réutilisable pour la suite, à repartir de `main` |
+| `main` | Seule branche vivante. La CI (tsc, eslint, vitest, build) tourne sur chaque PR et sur chaque push. | Vert |
 
-À supprimer quand tu veux (déjà dans `main`) : `chore/ci-quality-gates`.
+Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/`, `docs/`, `chore/`), une PR par tâche, fusion par l'humain une fois la CI verte. `chore/ci-quality-gates` et `claude/focused-gates-fav90h` (déjà fusionnées) restent sur GitHub sans usage — à supprimer quand tu veux.
 
-### Fait
+**Antigravity n'est plus sur ce projet** (24/09) : son travail du jour (T019-T025 en local, jamais poussé) a été retiré à la demande du fondateur. Les tâches correspondantes sont **remises à zéro**, personne n'a commencé dessus. Prochaine session : Claude seul, sauf décision contraire.
 
-- [x] Analyse stratégique, marché, concurrence, choix de cible : `docs/05-analyse-strategique.md`
-- [x] Kit de prospection écrit (e-mails, objections, questionnaire) : `docs/06-kit-prospection.md`
-- [x] Design system unique (tokens, composants `components/ui/*`, `Verdict`, page `/design-system`) : `docs/07-design-system.md`
-- [x] Constitution (principes et portes de qualité) : `docs/08-constitution.md`
-- [x] PRD du MVP (67 EF, 15 ENF, décisions §14) : `docs/09-prd-mvp.md`
-- [x] Scanner v2 (redirections sûres, `robots.txt` par bot, User-Agent honnête, challenges, 3 résultats séparés) : fusionné dans `main` (PR #1)
-- [x] CI GitHub Actions et `main` au vert : PR #2
-- [x] Nouvelle page d'accueil (angle diagnostic, portefeuille, `ScanForm` sur la nouvelle API) et nouvelle page de prix (39 / 99 / 249 €)
-- [x] Skills installés dans `cited/.claude/skills`, avec un lien symbolique à la racine du dépôt (design, rédaction, PRD, ingénierie) et 6 agents marketing dans `cited/.claude/agents`
+### Fait aujourd'hui (24/09), en plus du travail antérieur listé dans `tasks/mvp-tasks.md`
 
-- [x] Plan technique 0 € : `docs/10-plan-technique.md`. Pile retenue : Render (offre gratuite) + Neon Postgres + Inngest + Resend + PostHog + `@react-pdf/renderer`. Les conditions de ces offres sont à confirmer (tâche T001).
-- [x] Liste des tâches du MVP, 57 tâches en 9 phases : `tasks/mvp-tasks.md` (**c'est elle qui fait foi pour le « quoi faire ensuite »**)
-- [x] T006 : Route de compteur d'audience RGPD-safe (pas de cookie, pas de tiers) — `app/api/beacon/route.ts`, appel `navigator.sendBeacon` depuis `app/(marketing)/layout.tsx`
+- [x] **T037-T039** : coupon fondateur Stripe (`FONDATEUR50`, vérifié en mode test), accepté au checkout, marque `isFounderMember` via le webhook. Cases T038 et T039 cochées dans `tasks/mvp-tasks.md` le 24/09, le code était déjà sur `main` (PR #13).
+- [x] **T042** : page Tarifs — dépassement 100 sites et paiement annuel présentés comme activables à la main, jamais en libre-service.
+- [x] **T046** : e-mail des 5 questions à J+3. L'e-mail d'offre fondatrice (T047) n'existe pas encore.
+- [x] **T052** : réinitialisation de mot de passe par e-mail.
+- [x] **T056** : purge mensuelle de `ScanLog.payload` au-delà de 90 jours.
+- [x] Documentation : `docs/decisions/ADR-001-posthog-remplace-sentry.md`, budget de quotas gratuits Inngest/Neon/Resend recalculé et corrigé dans `docs/10-plan-technique.md`.
 
-### 🤖 Règles de Collaboration (Antigravity & Claude Code)
-Pour permettre à 2 agents IA de travailler en parallèle sur ce dépôt sans créer de conflits, les règles suivantes sont absolues :
-1. **Isolation stricte** : Chaque agent (ou sous-agent) DOIT travailler sur sa propre branche Git isolée (ex: `feat/t021-bulk-add`). Il est formellement interdit de coder directement sur `main` ou de travailler sur la branche d'un autre agent. L'utilisation de `git worktree` est fortement recommandée pour l'isolation locale sur disque.
-2. **Identité Git claire** : Chaque agent DOIT s'identifier proprement avant son premier commit.
-   - Antigravity signe : `git config user.name "Agent IA Antigravity"` et `git config user.email "antigravity@ai.local"`
-   - Claude signe : `git config user.name "Agent IA Claude"` et `git config user.email "claude@ai.local"`
-3. **Pas de merge sauvage** : Les agents effectuent leurs commits sur leurs branches. Seul l'humain (l'Orchestrateur) est autorisé à valider et fusionner (merge) le code vers `main`.
+21 tâches cochées sur 60 dans `tasks/mvp-tasks.md` — **c'est elle qui fait foi**, cette section n'est qu'un résumé.
+
+Toujours ouvertes, à tort marquées faites dans une version précédente de ce fichier : **T040** (les réglages affichent encore « Offre agence — 20 domaines » et « 18/20 »), **T041** (pas d'export RGPD), **T047** (pas d'e-mail d'offre fondatrice), **T050** (badges « En préparation », mais Laura Bréa, une fausse clé API copiable et Atelier Boréal sont encore à l'écran).
 
 ### Services provisionnés (24/09, mode test, 0 €)
 
 | Service | Ressource | Identifiants non secrets |
 |---|---|---|
-| Neon | Projet `cited`, Postgres 17, Francfort (`aws-eu-central-1`), base `cited`, rôle `cited` | projet `billowing-resonance-22258158`. La chaîne de connexion (secrète) est à récupérer dans la console Neon ou via le MCP, et à mettre directement dans Render (`DATABASE_URL`). |
-| Stripe (test) | 3 produits et prix mensuels HT en EUR | `STRIPE_PRICE_SOLO=price_1UJ459E0KhuxlY8kOXQkdsjH` (39 €), `STRIPE_PRICE_PRO=price_1UJ45LE0KhuxlY8k1kqASn38` (99 €), `STRIPE_PRICE_SCALE=price_1UJ45PE0KhuxlY8kI8hhUDP1` (249 €). Lookup keys `cited_{solo,pro,scale}_monthly`. |
-| Stripe (test) | Coupon fondateur | `FONDATEUR50` : −50 %, à vie, 10 utilisations maximum |
-| PostHog | Projet Analytics + Session Replay + Error Tracking | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` et `NEXT_PUBLIC_POSTHOG_HOST` |
-| Render | Espace « My Workspace » | Service web à créer après la fusion dans `main` (T003) |
-| Resend | Compte | Domaine d'envoi à ajouter (nécessite un domaine) |
-| Inngest | — | Compte et clés à créer (`INNGEST_SIGNING_KEY`, `INNGEST_EVENT_KEY`) |
+| Neon | Projet `cited`, Postgres 17, Francfort (`aws-eu-central-1`), base `cited` | `billowing-resonance-22258158`. Schéma poussé (`db push`), **aucune table `_prisma_migrations`** : à baseliner avant le premier `migrate deploy` en production (T004). |
+| Stripe (test) | 3 prix + coupon fondateur | `STRIPE_PRICE_SOLO/PRO/SCALE`, coupon `FONDATEUR50` (−50 %, à vie, 10 utilisations max) — tous vérifiés via MCP le 24/09. |
+| PostHog | Cloud UE, erreurs + mesure produit (remplace Sentry, voir ADR-001) | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST`. Setup côté code amorcé localement par le fondateur (T005), pas encore commité au 24/09. |
+| Render | Espace « My Workspace » (`tea-d97ap06rnols73ck4o20`) | **Aucun service créé** (T003, tentative en cours au 24/09, interrompue). |
+| Resend | Compte | 2 clés API existantes, aucun domaine d'envoi configuré. |
+| Inngest | Env `production`/`branch` | Aucune app synchronisée. `INNGEST_SIGNING_KEY`/`INNGEST_EVENT_KEY` à créer. |
+
+Points non vérifiés (T001) : les CGU d'usage commercial de Render, Neon, Resend et PostHog ne sont pas confirmées par écrit — aucun outil MCP n'expose ce texte contractuel, à faire à la main.
 
 ---
 
 ## 2. À faire ensuite, dans l'ordre
 
-1. ~~Fusionner le travail du 24/09~~ : fait (PR #3).
-2. **Commencer par T001** (confirmer par écrit les offres gratuites), puis **suivre `tasks/mvp-tasks.md`** dans l'ordre. Priorités (risque n°1 du PRD) :
-   - brancher les écrans maquettes sur la base (rapports, alertes, réglages, fiche site, onboarding : aujourd'hui des données fictives) ;
-   - appliquer les quotas par plan (10 / 30 / 100 sites).
-3. **Passe unique par écran :** données réelles, puis migration au design system, puis réécriture des textes. Écrans concernés : `login`, `register`, `app/(app)/*`, `/analyse/[domain]`, `components/DashboardSites.tsx`, `components/ui.tsx`. Ensuite, supprimer les alias legacy de `globals.css`, `app/ds/` et `app/_ds/`.
-4. **Réécrire tous les textes** avec les skills `cited:copywriting`, `cited:copy-editing`, `cited:design-ux-copy`, `cited:content-research-writer`.
-5. **Déployer une préversion gratuite** (pile choisie dans `docs/10-plan-technique.md`). Vercel Hobby est exclu, car son usage commercial est interdit.
-6. **Marketing** (0 €) : baromètre « les sites français bloquent-ils ChatGPT ? », puis prospection écrite de 150 agences (`docs/06-kit-prospection.md`). Ne publier que des constats vérifiés.
+1. **T003/T004** (infra) : créer le service Render (région Francfort, `cited/` comme racine de build), puis baseliner et migrer la base Neon en production. Bloqué au 24/09 par deux permissions refusées en mode automatique (récupération de la chaîne de connexion Neon, génération locale d'un secret) — à relancer avec le fondateur présent, ou en autorisant ces actions.
+2. **Reprendre le cœur produit, dans l'ordre de `tasks/mvp-tasks.md`** : **T019 (quota par plan)** en premier — risque n°1 du PRD, rien n'est fait dessus. Puis T020-T036 (portefeuille, scan quotidien réel, alertes, rapports mensuels PDF).
+3. **Facturation restante** : T040 (abonnement réel dans les réglages), T041 (export RGPD).
+4. **Onboarding restant** : T043-T045, puis T047 (e-mail d'offre fondatrice). T048 attend le rapport mensuel (T032b).
+5. **Écrans fictifs restants** : T049, T050, T051.
+6. **Qualité** : T053-T055, puis T057 une fois le déploiement en place.
+7. **Déployer une préversion gratuite**, une fois T003/T004 faits.
+8. **Marketing** (0 €) : baromètre « les sites français bloquent-ils ChatGPT ? », puis prospection écrite de 150 agences (`docs/06-kit-prospection.md`). Ne publier que des constats vérifiés.
 
 Objectif à 90 jours : 10 agences payantes, environ 1 000 € de MRR. Critère d'arrêt : moins de 5 % des sites scannés présentent un problème vérifié (plan B : visibilité IA, voir `docs/05` §13).
 
@@ -77,19 +68,19 @@ Objectif à 90 jours : 10 agences payantes, environ 1 000 € de MRR. Critère d
 ## 3. Reprendre en 5 commandes (local)
 
 ```bash
-git fetch origin && git checkout claude/focused-gates-fav90h   # ou main après fusion
+git fetch origin && git checkout main
 cd cited && npm install
 npx prisma generate
 npx tsc --noEmit && npx vitest run      # doit être vert
 npm run dev                              # http://localhost:3000, /pricing, /design-system
 ```
 
-Variables d'environnement : voir `cited/.env.example` (`DATABASE_URL`, `AUTH_SECRET`, `STRIPE_*`, `RESEND_API_KEY`, `INNGEST_*`).
+Variables d'environnement : voir `cited/.env.example` (`DATABASE_URL`, `AUTH_SECRET`, `STRIPE_*`, `RESEND_API_KEY`, `INNGEST_*`, `NEXT_PUBLIC_POSTHOG_*`).
 
 ## 4. Reprendre avec Claude (économe)
 
 Colle ceci au début d'une nouvelle session :
 
-> Lis `PROGRESS.md` et `tasks/mvp-tasks.md`. Budget 0 €, sois économe en tokens. Prends la prochaine tâche non cochée, fais-la, vérifie (tsc, eslint, vitest), commite, coche-la dans `tasks/mvp-tasks.md`, puis mets à jour `PROGRESS.md`.
+> Lis `PROGRESS.md` et `tasks/mvp-tasks.md`. Budget 0 €, sois économe en tokens. Prends la prochaine tâche non cochée, fais-la sur sa propre branche depuis `main`, vérifie (tsc, eslint, vitest), ouvre une PR, coche-la dans `tasks/mvp-tasks.md` une fois fusionnée, puis mets à jour `PROGRESS.md`.
 
 Règle de tenue : **à chaque tâche terminée, cocher la case dans `tasks/mvp-tasks.md`, et mettre à jour la section 1 de ce fichier à chaque fin de session.**
