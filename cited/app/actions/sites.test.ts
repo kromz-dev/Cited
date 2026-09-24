@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { getMonitoredSites, addMonitoredSite, deleteMonitoredSite } from './sites';
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { getMonitoredSites, addMonitoredSite, addMonitoredSitesBulk, deleteMonitoredSite } from "./sites";
 
 vi.mock('@/auth', () => ({
   auth: vi.fn(),
@@ -15,6 +15,7 @@ vi.mock('@/lib/db', () => ({
     monitoredSite: {
       findMany: vi.fn(),
       create: vi.fn(),
+      createManyAndReturn: vi.fn(),
       deleteMany: vi.fn(),
       count: vi.fn(),
     },
@@ -25,9 +26,14 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
+vi.mock('@/lib/scanner/crawler', () => ({
+  assertSafeUrl: vi.fn(async (url: string) => url),
+}));
+
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { assertSafeUrl } from '@/lib/scanner/crawler';
 import type { Session } from 'next-auth';
 
 // `auth` is exported by NextAuth v5 as an intersection of several call
@@ -53,6 +59,7 @@ type DeleteManyResult = Awaited<ReturnType<typeof db.monitoredSite.deleteMany>>;
 describe('sites actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(assertSafeUrl).mockImplementation(async (url: string) => url);
   });
 
   describe('getMonitoredSites', () => {
@@ -180,6 +187,15 @@ describe('sites actions', () => {
       expect(db.monitoredSite.create).not.toHaveBeenCalled();
     });
 
+    it('refuse une URL qui résout vers une IP privée et ne crée aucune ligne', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      vi.mocked(assertSafeUrl).mockRejectedValueOnce(new Error('Forbidden IP resolved: 10.0.0.1'));
+
+      const res = await addMonitoredSite({ name: 'Interne', url: 'http://secret.internal' });
+
+      expect(res).toEqual({ error: 'Forbidden IP resolved: 10.0.0.1' });
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+      expect(db.user.findUnique).not.toHaveBeenCalled();
     it('verrouille la ligne User avant de compter les sites', async () => {
       const order: string[] = [];
       mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
@@ -236,4 +252,45 @@ describe('sites actions', () => {
       expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
     });
   });
+
+  describe('addMonitoredSitesBulk', () => {
+    it('ajoute les 10 places restantes et explique les 15 lignes ignorées', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+      vi.mocked(db.user.findUnique).mockResolvedValueOnce({ plan: 'SOLO', stripeCurrentPeriodEnd: futureDate } as unknown as MaybeUser);
+      vi.mocked(db.monitoredSite.findMany).mockResolvedValueOnce([] as unknown as MonitoredSites);
+      vi.mocked(db.monitoredSite.createManyAndReturn).mockImplementation(((args: { data: { url: string }[] }) =>
+        Promise.resolve(args.data.map((row) => ({ id: row.url })))) as unknown as typeof db.monitoredSite.createManyAndReturn);
+      vi.mocked(assertSafeUrl).mockImplementation(async (url: string) => {
+        if (url.includes('10.0.0.1') || url.includes('notaurl')) {
+          throw new Error('URL refusée');
+        }
+        return url;
+      });
+
+      const lines = [
+        ...Array.from({ length: 20 }, (_, i) => `https://ok${i + 1}.example`),
+        'https://ok1.example',
+        'https://ok2.example',
+        'https://ok3.example',
+        'http://10.0.0.1/secret',
+        'notaurl',
+      ];
+
+      const res = await addMonitoredSitesBulk(lines.join('\n'));
+
+      expect(db.monitoredSite.create).not.toHaveBeenCalled();
+      expect(db.monitoredSite.createManyAndReturn).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(db.monitoredSite.createManyAndReturn).mock.calls[0]?.[0]?.data).toHaveLength(10);
+      expect(res).toMatchObject({ data: { skipped: expect.any(Array) } });
+      if (!('data' in res) || !res.data) throw new Error('expected data');
+      expect(res.data.created).toHaveLength(10);
+      expect(res.data.skipped).toHaveLength(15);
+      expect(res.data.skipped.filter((row) => row.reason === 'Doublon dans la liste.')).toHaveLength(3);
+      expect(res.data.skipped.filter((row) => row.reason === 'URL refusée')).toHaveLength(2);
+      expect(res.data.skipped.filter((row) => row.reason.includes('plan Pro'))).toHaveLength(10);
+    });
+  });
+});
 });
