@@ -37,6 +37,14 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 - [x] Liste des tâches du MVP, 57 tâches en 9 phases : `tasks/mvp-tasks.md` (**c'est elle qui fait foi pour le « quoi faire ensuite »**)
 - [x] T006 : Route de compteur d'audience RGPD-safe (pas de cookie, pas de tiers) — `app/api/beacon/route.ts`, appel `navigator.sendBeacon` depuis `app/(marketing)/layout.tsx`
 
+### 🤖 Règles de Collaboration (Antigravity & Claude Code)
+Pour permettre à 2 agents IA de travailler en parallèle sur ce dépôt sans créer de conflits, les règles suivantes sont absolues :
+1. **Isolation stricte** : Chaque agent (ou sous-agent) DOIT travailler sur sa propre branche Git isolée (ex: `feat/t021-bulk-add`). Il est formellement interdit de coder directement sur `main` ou de travailler sur la branche d'un autre agent. L'utilisation de `git worktree` est fortement recommandée pour l'isolation locale sur disque.
+2. **Identité Git claire** : Chaque agent DOIT s'identifier proprement avant son premier commit.
+   - Antigravity signe : `git config user.name "Agent IA Antigravity"` et `git config user.email "antigravity@ai.local"`
+   - Claude signe : `git config user.name "Agent IA Claude"` et `git config user.email "claude@ai.local"`
+3. **Pas de merge sauvage** : Les agents effectuent leurs commits sur leurs branches. Seul l'humain (l'Orchestrateur) est autorisé à valider et fusionner (merge) le code vers `main`.
+
 ### Services provisionnés (24/09, mode test, 0 €)
 
 | Service | Ressource | Identifiants non secrets |
