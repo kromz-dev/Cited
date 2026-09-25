@@ -1,7 +1,7 @@
 "use client";
 
 import posthog from "posthog-js";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 // L'initialisation de PostHog vit désormais dans `instrumentation-client.ts`
@@ -58,4 +58,6 @@ export function PostHogIdentify() {
 
   return null;
 }
+
+
 
