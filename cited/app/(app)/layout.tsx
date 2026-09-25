@@ -12,7 +12,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-paper text-ink">
       <div className="flex items-center justify-between border-b border-line bg-surface px-5 py-4 md:hidden">
-        <Link href="/" className="text-xl font-semibold tracking-tight">
+        <Link href="/dashboard" className="text-xl font-semibold tracking-tight">
           Cited<span className="text-cobalt">.</span>
         </Link>
         <details className="relative">
@@ -30,7 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </div>
       <div className="flex min-h-[calc(100vh-65px)] md:min-h-screen">
         <aside className="hidden w-64 border-r border-line bg-surface p-5 md:flex md:flex-col">
-          <Link href="/" className="mb-10 text-xl font-semibold tracking-tight text-ink">
+          <Link href="/dashboard" className="mb-10 text-xl font-semibold tracking-tight text-ink">
             Cited<span className="text-cobalt">.</span>
           </Link>
           <nav className="flex-1 space-y-1">

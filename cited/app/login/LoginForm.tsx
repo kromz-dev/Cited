@@ -14,7 +14,9 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function submit(formData: FormData) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setLoading(true);
     setError("");
     const result = await signIn("credentials", {
@@ -27,13 +29,13 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
       setLoading(false);
       return;
     }
+    console.log("Logged in! Pushing to", callbackUrl);
     posthog.capture("user_logged_in");
-    router.push(callbackUrl);
-    router.refresh();
+    window.location.href = callbackUrl;
   }
 
   return (
-    <form action={submit} className="mt-8 flex flex-col gap-4">
+    <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium text-ink-2" htmlFor="email">
           Adresse e-mail
@@ -66,3 +68,4 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
     </form>
   );
 }
+
