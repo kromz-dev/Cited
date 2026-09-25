@@ -367,8 +367,8 @@ jobs:
           fi
 
           # Check for skipped tests
-          if git diff origin/main...HEAD -- '*.test.*' | grep -E '^\+.*(\.skip|xit\(|xdescribe\()'; then
-            echo "❌ New skipped tests detected" >> $GITHUB_STEP_SUMMARY
+          if git diff origin/main...HEAD -- '*.test.*' | grep -E '^\+.*((it|test|describe)\.(skip|todo|only)\(|xit\(|xdescribe\()'; then
+            echo "❌ New skipped/disabled/exclusive test detected" >> $GITHUB_STEP_SUMMARY
             FAIL=1
           fi
 
