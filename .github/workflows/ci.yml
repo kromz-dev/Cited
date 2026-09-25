@@ -298,9 +298,9 @@ jobs:
       - name: Format check (no drift)
         run: |
           npx prisma format
-          if ! git diff --quiet cited/prisma/schema.prisma; then
+          if ! git diff --quiet prisma/schema.prisma; then
             echo "❌ Prisma schema is not formatted. Run 'npx prisma format' locally."
-            git diff cited/prisma/schema.prisma
+            git diff prisma/schema.prisma
             exit 1
           fi
 
@@ -313,7 +313,7 @@ jobs:
       - name: Check for schema-migration drift
         run: |
           npx prisma migrate diff \
-            --from-migrations ./prisma/migrations \
+            --from-url "$DATABASE_URL" \
             --to-schema-datamodel ./prisma/schema.prisma \
             --exit-code || {
               echo "⚠️  Schema has drifted from migrations. Run 'npx prisma migrate dev' to generate a migration."
@@ -367,8 +367,8 @@ jobs:
           fi
 
           # Check for skipped tests
-          if git diff origin/main...HEAD -- '*.test.*' | grep -E '^\+.*(\.skip|xit\(|xdescribe\()'; then
-            echo "❌ New skipped tests detected" >> $GITHUB_STEP_SUMMARY
+          if git diff origin/main...HEAD -- '*.test.*' | grep -E '^\+.*((it|test|describe)\.(skip|todo|only)\(|xit\(|xdescribe\()'; then
+            echo "❌ New skipped/disabled/exclusive test detected" >> $GITHUB_STEP_SUMMARY
             FAIL=1
           fi
 
