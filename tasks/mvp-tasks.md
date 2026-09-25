@@ -160,13 +160,13 @@
   - **Vérification** : test `app/actions/sites.test.ts` — un compte `SOLO` avec 10 sites déjà actifs reçoit une erreur orientant vers le palier supérieur au 11ᵉ ajout, jamais une erreur technique générique
   - **Taille** : S
 
-- [ ] **T020** [P2] Valider l'URL (format + garde SSRF, réutilisation de `assertSafeUrl`) avant création d'un `MonitoredSite` — `cited/app/actions/sites.ts`
+- [x] **T020** [P2] Valider l'URL (format + garde SSRF, réutilisation de `assertSafeUrl`) avant création d'un `MonitoredSite` — `cited/app/actions/sites.ts`
   - **Dépendances** : Aucune
   - **EF/ENF** : EF-022
   - **Vérification** : test — une URL résolvant vers une IP privée est refusée sans créer de ligne en base
   - **Taille** : S
 
-- [ ] **T021** [P2] Ajout en masse (collage de domaines ou CSV), dé-duplication, quota — `cited/app/actions/sites.ts::addMonitoredSitesBulk`
+- [x] **T021** [P2] Ajout en masse (collage de domaines ou CSV), dé-duplication, quota — `cited/app/actions/sites.ts::addMonitoredSitesBulk`
   - **Dépendances** : T019, T020
   - **EF/ENF** : EF-019
   - **Vérification** : test — 25 lignes dont 3 doublons et 2 invalides sur un plan à 10 sites restants ajoute exactement 10 sites valides et rapporte les 15 lignes ignorées avec leur raison
@@ -258,7 +258,7 @@
   - **Vérification** : test — un client avec deux sites et un incident résolu produit une disponibilité et une liste d'incidents cohérentes avec les données de test
   - **Taille** : M
 
-- [ ] **T032b** [P3] Génération et persistance du `MonthlyReport` (appel du moteur PDF, écriture en base) — `cited/app/actions/reports.ts::generateMonthlyReport`, `cited/inngest/functions/monthly-report.ts`
+- [x] **T032b** [P3] Génération et persistance du `MonthlyReport` (appel du moteur PDF, écriture en base) — `cited/app/actions/reports.ts::generateMonthlyReport`, `cited/inngest/functions/monthly-report.ts`
   - **Dépendances** : T012, T031, T032a
   - **EF/ENF** : EF-049, EF-051
   - **Vérification** : l'action peut être appelée à la demande (pas seulement le 1ᵉʳ du mois) et produit un `MonthlyReport` téléchargeable
@@ -270,7 +270,7 @@
   - **Vérification** : un compte `SOLO` ne peut pas générer de rapport en marque blanche (erreur explicite) ; un compte `PRO` voit son logo dans le PDF généré
   - **Taille** : M
 
-- [ ] **T034** [P3] Raccorder `app/(app)/reports/page.tsx` aux vraies données (`Client`, `MonthlyReport`), export réel au lieu de `window.print()` — `cited/app/(app)/reports/page.tsx`
+- [x] **T034** [P3] Raccorder `app/(app)/reports/page.tsx` aux vraies données (`Client`, `MonthlyReport`), export réel au lieu de `window.print()` — `cited/app/(app)/reports/page.tsx`
   - **Dépendances** : T032b, T033
   - **EF/ENF** : EF-049
   - **Vérification** : la liste "six clients fictifs" disparaît du code source ; le bouton télécharge un vrai fichier PDF
@@ -282,7 +282,7 @@
   - **Vérification** : un site peut être associé à un client existant ou rester sans client (champ optionnel respecté)
   - **Taille** : M
 
-- [ ] **T036** [P] [P3] Tests du moteur PDF et test d'intégration bout-en-bout de génération de rapport — `cited/lib/reports/renderMonthlyReportPdf.test.ts`, `cited/inngest/functions/monthly-report.test.ts`
+- [x] **T036** [P] [P3] Tests du moteur PDF et test d'intégration bout-en-bout de génération de rapport — `cited/lib/reports/renderMonthlyReportPdf.test.ts`, `cited/inngest/functions/monthly-report.test.ts`
   - **Dépendances** : T031, T032b
   - **EF/ENF** : EF-047 à EF-051
   - **Vérification** : `npx vitest run` vert sur les deux fichiers
