@@ -392,7 +392,7 @@
   - **Vérification** : aucune section n'affiche une fonctionnalité inactive comme "Actif" (le badge Slack actuel, notamment) ; multi-utilisateur et clé API sont soit absents, soit "en préparation"
   - **Taille** : M
 
-- [ ] **T051** [MOCK] Audit final "aucune donnée fictive dans le chemin critique" — recherche des chaînes de démonstration restantes (`Atelier Boréal`, `client-vitrine`, `Laura Bréa`, etc.) hors fixtures de test, dans toute l'application authentifiée
+- [x] **T051** [MOCK] Audit final "aucune donnée fictive dans le chemin critique" — recherche des chaînes de démonstration restantes (`Atelier Boréal`, `client-vitrine`, `Laura Bréa`, etc.) hors fixtures de test, dans toute l'application authentifiée
   - **Dépendances** : T026, T027, T029a, T029b, T029c, T034, T040, T043, T049, T050
   - **EF/ENF** : principe II
   - **Vérification** : `grep -r "Atelier Boréal\|client-vitrine\|Laura Bréa" cited/app cited/components` ne retourne plus rien en dehors de `cited/**/*.test.ts` et des fixtures explicitement documentées comme telles

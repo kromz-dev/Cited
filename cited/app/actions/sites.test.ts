@@ -293,5 +293,14 @@ describe('sites actions', () => {
       expect(res.data.skipped.filter((row) => row.reason === 'URL refusée')).toHaveLength(2);
       expect(res.data.skipped.filter((row) => row.reason.includes('palier Freelance'))).toHaveLength(10);
     });
+
+    it('ne crée aucun site quand la liste est vide (T051 : le champ onboarding démarre vide, jamais pré-rempli)', async () => {
+      mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
+
+      const res = await addMonitoredSitesBulk('');
+
+      expect(db.monitoredSite.createManyAndReturn).not.toHaveBeenCalled();
+      expect(res).toMatchObject({ data: { created: [], skipped: [] } });
+    });
   });
 });

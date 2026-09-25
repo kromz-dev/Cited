@@ -60,7 +60,7 @@ export function BrandSettingsForm({
           onChange={(event) => setAgencyName(event.target.value)}
           maxLength={80}
           required
-          placeholder="Atelier Boréal Agence"
+          placeholder="Nom affiché sur vos rapports"
         />
       </div>
 

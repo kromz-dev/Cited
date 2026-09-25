@@ -45,6 +45,9 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
           Mot de passe
         </label>
         <Input id="password" name="password" type="password" autoComplete="current-password" required fieldSize="lg" />
+        <Link href="/forgot-password" className="mt-1 w-fit text-[13px] text-cobalt hover:underline">
+          Mot de passe oublié
+        </Link>
       </div>
       {error && (
         <p role="alert" className="rounded-md border border-stop/30 bg-stop-soft p-3 text-sm text-stop">

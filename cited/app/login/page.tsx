@@ -1,30 +1,27 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Verdict } from "@/components/ui/verdict";
+import { safeCallbackUrl } from "@/lib/auth-route-policy";
+import { LoginForm } from "./LoginForm";
 
-export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("laura@atelier-boreal.fr");
-  const [password, setPassword] = useState("••••••••••••");
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    router.push("/dashboard");
-  }
-
-  function handleMagicLink() {
-    setMagicLinkSent(true);
-    setTimeout(() => setMagicLinkSent(false), 5000);
-  }
+/**
+ * Page de connexion (T051, principe II) : le formulaire appelle réellement
+ * `signIn("credentials", …)` via `LoginForm`, jamais un état simulé — avant
+ * ce correctif, cette page pré-remplissait un e-mail et un mot de passe
+ * inventés et redirigeait vers /dashboard sans la moindre vérification, quel
+ * que soit ce qui était saisi. `LoginForm` existait déjà (T0xx, jamais
+ * branché) et reste la seule voie de connexion par e-mail/mot de passe.
+ *
+ * `callbackUrl` vient du middleware (`middleware.ts`) quand un visiteur non
+ * connecté tente d'atteindre une page protégée ; `safeCallbackUrl` refuse
+ * toute valeur qui ne serait pas un chemin interne (protection open-redirect,
+ * même garde que dans `middleware.ts`).
+ */
+export default async function LoginPage(props: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await props.searchParams;
+  const safeUrl = safeCallbackUrl(callbackUrl);
 
   return (
     <div className="flex min-h-screen flex-col bg-paper text-ink">
@@ -53,81 +50,28 @@ export default function LoginPage() {
               Accédez au portefeuille de votre agence et à l&apos;historique des verdicts.
             </p>
 
-            <form onSubmit={handleLogin} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="c-mail" className="text-xs font-medium text-ink-2">
-                  E-mail professionnel
-                </label>
-                <Input
-                  id="c-mail"
-                  type="email"
-                  required
-                  fieldSize="lg"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="c-pass" className="text-xs font-medium text-ink-2">
-                  Mot de passe
-                </label>
-                <Input
-                  id="c-pass"
-                  type="password"
-                  required
-                  fieldSize="lg"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <Link href="/forgot-password" className="mt-1 w-fit text-[13px] text-cobalt hover:underline">
-                  Mot de passe oublié
-                </Link>
-              </div>
-
-              <Button type="submit" size="lg" disabled={loading} className="mt-1 w-full">
-                {loading ? "Connexion..." : "Se connecter"}
-              </Button>
-            </form>
-
-            <div className="my-6.5 flex items-center gap-3.5">
-              <span className="h-px flex-1 bg-line" />
-              <span className="text-xs font-medium text-ink-2">ou</span>
-              <span className="h-px flex-1 bg-line" />
-            </div>
-
-            <Button type="button" variant="outline" size="lg" className="w-full" onClick={handleMagicLink}>
-              {magicLinkSent
-                ? "Lien envoyé, vérifiez votre boîte de réception"
-                : "Recevoir un lien de connexion par e-mail"}
-            </Button>
-
-            <p className="mt-5.5 text-[13px] text-ink-2">
-              Pas encore de compte ?{" "}
-              <Link href="/register" className="font-medium text-cobalt hover:underline">
-                Créer mon compte
-              </Link>
-            </p>
+            <LoginForm callbackUrl={safeUrl} />
           </div>
         </div>
 
-        {/* Colonne droite : dernier changement détecté sur le portefeuille */}
+        {/* Colonne droite : illustration d'une alerte (exemple, pas les données du visiteur) */}
         <div className="flex items-center justify-center bg-ink p-6 text-paper sm:p-12 lg:p-14">
           <div className="w-full max-w-[440px]">
-            <p className="mb-5 text-sm font-medium text-paper/70">Depuis votre dernière visite</p>
+            <p className="mb-5 text-sm font-medium text-paper/70">Exemple d&apos;alerte</p>
             <h2 className="m-0 text-[clamp(26px,3.2vw,38px)] font-extrabold leading-[1.08] text-paper">
-              2 domaines de votre portefeuille sont passés au rouge.
+              Vous êtes prévenu dès qu&apos;un domaine de votre portefeuille passe au rouge.
             </h2>
             <div className="mt-7 flex flex-col gap-3.5">
               <div className="flex items-center justify-between gap-3 border-t border-paper/20 pt-3.5">
-                <span className="font-mono text-sm text-paper/90">client-vitrine.bubbleapps.io</span>
+                <span className="font-mono text-sm text-paper/90">exemple-client.fr</span>
                 <Verdict value="refuse" detail="403" />
               </div>
               <div className="flex items-center justify-between gap-3 border-t border-paper/20 pt-3.5">
-                <span className="font-mono text-sm text-paper/90">maison-verdier.com</span>
+                <span className="font-mono text-sm text-paper/90">exemple-agence.fr</span>
                 <Verdict value="vide" detail="0 caractère" />
               </div>
             </div>
+            <p className="mt-4 text-xs text-paper/60">Illustration, domaines fictifs.</p>
           </div>
         </div>
       </div>

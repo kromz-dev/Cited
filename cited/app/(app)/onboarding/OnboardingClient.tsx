@@ -46,14 +46,7 @@ export function OnboardingClient({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const initialDomains = `client-vitrine.bubbleapps.io
-atelier-boreal.fr
-maison-verdier.com
-studio-lami.fr
-cabinet-nore.fr
-librairie-pas.fr`;
-
-  const [domainsText, setDomainsText] = useState(initialDomains);
+  const [domainsText, setDomainsText] = useState("");
   const [recapSchedule, setRecapSchedule] = useState("Lundi matin");
   const [threshold, setThreshold] = useState("200 car.");
 
@@ -160,7 +153,7 @@ librairie-pas.fr`;
                 className="w-full rounded-sm border border-line-strong bg-surface p-3 font-mono text-[13px] leading-[1.8] text-ink outline-none transition-colors focus-visible:border-cobalt focus-visible:ring-3 focus-visible:ring-cobalt/25"
                 placeholder="exemple.com"
               />
-              <p className="type-caption text-ink-2">Liste d&apos;exemple pré-remplie ; remplacez-la par vos domaines.</p>
+              <p className="type-caption text-ink-2">Un domaine par ligne, sans http(s)://.</p>
             </div>
 
             <div className="mt-3.5 flex items-center justify-between border-t border-line pt-3.5 text-sm text-ink-2">
@@ -186,7 +179,7 @@ librairie-pas.fr`;
                 type="button"
                 size="lg"
                 onClick={handleStartScan}
-                disabled={isPending}
+                disabled={isPending || domainCount === 0}
                 className="flex-[1_1_200px]"
               >
                 {isPending ? (
