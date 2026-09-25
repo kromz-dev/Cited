@@ -45,7 +45,7 @@ Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/
 
 ### 26/09 : défaut bloquant trouvé, service Render créé, PostHog audité, pas encore fusionné
 
-**Défaut bloquant trouvé, pas encore corrigé : la connexion par e-mail/mot de passe ne fonctionne pas.** `cited/app/login/LoginForm.tsx` appelle `signIn("credentials", …)`, mais `cited/auth.config.ts` ne déclare que le fournisseur Google (`providers: [Google]`). Aucun fournisseur `Credentials` n'existe nulle part dans le dépôt (recherche complète). Conséquence : sans clés Google configurées — c'est l'état actuel, y compris au premier déploiement prévu — personne ne peut se connecter, ni par Google (non configuré) ni par mot de passe (fournisseur absent). Aucun test ne couvre l'écran de connexion, d'où l'absence de détection par la CI malgré un `main` vert. Un correctif a été préparé (`.superpowers/sdd/bugfix-credentials-brief.md` dans ce worktree) : ajouter le fournisseur `Credentials` dans `cited/auth.ts` (jamais dans `auth.config.ts`, consommé par `middleware.ts` en edge runtime, incompatible avec `node:crypto` utilisé par `lib/password.ts`). Non implémenté à ce jour — budget de session épuisé avant la fin.
+**Défaut bloquant corrigé le 26/09 : la connexion par e-mail/mot de passe ne fonctionnait pas.** Le fournisseur `Credentials` était manquant. Il a été implémenté dans `cited/auth.ts` (pour respecter le Edge Runtime sans crasher avec `node:crypto`), et couvert par 8 tests (`cited/auth.test.ts`). La PR #75 est ouverte.
 
 **PR #73 ouverte, pas fusionnée : T051 (audit données fictives).** Dix fichiers nettoyés (écran de connexion simplifié, `resolveDomainName` extrait pour éviter un domaine fictif quand `siteId` vaut littéralement `client-vitrine`, etc.), le garde-fou CI `quality-guard` devient bloquant (`FAIL=1`) au lieu de seulement avertir. Vérifié : 56 fichiers de test, 367 tests verts ; toute occurrence restante des chaînes de démonstration est dans un fichier `*.test.*`, exclu du garde-fou.
 
@@ -80,9 +80,9 @@ Cinq pull requests Dependabot restent ouvertes (#28 à #32), dont trois montées
 
 ## 2. À faire ensuite, dans l'ordre
 
-1. **Corriger le fournisseur Credentials manquant** (hors plan `mvp-tasks.md`, trouvé le 26/09) — bloquant avant tout déploiement, voir section 1. Brief prêt : `.superpowers/sdd/bugfix-credentials-brief.md`.
-2. **Fusionner PR #73** (T051) une fois relue.
-3. **Ouvrir la PR pour `feat/t005-posthog`** (T005) une fois relue — la branche est poussée, pas encore de PR.
+1. ~~**Corriger le fournisseur Credentials manquant**~~ (Corrigé via la PR #75 ouverte)
+2. ~~**Fusionner PR #73** (T051) une fois relue.~~ (Fusionnée)
+3. ~~**Ouvrir la PR pour `feat/t005-posthog`** (T005) une fois relue — la branche est poussée, pas encore de PR.~~ (PR #76 ouverte)
 4. **T003 et T004** : le service Render existe (`srv-darer6btqb8s73f7d670`) mais Root Directory, Health Check Path et toutes les variables d'environnement restent à saisir à la main dans le tableau de bord (l'API MCP les a refusées). Puis baseline et migration Neon avec la commande de la section 1.
 5. **Domaine d'envoi Resend** — aucun domaine possédé à ce jour. Achat nécessaire (première dépense réelle), puis vérification SPF/DKIM/DMARC dans Resend. Bloquant pour tout e-mail produit en dehors des tests.
 6. **T054** — audit d'accessibilité WCAG AA des écrans désormais raccordés aux données réelles.
