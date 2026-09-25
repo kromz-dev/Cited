@@ -190,7 +190,7 @@
   - **Vérification** : un site en timeout DNS simulé prend le statut `ERREUR`, un site avec `robots.txt` disallow prend `BLOQUÉ`, avec un badge visuellement différent
   - **Taille** : S
 
-- [ ] **T025** [P2] Cause et correctif dans l'e-mail d'alerte, gabarit distinct régression/retour au vert — `cited/lib/alerting/sendAlert.ts`
+- [x] **T025** [P2] Cause et correctif dans l'e-mail d'alerte, gabarit distinct régression/retour au vert — `cited/lib/alerting/sendAlert.ts`
   - **Dépendances** : T023
   - **EF/ENF** : EF-035, EF-036
   - **Vérification** : deux gabarits testés (`sendAlert.test.ts`, nouveau) — objet et ton différents entre régression et résolution ; le corps cite la cause identifiée (ex. "robots.txt interdit GPTBot") et un correctif
