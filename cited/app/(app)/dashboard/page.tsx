@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { listClients } from "@/app/actions/clients";
 import { getMonitoredSites } from "@/app/actions/sites";
 import { DashboardSites } from "@/components/DashboardSites";
+import { db } from "@/lib/db";
+import { maxSitesFor } from "@/lib/billing/plans";
 
 export const metadata = {
   title: "Portefeuille | Cited",
@@ -14,9 +16,10 @@ export default async function DashboardPage() {
 
   if (!userId) redirect("/login");
 
-  const [monitoredSites, clients] = await Promise.all([
+  const [monitoredSites, clients, user] = await Promise.all([
     getMonitoredSites(),
     listClients(),
+    db.user.findUnique({ where: { id: userId }, select: { plan: true } }),
   ]);
 
   return (
@@ -31,6 +34,7 @@ export default async function DashboardPage() {
       <DashboardSites
         initialSites={monitoredSites.data || []}
         initialClients={clients.data || []}
+        siteLimit={maxSitesFor(user?.plan ?? "FREE")}
       />
     </div>
   );

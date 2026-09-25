@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Verdict } from "@/components/ui/verdict";
 import { verdictForSiteStatus } from "@/lib/sites/site-status";
+import { quotaLabel } from "@/lib/sites/quota-label";
 
 export type MonitoredSite = {
   id: string;
@@ -30,9 +31,11 @@ const FILTERS = ["Tous", "En alerte", "OK"] as const;
 export function DashboardSites({
   initialSites,
   initialClients,
+  siteLimit,
 }: {
   initialSites: MonitoredSite[];
   initialClients: AgencyClient[];
+  siteLimit: number;
 }) {
   const [sites, setSites] = useState(initialSites);
   const [clients, setClients] = useState(initialClients);
@@ -154,7 +157,7 @@ export function DashboardSites({
           <CardContent>
             <div className="type-caption text-ink-2">Domaines surveillés</div>
             <div className="mt-2 text-2xl font-semibold text-ink tnum">
-              {sites.length}<span className="text-base font-normal text-ink-2"> / 20</span>
+              {quotaLabel(sites.length, siteLimit)}
             </div>
           </CardContent>
         </Card>
@@ -175,7 +178,8 @@ export function DashboardSites({
         <Card size="sm">
           <CardContent>
             <div className="type-caption text-ink-2">Prochain scan</div>
-            <div className="mt-2 text-2xl font-semibold text-ink tnum">04:12</div>
+            <div className="mt-2 text-2xl font-semibold text-ink">3 h</div>
+            <p className="mt-1 text-sm text-ink-2">chaque nuit</p>
           </CardContent>
         </Card>
       </div>
@@ -350,15 +354,9 @@ export function DashboardSites({
                           <Verdict value={verdict} variant="inline" />
                         )}
                       </td>
-                      <td className="px-3 py-2 text-right text-ink-2 tnum">
-                        {isError ? "403" : isOk ? "200" : "—"}
-                      </td>
-                      <td className="px-3 py-2 text-right text-ink-2 tnum">
-                        {isError ? "0 car." : isOk ? "4 210 car." : "—"}
-                      </td>
-                      <td className="px-3 py-2 text-right text-ink-2 tnum">
-                        {isError ? "6 jours" : "—"}
-                      </td>
+                      <td className="px-3 py-2 text-right text-ink-2 tnum">—</td>
+                      <td className="px-3 py-2 text-right text-ink-2 tnum">—</td>
+                      <td className="px-3 py-2 text-right text-ink-2 tnum">—</td>
                       <td className="px-3 py-2 text-right text-ink-2 tnum">
                         {new Date(site.createdAt).toLocaleDateString("fr-FR")}
                       </td>

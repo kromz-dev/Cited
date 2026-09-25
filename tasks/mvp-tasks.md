@@ -202,7 +202,7 @@
   - **Vérification** : la page n'importe plus `initialAlerts` (tableau fictif) ; une alerte envoyée en test apparaît dans la liste au rechargement
   - **Taille** : M
 
-- [ ] **T027** [P2] Remplacer les indicateurs fictifs du tableau de bord (quota "/20" en dur, "texte utile", "prochain scan") par les données réelles — `cited/components/DashboardSites.tsx`
+- [x] **T027** [P2] Remplacer les indicateurs fictifs du tableau de bord (quota "/20" en dur, "texte utile", "prochain scan") par les données réelles — `cited/components/DashboardSites.tsx`
   - **Dépendances** : T008, T023
   - **EF/ENF** : EF-040, EF-041
   - **Vérification** : le quota affiché change réellement selon le plan de l'utilisateur connecté (vérifié avec deux comptes de plans différents en test manuel)
