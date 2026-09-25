@@ -10,4 +10,11 @@ export default defineConfig({
       "@": root,
     },
   },
+  test: {
+    server: {
+      deps: {
+        inline: ["next-auth"],
+      },
+    },
+  },
 });
