@@ -213,6 +213,63 @@ describe("scanSiteJob", () => {
     expect(sendRegressionAlert).toHaveBeenCalledTimes(1);
   });
 
+  it("parcours P2 complet : ajout, scan, changement de statut, une seule alerte même après un second scan identique", async () => {
+    const blockedResults = [
+      {
+        agent: "GPTBot",
+        simpleStatus: "BLOQUÉ",
+        reasons: ["robots.txt disallows GPTBot"],
+        httpStatus: 200,
+        durationMs: 10,
+        wordCount: 80,
+      },
+    ] as const;
+
+    // Site ajouté, encore au statut OK : premier scan, verdict qui régresse.
+    vi.mocked(db.monitoredSite.findUnique).mockResolvedValueOnce({
+      id: "site-1",
+      url: "https://exemple.fr",
+      status: "OK",
+      user: { email: "agence@exemple.fr" },
+    } as unknown as MonitoredSiteWithUser);
+    vi.mocked(runCoreScan).mockResolvedValueOnce({
+      report: {},
+      results: blockedResults,
+    } as unknown as CoreScanOutput);
+
+    await invokeHandler(scanSiteJob, {
+      event: { data: { siteId: "site-1" } },
+      step: stepThatRuns(),
+    });
+
+    expect(db.monitoredSite.update).toHaveBeenCalledWith({
+      where: { id: "site-1" },
+      data: { status: "BLOQUÉ" },
+    });
+    expect(sendRegressionAlert).toHaveBeenCalledTimes(1);
+
+    // Second scan, identique : le site est désormais persisté BLOQUÉ (T023),
+    // donc oldStatus === newStatus et aucune nouvelle alerte ne doit partir.
+    vi.mocked(db.monitoredSite.findUnique).mockResolvedValueOnce({
+      id: "site-1",
+      url: "https://exemple.fr",
+      status: "BLOQUÉ",
+      user: { email: "agence@exemple.fr" },
+    } as unknown as MonitoredSiteWithUser);
+    vi.mocked(runCoreScan).mockResolvedValueOnce({
+      report: {},
+      results: blockedResults,
+    } as unknown as CoreScanOutput);
+
+    await invokeHandler(scanSiteJob, {
+      event: { data: { siteId: "site-1" } },
+      step: stepThatRuns(),
+    });
+
+    expect(db.monitoredSite.update).toHaveBeenCalledTimes(1);
+    expect(sendRegressionAlert).toHaveBeenCalledTimes(1);
+  });
+
   it("enregistre ERREUR pour un site injoignable et BLOQUÉ pour un robots.txt", async () => {
     vi.mocked(db.monitoredSite.findUnique).mockResolvedValue({
       id: "site-1",
