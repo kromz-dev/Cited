@@ -1,7 +1,7 @@
 # Cited — état du projet et reprise
 
 Source de vérité pour reprendre le travail, avec un humain ou un agent.
-**Dernière mise à jour :** 25 septembre 2026.
+**Dernière mise à jour :** 26 septembre 2026.
 
 **Stack :** Next.js 16 · React 19 · TypeScript strict · Prisma 5 · PostgreSQL · Tailwind 4 · NextAuth v5 · Stripe · Inngest · Resend · PostHog
 **Contrainte absolue :** budget 0 €, autofinancé. Uniquement des offres gratuites qui autorisent un usage commercial (voir `docs/09-prd-mvp.md` §14, ENF-016).
@@ -41,7 +41,23 @@ Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/
 
 **Défaut réel trouvé au passage** : sur cette même branche, la ligne `AlertEvent` n'était écrite que par le récapitulatif ; le chemin réellement emprunté par `scan-site.ts` envoyait donc l'e-mail sans jamais l'enregistrer. Corrigé dans `sendAlert.ts` ; le journal d'alertes serait sinon resté vide en production.
 
-53 tâches cochées sur 60 dans `tasks/mvp-tasks.md` — **c'est elle qui fait foi**, cette section n'est qu'un résumé.
+53 tâches cochées sur 60 dans `tasks/mvp-tasks.md` — **c'est elle qui fait foi**, cette section n'est qu'un résumé. Rien de nouveau n'a été fusionné le 26/09 (voir section suivante), donc ce compte n'a pas bougé.
+
+### 26/09 : défaut bloquant trouvé, service Render créé, PostHog audité, pas encore fusionné
+
+**Défaut bloquant trouvé, pas encore corrigé : la connexion par e-mail/mot de passe ne fonctionne pas.** `cited/app/login/LoginForm.tsx` appelle `signIn("credentials", …)`, mais `cited/auth.config.ts` ne déclare que le fournisseur Google (`providers: [Google]`). Aucun fournisseur `Credentials` n'existe nulle part dans le dépôt (recherche complète). Conséquence : sans clés Google configurées — c'est l'état actuel, y compris au premier déploiement prévu — personne ne peut se connecter, ni par Google (non configuré) ni par mot de passe (fournisseur absent). Aucun test ne couvre l'écran de connexion, d'où l'absence de détection par la CI malgré un `main` vert. Un correctif a été préparé (`.superpowers/sdd/bugfix-credentials-brief.md` dans ce worktree) : ajouter le fournisseur `Credentials` dans `cited/auth.ts` (jamais dans `auth.config.ts`, consommé par `middleware.ts` en edge runtime, incompatible avec `node:crypto` utilisé par `lib/password.ts`). Non implémenté à ce jour — budget de session épuisé avant la fin.
+
+**PR #73 ouverte, pas fusionnée : T051 (audit données fictives).** Dix fichiers nettoyés (écran de connexion simplifié, `resolveDomainName` extrait pour éviter un domaine fictif quand `siteId` vaut littéralement `client-vitrine`, etc.), le garde-fou CI `quality-guard` devient bloquant (`FAIL=1`) au lieu de seulement avertir. Vérifié : 56 fichiers de test, 367 tests verts ; toute occurrence restante des chaînes de démonstration est dans un fichier `*.test.*`, exclu du garde-fou.
+
+**Branche `feat/t005-posthog` poussée, aucune PR ouverte.** Audit en quatre points avant travail : exceptions client et mesure produit déjà en place (héritage de la PR #36, jamais cochée), absence de Sentry quasi complète (un commentaire mort corrigé), exceptions serveur absentes. Ajouté : `cited/instrumentation.ts` et `cited/instrumentation-client.ts` (convention Next.js 16), `cited/lib/posthog-server.ts`. Autocapture et session replay désactivés explicitement côté client pour préserver le quota gratuit (1 M événements/mois, 5 000 enregistrements/mois). 368 tests verts. **Compte PostHog audité par MCP** : projet `282882`, nommé « Default project », fuseau UTC, `ingested_event: false` — **aucun événement n'a jamais été reçu**, malgré des indicateurs d'onboarding tous à `true`. Le code compile et teste correctement mais l'ingestion réelle n'est pas vérifiée. Reste au fondateur : renommer le projet, passer le fuseau en Europe/Paris, renseigner le vrai token en production, provoquer une erreur test et vérifier son apparition dans PostHog.
+
+**Service Render créé par MCP.** `srv-darer6btqb8s73f7d670`, région Francfort, plan gratuit, URL `https://cited-6ihy.onrender.com`. **Deux champs refusés par l'API malgré l'envoi**, à corriger à la main dans le tableau de bord avant tout déploiement : Root Directory (vide au lieu de `cited`) et Health Check Path (vide au lieu de `/api/health`). Les variables d'environnement n'ont pas pu être posées par MCP non plus (erreur de type côté connecteur) — à saisir entièrement à la main.
+
+**Resend confirmé sans domaine d'envoi** (`list-domains` → aucun résultat). Bloquant pour tous les e-mails produits (alertes, rapports, découverte, offre fondatrice) : sans domaine vérifié, seul `onboarding@resend.dev` peut envoyer, inutilisable pour démarcher de vraies agences. Achat d'un nom de domaine nécessaire — première dépense réelle du projet (budget 0 € sur les services, pas sur le domaine). Recherche de disponibilité et de prix lancée puis interrompue avant son terme (budget de session) ; à refaire.
+
+**Test local effectué, interrompu avant la connexion.** Branche Neon jetable `local-dev` (`br-old-mode-b21jizov`), séparée de la production, créée et **baselinée** (`prisma migrate resolve --applied 20260925000000_init`) — confirme en conditions réelles que la procédure du runbook fonctionne. Serveur `next dev` démarré, page d'accueil affichée avec du contenu réel, `/api/health` répond `{"status":"ok"}`. Interrompu juste avant de tester `/register`, qui aurait immédiatement buté sur le défaut Credentials ci-dessus. `cited/.env` et `cited/.env.local` créés dans ce worktree uniquement (ignorés par git, jamais poussés) — à recréer dans tout autre worktree ou machine, et à saisir séparément dans Render, qui ne les lit pas.
+
+**Ménage** : 6 branches distantes entièrement fusionnées supprimées de GitHub. Les checkouts locaux `Cited-claude` et `Cited-claude-2` avaient les symlinks `.claude/agents` et `.claude/skills` cassés sous Windows (`core.symlinks=false` posé pour corriger). Dependabot invité à rebaser #28 et #30 sur le `main` réparé ; #28 a été remplacé par #72 (nouveau groupe minor/patch) après rebase, à revérifier.
 
 **Incident du 24/09 (clos)** : T040, T041, T050 (PR #14-#16) et T047 (PR #20) étaient des PR empilées, fusionnées dans leur branche de base au lieu de `main`. Restaurées par les PR #33 et #34. Règle depuis : pas de PR empilées, ou fusion avec `--delete-branch`.
 
@@ -64,13 +80,15 @@ Cinq pull requests Dependabot restent ouvertes (#28 à #32), dont trois montées
 
 ## 2. À faire ensuite, dans l'ordre
 
-1. **T003 et T004** : le fondateur crée le service Render à partir du `render.yaml` maintenant dans le dépôt (Francfort, racine de build `cited/`) et saisit les secrets, puis baseline et migre Neon avec la commande ci-dessus. Rien n'est encore provisionné.
-2. **T005** — PostHog. Le fondateur a commencé ce travail en local le 24/09 sans jamais le commiter : soit ces fichiers sont récupérés, soit le travail reprend de zéro.
-3. **T051** — audit final « aucune donnée fictive dans le chemin critique ». Le job CI `quality-guard` ne fait aujourd'hui qu'avertir sur les chaînes de démonstration connues ; il doit devenir un échec bloquant une fois cette tâche faite.
-4. **T054** — audit d'accessibilité WCAG AA des écrans désormais raccordés aux données réelles.
-5. **T057** — vérification de bout en bout du pipeline de déploiement, une fois T003 et T004 faits.
-6. **T001** — confirmer par écrit les conditions d'usage commercial de Render, Neon, Resend et PostHog. Aucun outil n'expose ce texte contractuel ; lecture manuelle.
-7. Puis le marketing à 0 € : le baromètre « les sites français bloquent-ils ChatGPT ? », puis la prospection écrite de 150 agences (`docs/06-kit-prospection.md`). Ne publier que des constats vérifiés.
+1. **Corriger le fournisseur Credentials manquant** (hors plan `mvp-tasks.md`, trouvé le 26/09) — bloquant avant tout déploiement, voir section 1. Brief prêt : `.superpowers/sdd/bugfix-credentials-brief.md`.
+2. **Fusionner PR #73** (T051) une fois relue.
+3. **Ouvrir la PR pour `feat/t005-posthog`** (T005) une fois relue — la branche est poussée, pas encore de PR.
+4. **T003 et T004** : le service Render existe (`srv-darer6btqb8s73f7d670`) mais Root Directory, Health Check Path et toutes les variables d'environnement restent à saisir à la main dans le tableau de bord (l'API MCP les a refusées). Puis baseline et migration Neon avec la commande de la section 1.
+5. **Domaine d'envoi Resend** — aucun domaine possédé à ce jour. Achat nécessaire (première dépense réelle), puis vérification SPF/DKIM/DMARC dans Resend. Bloquant pour tout e-mail produit en dehors des tests.
+6. **T054** — audit d'accessibilité WCAG AA des écrans désormais raccordés aux données réelles.
+7. **T057** — vérification de bout en bout du pipeline de déploiement, une fois 1 et 4 faits.
+8. **T001** — confirmer par écrit les conditions d'usage commercial de Render, Neon, Resend et PostHog. Aucun outil n'expose ce texte contractuel ; lecture manuelle.
+9. Puis le marketing à 0 € : le baromètre « les sites français bloquent-ils ChatGPT ? », puis la prospection écrite de 150 agences (`docs/06-kit-prospection.md`). Ne publier que des constats vérifiés.
 
 Objectif à 90 jours : 10 agences payantes, environ 1 000 € de MRR. Critère d'arrêt : moins de 5 % des sites scannés présentent un problème vérifié (plan B : visibilité IA, voir `docs/05` §13).
 
