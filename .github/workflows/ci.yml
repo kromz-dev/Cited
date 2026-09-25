@@ -298,9 +298,9 @@ jobs:
       - name: Format check (no drift)
         run: |
           npx prisma format
-          if ! git diff --quiet cited/prisma/schema.prisma; then
+          if ! git diff --quiet prisma/schema.prisma; then
             echo "❌ Prisma schema is not formatted. Run 'npx prisma format' locally."
-            git diff cited/prisma/schema.prisma
+            git diff prisma/schema.prisma
             exit 1
           fi
 

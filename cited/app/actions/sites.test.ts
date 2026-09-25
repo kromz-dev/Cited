@@ -196,6 +196,8 @@ describe('sites actions', () => {
       expect(res).toEqual({ error: 'Forbidden IP resolved: 10.0.0.1' });
       expect(db.monitoredSite.create).not.toHaveBeenCalled();
       expect(db.user.findUnique).not.toHaveBeenCalled();
+    });
+
     it('verrouille la ligne User avant de compter les sites', async () => {
       const order: string[] = [];
       mockedAuth.mockResolvedValueOnce(fakeSession('user-1'));
@@ -292,5 +294,4 @@ describe('sites actions', () => {
       expect(res.data.skipped.filter((row) => row.reason.includes('plan Pro'))).toHaveLength(10);
     });
   });
-});
 });
