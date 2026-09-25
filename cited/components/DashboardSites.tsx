@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { assignSiteClient, createClient } from "@/app/actions/clients";
-import { addMonitoredSite, deleteMonitoredSite } from "@/app/actions/sites";
+import { addMonitoredSite, addMonitoredSitesBulk, deleteMonitoredSite } from "@/app/actions/sites";
 import { Loader2, Plus, ShieldAlert, X, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,8 @@ export function DashboardSites({
   const [clientName, setClientName] = useState("");
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
+  const [bulk, setBulk] = useState("");
+  const [bulkReport, setBulkReport] = useState("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -67,6 +69,28 @@ export function DashboardSites({
         setUrl("");
         setShowAddForm(false);
       }
+    });
+  };
+
+  const handleBulk = (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
+    setBulkReport("");
+    startTransition(async () => {
+      const response = await addMonitoredSitesBulk(bulk);
+      if ("error" in response && response.error) {
+        setError(response.error);
+        return;
+      }
+      if (!("data" in response) || !response.data) return;
+      setSites((prev) => [...(response.data.created as MonitoredSite[]), ...prev]);
+      const ignored = response.data.skipped.length;
+      setBulkReport(
+        ignored === 0
+          ? `${response.data.created.length} domaines ajoutés.`
+          : `${response.data.created.length} domaines ajoutés, ${ignored} lignes ignorées.`,
+      );
+      setBulk("");
     });
   };
 
@@ -252,6 +276,22 @@ export function DashboardSites({
                   {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ajouter"}
                 </Button>
               </div>
+            </form>
+            <form onSubmit={handleBulk} className="mt-6 border-t border-line pt-6">
+              <label htmlFor="bulk" className="mb-1.5 block text-sm font-medium text-ink">Plusieurs domaines</label>
+              <p className="mb-2 text-sm text-ink-2">Une ligne par domaine, ou « nom, adresse ».</p>
+              <textarea
+                id="bulk"
+                value={bulk}
+                onChange={(event) => setBulk(event.target.value)}
+                rows={5}
+                placeholder={"atelier.fr\nCabinet, https://cabinet.fr"}
+                className="w-full rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
+              />
+              {bulkReport && <p className="mt-2 text-sm text-ink-2">{bulkReport}</p>}
+              <Button type="submit" variant="outline" className="mt-3" disabled={isPending || bulk.trim().length === 0}>
+                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ajouter la liste"}
+              </Button>
             </form>
           </CardContent>
         </Card>

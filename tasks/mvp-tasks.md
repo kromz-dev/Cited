@@ -172,7 +172,7 @@
   - **Vérification** : test — 25 lignes dont 3 doublons et 2 invalides sur un plan à 10 sites restants ajoute exactement 10 sites valides et rapporte les 15 lignes ignorées avec leur raison
   - **Taille** : M
 
-- [ ] **T022** [P2] Unifier le point d'entrée d'ajout : supprimer `app/(app)/sites/new/` (doublon sur l'ancien modèle `Site`) au profit du formulaire de `DashboardSites` + import en masse — `cited/app/(app)/sites/new/` (suppression), `cited/components/DashboardSites.tsx`
+- [x] **T022** [P2] Unifier le point d'entrée d'ajout : supprimer `app/(app)/sites/new/` (doublon sur l'ancien modèle `Site`) au profit du formulaire de `DashboardSites` + import en masse — `cited/app/(app)/sites/new/` (suppression), `cited/components/DashboardSites.tsx`
   - **Dépendances** : T021
   - **EF/ENF** : EF-021
   - **Vérification** : aucun lien restant dans l'application vers `/sites/new` ; `npm run build` ne référence plus le dossier supprimé
