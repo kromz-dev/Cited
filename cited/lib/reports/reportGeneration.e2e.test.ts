@@ -11,10 +11,10 @@ import {
 import { generateDiagnosticPdfBuffer } from './renderDiagnosticPdf';
 import {
   aggregateMonthlyReport,
-  getMonthlyReportData,
   type ReportPeriod,
   type AggregateMonthlySiteInput,
-} from '../../app/actions/reports';
+} from './monthlyReport';
+import { getMonthlyReportData } from '../../app/actions/reports';
 import type { ScanReport, ScanCoreResult } from '../scanner/core';
 
 // Mock auth and db for the server action integration tests
