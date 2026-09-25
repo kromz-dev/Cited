@@ -15,7 +15,13 @@ keep-alive Inngest, budget d'exécutions) et `PROGRESS.md` (état des services p
 Le schéma de production (projet Neon `billowing-resonance-22258158`, Postgres 17,
 `aws-eu-central-1`, base `cited`) a été appliqué par `db push` : il n'existe **aucune
 table `_prisma_migrations`**. Il faut donc "baseliner" la base — dire à Prisma Migrate
-que les 3 migrations locales sont déjà appliquées — avant le premier vrai `migrate deploy`.
+que la migration locale unique est déjà appliquée — avant le premier vrai `migrate deploy`.
+
+L'historique des migrations a été fusionné (PR #68, `main`) en une migration unique
+`20260925000000_init` — les trois anciennes migrations (`20260916055018_init`,
+`20260916181000_add_password_hash`, `20260924040100_mvp_entities`) n'existent plus dans
+`cited/prisma/migrations/`. Le baseline ci-dessous ne référence donc que cette migration
+unique.
 
 1. **Récupérer les deux URL de connexion** dans la console Neon (Dashboard → projet
    `cited` → onglet **Connect** → sélectionner la base `cited`) :
@@ -48,18 +54,21 @@ que les 3 migrations locales sont déjà appliquées — avant le premier vrai `
    cd cited
    npx prisma migrate diff \
      --from-url "$DIRECT_URL" \
-     --to-schema-datamodel prisma/schema.prisma
+     --to-schema-datamodel prisma/schema.prisma \
+     --exit-code
    ```
 
-   - **Si la sortie est vide** (aucune différence) : la base correspond exactement au
-     schéma versionné, on peut baseliner en confiance (étape 4).
-   - **Si le diff n'est pas vide** : ne pas baseliner. La base de production contient
-     des colonnes/tables que les migrations locales ne recréeraient pas à l'identique.
-     Dans ce cas :
+   - **Si la sortie affiche `No difference detected.`** (code de sortie 0) : la base
+     correspond exactement au schéma versionné, on peut baseliner en confiance (étape 4).
+     C'est le résultat attendu et vérifié sur un Postgres réel après un `db push` suivi
+     de ce baseline.
+   - **Si le diff n'est pas vide** (code de sortie non nul) : ne pas baseliner. La base
+     de production contient des colonnes/tables que la migration locale ne recréerait
+     pas à l'identique. Dans ce cas :
      a. Ne PAS lancer `migrate resolve` tant que le diff n'est pas expliqué.
-     b. Comparer le diff ligne à ligne avec les 3 migrations locales
-        (`20260916055018_init`, `20260916181000_add_password_hash`,
-        `20260924040100_mvp_entities`) pour identifier ce qui manque ou diffère.
+     b. Comparer le diff ligne à ligne avec la migration locale unique
+        (`cited/prisma/migrations/20260925000000_init/migration.sql`) pour identifier
+        ce qui manque ou diffère.
      c. Si le diff révèle un oubli côté schéma (colonne ajoutée manuellement en base,
         jamais migrée), générer la migration manquante en local
         (`npx prisma migrate dev --name <nom>` contre une base de test, jamais contre
@@ -68,14 +77,12 @@ que les 3 migrations locales sont déjà appliquées — avant le premier vrai `
         différemment par `db push`), documenter la décision ici avant de baseliner
         quand même — ne pas baseliner en silence sur un diff non expliqué.
 
-4. **Baseliner chacune des 3 migrations, dans l'ordre chronologique** (chaque commande
-   inscrit la migration comme "déjà appliquée" dans `_prisma_migrations`, sans rejouer
-   son SQL) :
+4. **Baseliner la migration unique** (inscrit la migration comme "déjà appliquée" dans
+   `_prisma_migrations`, sans rejouer son SQL — l'historique a été fusionné en une seule
+   migration `20260925000000_init`, voir PR #68 sur `main`) :
 
    ```bash
-   npx prisma migrate resolve --applied 20260916055018_init
-   npx prisma migrate resolve --applied 20260916181000_add_password_hash
-   npx prisma migrate resolve --applied 20260924040100_mvp_entities
+   npx prisma migrate resolve --applied 20260925000000_init
    ```
 
 5. **Vérifier** :
@@ -84,8 +91,9 @@ que les 3 migrations locales sont déjà appliquées — avant le premier vrai `
    npx prisma migrate status
    ```
 
-   Doit afficher `Database schema is up to date!`. Si une migration manque encore,
-   relire l'étape 4 — l'ordre chronologique compte.
+   Doit afficher `Database schema is up to date!`. Après ce baseline, un
+   `npx prisma migrate deploy` doit être un no-op (aucune migration en attente) —
+   vérifié sur un Postgres réel.
 
 6. Une fois la base baselinée, **désexporter les variables** du terminal (fermer la
    session, ou `unset DATABASE_URL DIRECT_URL` / `Remove-Item Env:DATABASE_URL,Env:DIRECT_URL`)

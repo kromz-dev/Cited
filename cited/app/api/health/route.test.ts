@@ -42,7 +42,10 @@ describe("GET /api/health", () => {
     const routePath = fileURLToPath(new URL("./route.ts", import.meta.url));
     const source = readFileSync(routePath, "utf-8");
 
-    expect(source).not.toMatch(/@\/lib\/db/);
+    // On vérifie l'absence d'un import (statique ou dynamique) réel, pas la
+    // simple mention littérale dans un commentaire (ex. la note ci-dessus
+    // rappelant explicitement de ne pas importer @/lib/db).
+    expect(source).not.toMatch(/(?:from\s+|import\()["']@\/lib\/db["']/);
   });
 
   it("4. exporte dynamic = 'force-dynamic'", async () => {
