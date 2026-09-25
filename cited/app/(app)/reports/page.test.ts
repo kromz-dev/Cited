@@ -4,6 +4,19 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import ReportsPage from "./page";
 
+/**
+ * ReportsPage() returns `JSX.Element | null` (null only on the redirect path).
+ * Tests that expect a rendered element call this to fail fast with a clear
+ * message instead of letting TypeScript's strict null checks complain, and
+ * instead of silently reading properties off `null`.
+ */
+function assertRendered<T>(value: T | null): T {
+  if (value === null) {
+    throw new Error("Expected ReportsPage() to render JSX, but it returned null");
+  }
+  return value;
+}
+
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
@@ -68,7 +81,7 @@ describe("ReportsPage (Server Component)", () => {
       },
     ] as never);
 
-    const jsx = await ReportsPage();
+    const result = await ReportsPage();
 
     expect(db.client.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -76,7 +89,8 @@ describe("ReportsPage (Server Component)", () => {
       }),
     );
     expect(db.scanLog.findMany).toHaveBeenCalled();
-    expect(jsx).toBeDefined();
+    expect(result).not.toBeNull();
+    const jsx = assertRendered(result);
     expect(jsx.type.name).toBe("ReportsClient");
     expect(jsx.props.initialClients).toEqual([
       {
@@ -103,7 +117,7 @@ describe("ReportsPage (Server Component)", () => {
 
     vi.mocked(db.client.findMany).mockResolvedValueOnce([] as never);
 
-    const jsx = await ReportsPage();
+    const result = await ReportsPage();
 
     expect(db.client.findMany).toHaveBeenCalledWith({
       where: { userId: "user-empty" },
@@ -111,6 +125,8 @@ describe("ReportsPage (Server Component)", () => {
       orderBy: { name: "asc" },
     });
     expect(db.scanLog.findMany).not.toHaveBeenCalled();
+    expect(result).not.toBeNull();
+    const jsx = assertRendered(result);
     expect(jsx.props.initialClients).toEqual([]);
   });
 });
