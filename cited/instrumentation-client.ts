@@ -21,6 +21,11 @@ if (projectToken && host) {
     // consentement (règle « pas de cookie » de T006 sur les pages
     // marketing). L'identifiant ne vit que le temps de la page.
     persistence: "memory",
+    // PostHog affiche un warning si on utilise 'memory' sans fournir d'ID.
+    // On génère un ID unique par chargement de page pour le faire taire.
+    bootstrap: {
+      distinctID: typeof crypto !== "undefined" ? crypto.randomUUID() : "anonymous",
+    },
     // Pas de profil de personne pour les visiteurs anonymes.
     person_profiles: "identified_only",
     capture_exceptions: true,
