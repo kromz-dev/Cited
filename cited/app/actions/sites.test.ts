@@ -291,7 +291,7 @@ describe('sites actions', () => {
       expect(res.data.skipped).toHaveLength(15);
       expect(res.data.skipped.filter((row) => row.reason === 'Doublon dans la liste.')).toHaveLength(3);
       expect(res.data.skipped.filter((row) => row.reason === 'URL refusée')).toHaveLength(2);
-      expect(res.data.skipped.filter((row) => row.reason.includes('plan Pro'))).toHaveLength(10);
+      expect(res.data.skipped.filter((row) => row.reason.includes('palier Freelance'))).toHaveLength(10);
     });
   });
 });
