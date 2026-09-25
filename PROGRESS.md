@@ -85,7 +85,7 @@ Cinq pull requests Dependabot restent ouvertes (#28 à #32), dont trois montées
 3. ~~**Ouvrir la PR pour `feat/t005-posthog`** (T005) une fois relue — la branche est poussée, pas encore de PR.~~ (PR #76 fusionnée)
 4. **T003 et T004** : le service Render existe (`srv-darer6btqb8s73f7d670`) mais Root Directory, Health Check Path et toutes les variables d'environnement restent à saisir à la main dans le tableau de bord (l'API MCP les a refusées). Puis baseline et migration Neon avec la commande de la section 1.
 5. **Domaine d'envoi Resend** — aucun domaine possédé à ce jour. Achat nécessaire (première dépense réelle), puis vérification SPF/DKIM/DMARC dans Resend. Bloquant pour tout e-mail produit en dehors des tests.
-6. **T054** — audit d'accessibilité WCAG AA des écrans désormais raccordés aux données réelles.
+6. ~~**T054** — audit d'accessibilité WCAG AA des écrans désormais raccordés aux données réelles.~~ (Vérifié le 26/09 via axe-core/playwright)
 7. **T057** — vérification de bout en bout du pipeline de déploiement, une fois 1 et 4 faits.
 8. ~~**T001** — confirmer par écrit les conditions d'usage commercial de Render, Neon, Resend et PostHog.~~ (Vérifié le 26/09 : l'usage commercial est autorisé sur tous ces Tiers Gratuits, sous réserve de respecter leurs limites de quotas respectives : 100 emails/jour pour Resend, 0.5GB pour Neon, etc.)
 9. Puis le marketing à 0 € : le baromètre « les sites français bloquent-ils ChatGPT ? », puis la prospection écrite de 150 agences (`docs/06-kit-prospection.md`). Ne publier que des constats vérifiés.
