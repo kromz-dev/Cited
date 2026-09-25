@@ -188,7 +188,7 @@ export function aggregateMonthlyReport(input: AggregateMonthlyReportInput): Mont
   };
 }
 
-export async function getMonthlyReportDataForUser(userId: string, clientId: string, period: ReportPeriod): Promise<{ data?: MonthlyReportData; error?: string }> {
+export async function getMonthlyReportDataForUser(userId: string, clientId: string, period: ReportPeriod): Promise<{ data: MonthlyReportData } | { error: string }> {
   try {
     const client = await db.client.findFirst({
       where: { id: clientId, userId },
@@ -226,12 +226,12 @@ export async function getMonthlyReportDataForUser(userId: string, clientId: stri
   }
 }
 
-export async function generateMonthlyReportForUser(userId: string, clientId: string, periodStr: string): Promise<{ data?: { id: string; period: string }; error?: string }> {
+export async function generateMonthlyReportForUser(userId: string, clientId: string, periodStr: string): Promise<{ data: { id: string; period: string } } | { error: string }> {
   try {
     const period = monthPeriod(periodStr);
     const dataRes = await getMonthlyReportDataForUser(userId, clientId, period);
-    if (dataRes.error || !dataRes.data) {
-      return { error: dataRes.error || "Erreur de données" };
+    if ("error" in dataRes) {
+      return { error: dataRes.error };
     }
 
     const reportData = dataRes.data;
