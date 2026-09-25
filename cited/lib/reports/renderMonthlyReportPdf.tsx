@@ -1,5 +1,11 @@
 import * as React from 'react';
-import { Document, Page, Text, View, StyleSheet, renderToBuffer } from '@react-pdf/renderer';
+import { Document, Page, Text, View, Image, StyleSheet, renderToBuffer } from '@react-pdf/renderer';
+// Import relatif (et non `@/lib/billing/plans`) : ce module n'est pas mocké
+// dans `renderMonthlyReportPdf.test.ts` (on y teste la vraie logique de
+// palier), et l'alias `@/` n'est pas résolu par Vitest dans ce dépôt (aucun
+// `vitest.config`/plugin tsconfig-paths) — seul un import relatif fonctionne
+// pour une dépendance chargée réellement plutôt que mockée.
+import { whiteLabelFor } from '../billing/plans';
 
 /**
  * Type d'entrée du moteur de rapport mensuel, volontairement découplé de
@@ -70,13 +76,75 @@ export interface MonthlyReportData {
 
 export interface MonthlyReportBranding {
   name: string;
+  /** URL du logo telle qu'enregistrée dans `BrandSettings` — informatif, jamais chargé ici (SSRF). */
   logoUrl?: string;
   accentColor?: string;
+  /**
+   * Contenu du logo déjà chargé et validé, en data URI (voir
+   * `lib/reports/brandLogo.ts::loadBrandLogo`). C'est le SEUL champ que ce
+   * composant affiche : jamais `logoUrl` directement, sinon `<Image src>`
+   * ferait une requête serveur vers une URL choisie par l'utilisateur.
+   */
+  logoDataUri?: string;
 }
 
 export const DEFAULT_BRAND_NAME = 'Cited';
 /** Encre du système de design (`--ink`), utilisée quand `accentColor` est absente ou invalide. */
 export const DEFAULT_ACCENT_COLOR = '#18213a';
+
+/**
+ * Enregistrement `BrandSettings` tel que lu en base (Prisma), découplé ici
+ * pour ne pas faire dépendre ce module du client Prisma généré.
+ */
+export interface BrandSettingsRecord {
+  agencyName: string | null;
+  logoUrl: string | null;
+  accentColor: string | null;
+}
+
+export class WhiteLabelNotAllowedError extends Error {
+  constructor() {
+    super('La marque blanche est réservée aux paliers PRO et SCALE.');
+    this.name = 'WhiteLabelNotAllowedError';
+  }
+}
+
+/**
+ * Restreint la marque blanche du rapport mensuel aux paliers `PRO`/`SCALE`
+ * (EF-048, EF-050) — seule autorité : `whiteLabelFor` (lib/billing/plans.ts).
+ * Renvoie `undefined` pour `FREE`/`SOLO`, ou si le compte n'a encore
+ * enregistré aucun `BrandSettings` : dans les deux cas le rapport retombe
+ * silencieusement sur l'identité par défaut (« Cited »).
+ *
+ * Ne charge jamais le logo (pas d'accès réseau ici) : `logoUrl` est transmis
+ * tel quel, à charger séparément via `loadBrandLogo` avant de renseigner
+ * `logoDataUri` sur le résultat.
+ */
+export function resolveReportBranding(
+  plan: string,
+  brandSettings: BrandSettingsRecord | null
+): MonthlyReportBranding | undefined {
+  if (!whiteLabelFor(plan) || !brandSettings) return undefined;
+  return {
+    name: brandSettings.agencyName?.trim() || DEFAULT_BRAND_NAME,
+    logoUrl: brandSettings.logoUrl ?? undefined,
+    accentColor: brandSettings.accentColor ?? undefined,
+  };
+}
+
+/**
+ * Lève `WhiteLabelNotAllowedError` si le palier n'a pas droit à la marque
+ * blanche. À appeler quand la génération est *explicitement* demandée en
+ * marque blanche (bouton dédié) : contrairement à `resolveReportBranding`,
+ * qui retombe silencieusement sur « Cited », ce cas doit échouer de façon
+ * explicite (vérification T033 : un compte SOLO ne peut pas générer de
+ * rapport en marque blanche).
+ */
+export function assertWhiteLabelAllowed(plan: string): void {
+  if (!whiteLabelFor(plan)) {
+    throw new WhiteLabelNotAllowedError();
+  }
+}
 
 const HEX_COLOR_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
@@ -184,10 +252,26 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     marginBottom: 20,
   },
+  headerBrandGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerLogo: {
+    width: 20,
+    height: 20,
+    objectFit: 'contain',
+  },
   brand: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#18213A',
+  },
+  coverLogo: {
+    width: 64,
+    height: 64,
+    objectFit: 'contain',
+    marginBottom: 12,
   },
   headerText: {
     fontSize: 10,
@@ -262,10 +346,14 @@ const styles = StyleSheet.create({
   },
 });
 
-function ReportHeader({ brandName }: { brandName: string }) {
+function ReportHeader({ brandName, logoDataUri }: { brandName: string; logoDataUri?: string }) {
   return (
     <View style={styles.header}>
-      <Text style={styles.brand}>{brandName}</Text>
+      <View style={styles.headerBrandGroup}>
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- `Image` ici vient de @react-pdf/renderer (rendu PDF), pas du DOM : ce composant n'a pas de prop `alt`. */}
+        {logoDataUri && <Image style={styles.headerLogo} src={logoDataUri} />}
+        <Text style={styles.brand}>{brandName}</Text>
+      </View>
       <Text style={styles.headerText}>Rapport mensuel de surveillance IA</Text>
     </View>
   );
@@ -280,6 +368,7 @@ const MonthlyReportPdf = ({
 }) => {
   const brandName = resolveBrandName(branding);
   const accentColor = resolveAccentColor(branding?.accentColor);
+  const logoDataUri = branding?.logoDataUri;
   const sections = buildReportSections(data);
   const currentVerdictSection = sections.find((s) => s.key === 'currentVerdict')!;
   const historySection = sections.find((s) => s.key === 'history')!;
@@ -290,7 +379,9 @@ const MonthlyReportPdf = ({
     <Document>
       {/* Couverture */}
       <Page size="A4" style={styles.page}>
-        <ReportHeader brandName={brandName} />
+        <ReportHeader brandName={brandName} logoDataUri={logoDataUri} />
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- idem : composant PDF de @react-pdf/renderer, pas une balise <img> DOM. */}
+        {logoDataUri && <Image style={styles.coverLogo} src={logoDataUri} />}
         <Text style={[styles.title, { color: accentColor }]}>{SECTION_TITLES.cover}</Text>
         <Text style={styles.coverClient}>Client : {data.clientName}</Text>
         <Text style={styles.coverPeriod}>
@@ -304,7 +395,7 @@ const MonthlyReportPdf = ({
 
       {/* Verdict actuel */}
       <Page size="A4" style={styles.page}>
-        <ReportHeader brandName={brandName} />
+        <ReportHeader brandName={brandName} logoDataUri={logoDataUri} />
         <Text style={[styles.title, { color: accentColor }]}>{currentVerdictSection.title}</Text>
         {currentVerdictSection.isEmpty && (
           <Text style={styles.emptyState}>Aucun site surveillé sur cette période.</Text>
@@ -326,7 +417,7 @@ const MonthlyReportPdf = ({
 
       {/* Historique */}
       <Page size="A4" style={styles.page}>
-        <ReportHeader brandName={brandName} />
+        <ReportHeader brandName={brandName} logoDataUri={logoDataUri} />
         <Text style={[styles.title, { color: accentColor }]}>{historySection.title}</Text>
         {historySection.isEmpty && (
           <Text style={styles.emptyState}>Aucun historique disponible sur cette période.</Text>
@@ -348,7 +439,7 @@ const MonthlyReportPdf = ({
 
       {/* Incidents du mois */}
       <Page size="A4" style={styles.page}>
-        <ReportHeader brandName={brandName} />
+        <ReportHeader brandName={brandName} logoDataUri={logoDataUri} />
         <Text style={[styles.title, { color: accentColor }]}>{incidentsSection.title}</Text>
         {incidentsSection.isEmpty ? (
           <Text style={styles.emptyState}>Aucun incident ce mois-ci.</Text>
@@ -374,7 +465,7 @@ const MonthlyReportPdf = ({
 
       {/* Annexe technique */}
       <Page size="A4" style={styles.page}>
-        <ReportHeader brandName={brandName} />
+        <ReportHeader brandName={brandName} logoDataUri={logoDataUri} />
         <Text style={[styles.title, { color: accentColor }]}>{technicalSection.title}</Text>
         {technicalSection.isEmpty && (
           <Text style={styles.emptyState}>Aucune donnée technique disponible sur cette période.</Text>

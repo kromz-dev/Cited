@@ -264,7 +264,7 @@
   - **Vérification** : l'action peut être appelée à la demande (pas seulement le 1ᵉʳ du mois) et produit un `MonthlyReport` téléchargeable
   - **Taille** : M
 
-- [ ] **T033** [P3] Appliquer `BrandSettings` (logo, couleur, nom) au rendu PDF, restreint aux plans `PRO`/`SCALE` — `cited/lib/reports/renderMonthlyReportPdf.ts`, `cited/app/actions/settings.ts::updateBrandSettings`
+- [x] **T033** [P3] Appliquer `BrandSettings` (logo, couleur, nom) au rendu PDF, restreint aux plans `PRO`/`SCALE` — `cited/lib/reports/renderMonthlyReportPdf.ts`, `cited/app/actions/settings.ts::updateBrandSettings`
   - **Dépendances** : T009, T031
   - **EF/ENF** : EF-048, EF-050
   - **Vérification** : un compte `SOLO` ne peut pas générer de rapport en marque blanche (erreur explicite) ; un compte `PRO` voit son logo dans le PDF généré
