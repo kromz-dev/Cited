@@ -12,10 +12,16 @@ vi.mock("@/lib/db", () => ({
       findMany: vi.fn(),
       update: vi.fn(),
       findUnique: vi.fn(),
+      // T026 : sendRegressionAlert (déclenché sur régression) retrouve le
+      // site par domaine/e-mail pour journaliser l'AlertEvent envoyé.
+      findFirst: vi.fn(),
     },
     scanLog: {
       create: vi.fn(),
       findMany: vi.fn().mockResolvedValue([]),
+    },
+    alertEvent: {
+      createMany: vi.fn(),
     },
   },
 }));

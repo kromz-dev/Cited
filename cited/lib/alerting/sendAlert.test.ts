@@ -1,10 +1,24 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("@/lib/db", () => ({
-  db: { alertEvent: { createMany: vi.fn(), findMany: vi.fn() } },
+const sendMock = vi.hoisted(() => vi.fn());
+
+vi.mock("resend", () => ({
+  Resend: vi.fn().mockImplementation(function MockResend() {
+    return { emails: { send: sendMock } };
+  }),
 }));
 
-import { renderAlertEmail, suggestFix } from "./sendAlert";
+vi.mock("@/lib/db", () => ({
+  db: {
+    alertEvent: { createMany: vi.fn(), findMany: vi.fn() },
+    monitoredSite: { findFirst: vi.fn() },
+  },
+}));
+
+import { db } from "@/lib/db";
+import { renderAlertEmail, sendRegressionAlert, suggestFix } from "./sendAlert";
+
+const ORIGINAL_ENV = { ...process.env };
 
 describe("renderAlertEmail", () => {
   it("utilise un objet et un ton de régression, et cite la cause et le correctif", () => {
@@ -47,5 +61,60 @@ describe("renderAlertEmail", () => {
     expect(email.subject).toBe("Cited — 2 domaines ne sont plus lisibles");
     expect(email.text).toContain("a.fr");
     expect(email.text).toContain("b.fr");
+  });
+});
+
+describe("T026: sendRegressionAlert journalise l'alerte réellement envoyée", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    sendMock.mockResolvedValue({ data: { id: "resend_email_789" }, error: null });
+    process.env.RESEND_API_KEY = "re_test_key";
+  });
+
+  afterEach(() => {
+    process.env = { ...ORIGINAL_ENV };
+  });
+
+  it("envoie un seul e-mail et écrit une ligne AlertEvent pour le site concerné", async () => {
+    vi.mocked(db.monitoredSite.findFirst).mockResolvedValueOnce({ id: "site-1" } as never);
+
+    const result = await sendRegressionAlert(
+      "agence@example.com",
+      "exemple.fr",
+      "OK",
+      "BLOQUÉ",
+    );
+
+    expect(result.success).toBe(true);
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    expect(db.monitoredSite.findFirst).toHaveBeenCalledWith({
+      where: { url: "exemple.fr", user: { email: "agence@example.com" } },
+      select: { id: true },
+    });
+    expect(db.alertEvent.createMany).toHaveBeenCalledTimes(1);
+    expect(db.alertEvent.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({
+          siteId: "site-1",
+          type: "REGRESSION",
+          channel: "EMAIL",
+        }),
+      ],
+    });
+  });
+
+  it("n'écrit aucune ligne AlertEvent si le site n'a pas pu être retrouvé", async () => {
+    vi.mocked(db.monitoredSite.findFirst).mockResolvedValueOnce(null);
+
+    const result = await sendRegressionAlert(
+      "agence@example.com",
+      "exemple.fr",
+      "OK",
+      "BLOQUÉ",
+    );
+
+    expect(result.success).toBe(true);
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    expect(db.alertEvent.createMany).not.toHaveBeenCalled();
   });
 });

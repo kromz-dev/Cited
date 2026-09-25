@@ -75,27 +75,6 @@ export function renderAlertEmail(input: {
   return { subject, text, html };
 }
 
-export function renderDigest(input: {
-  regressions: AlertSiteChange[];
-  resolutions: AlertSiteChange[];
-}): { subject: string; text: string; html: string } {
-  if (input.regressions.length > 0 && input.resolutions.length === 0) {
-    return renderAlertEmail({ kind: "REGRESSION", domains: input.regressions });
-  }
-  if (input.resolutions.length > 0 && input.regressions.length === 0) {
-    return renderAlertEmail({ kind: "RESOLUTION", domains: input.resolutions });
-  }
-  const text = [
-    renderAlertEmail({ kind: "REGRESSION", domains: input.regressions }).text,
-    renderAlertEmail({ kind: "RESOLUTION", domains: input.resolutions }).text,
-  ].join("\n");
-  return {
-    subject: "Cited — changements de lisibilité",
-    text,
-    html: `<div style="font-family: sans-serif; max-width: 600px;"><pre>${escapeHtml(text)}</pre></div>`,
-  };
-}
-
 async function deliver(to: string, email: { subject: string; text: string; html: string }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -131,24 +110,6 @@ async function recordAlerts(kind: AlertKind, domains: AlertSiteChange[]) {
   });
 }
 
-/**
- * Un seul e-mail par compte pour un passage du scan, puis une ligne
- * AlertEvent par domaine concerné.
- */
-export async function sendDailyDigest(
-  to: string,
-  input: { regressions: AlertSiteChange[]; resolutions: AlertSiteChange[] },
-) {
-  if (input.regressions.length + input.resolutions.length === 0) {
-    return { success: true as const, skipped: true as const };
-  }
-  const sent = await deliver(to, renderDigest(input));
-  if (!sent.success) return sent;
-  await recordAlerts("REGRESSION", input.regressions);
-  await recordAlerts("RESOLUTION", input.resolutions);
-  return sent;
-}
-
 export async function listRecentAlerts(userId: string) {
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   return db.alertEvent.findMany({
@@ -166,35 +127,20 @@ export async function listRecentAlerts(userId: string) {
 }
 
 /**
- * Un seul e-mail pour tous les domaines d'un compte lors d'un passage du scan.
+ * Un seul e-mail pour tous les domaines d'un compte lors d'un passage du scan,
+ * puis une ligne AlertEvent par domaine concerné (T026) pour que le journal
+ * ne rate jamais une alerte réellement envoyée.
  */
 export async function sendUserDigest(
   to: string,
   kind: AlertKind,
   domains: AlertSiteChange[],
 ) {
-  if (domains.length === 0) return { success: true, skipped: true as const };
-
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.warn("RESEND_API_KEY is not defined. Skipping alert email.");
-    return { success: false, error: "No API Key" };
-  }
-
-  const email = renderAlertEmail({ kind, domains });
-  try {
-    const response = await new Resend(apiKey).emails.send({
-      from: FROM,
-      to,
-      subject: email.subject,
-      html: email.html,
-      text: email.text,
-    });
-    return { success: true, id: response.data?.id };
-  } catch (error) {
-    console.error("Failed to send alert digest:", error);
-    return { success: false, error };
-  }
+  if (domains.length === 0) return { success: true as const, skipped: true as const };
+  const sent = await deliver(to, renderAlertEmail({ kind, domains }));
+  if (!sent.success) return sent;
+  await recordAlerts(kind, domains);
+  return sent;
 }
 
 /** Conservé pour les appelants existants : un domaine, gabarit de régression. */
@@ -205,5 +151,11 @@ export async function sendRegressionAlert(
   newStatus: string,
 ) {
   const cause = newStatus;
-  return sendUserDigest(to, "REGRESSION", [{ domain, cause, fix: suggestFix(cause) }]);
+  const site = await db.monitoredSite.findFirst({
+    where: { url: domain, user: { email: to } },
+    select: { id: true },
+  });
+  return sendUserDigest(to, "REGRESSION", [
+    { siteId: site?.id, domain, cause, fix: suggestFix(cause) },
+  ]);
 }
