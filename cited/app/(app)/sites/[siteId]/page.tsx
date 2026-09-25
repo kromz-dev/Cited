@@ -6,6 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { SiteActions } from "./SiteActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Verdict } from "@/components/ui/verdict";
+import { buildScanHistory } from "@/lib/sites/scan-history";
 
 export const metadata = {
   title: "Détail du domaine | Cited",
@@ -20,7 +21,7 @@ export default async function SiteDetailPage(props: { params: Promise<{ siteId: 
   // Retrieve site from MonitoredSite or legacy Site
   const monitoredSite = await db.monitoredSite.findFirst({
     where: { id: siteId, userId: session.user.id },
-    include: { scanLogs: { orderBy: { createdAt: "desc" }, take: 10 } },
+    include: { scanLogs: { orderBy: { createdAt: "desc" }, take: 60 } },
   });
 
   const legacySite = !monitoredSite
@@ -55,6 +56,7 @@ export default async function SiteDetailPage(props: { params: Promise<{ siteId: 
     (!monitoredSite && !legacySite) ||
     domainName.includes("bubbleapps");
 
+  const history = buildScanHistory(monitoredSite?.scanLogs ?? []);
   const gptStatusCode = isBlocked ? 403 : 200;
   const claudeStatusCode = isBlocked ? 403 : 200;
   const daysInRed = isBlocked ? 6 : 0;
@@ -136,27 +138,25 @@ export default async function SiteDetailPage(props: { params: Promise<{ siteId: 
           Un scan par jour. Chaque barre est le verdict du jour ; l&apos;encre rouge signale un site invisible pour les IA.
         </p>
 
-        {/* Graphique en barres sur 12 jours */}
-        <div className="flex h-[120px] items-end gap-1.5 pt-4">
-          <span className="h-[70%] flex-1 rounded-t-xs bg-line" />
-          <span className="h-[74%] flex-1 rounded-t-xs bg-line" />
-          <span className="h-[80%] flex-1 rounded-t-xs bg-line" />
-          <span className="h-[76%] flex-1 rounded-t-xs bg-line" />
-          <span className="h-[82%] flex-1 rounded-t-xs bg-line" />
-          <span className="h-[78%] flex-1 rounded-t-xs bg-line" />
-          <span className="h-full flex-1 rounded-t-xs bg-stop" />
-          <span className="h-full flex-1 rounded-t-xs bg-stop" />
-          <span className="h-full flex-1 rounded-t-xs bg-stop" />
-          <span className="h-full flex-1 rounded-t-xs bg-stop" />
-          <span className="h-full flex-1 rounded-t-xs bg-stop" />
-          <span className="h-full flex-1 rounded-t-xs bg-stop" />
-        </div>
-
-        <div className="mt-2.5 flex justify-between text-xs text-ink-2">
-          <span>4 sept.</span>
-          <span className="font-medium text-stop">10 sept., bascule au rouge</span>
-          <span>16 sept.</span>
-        </div>
+        {history.length === 0 ? (
+          <p className="text-sm text-ink-2">Aucun scan n&apos;a encore été enregistré pour ce domaine.</p>
+        ) : (
+          <>
+            <div className="flex h-[120px] items-end gap-1.5 pt-4" role="img" aria-label="Historique des scans de ce domaine">
+              {history.map((point) => (
+                <span
+                  key={point.date}
+                  title={`${point.label} : ${point.degraded ? "dégradé" : "lisible"}`}
+                  className={`flex-1 rounded-t-xs ${point.degraded ? "h-full bg-stop" : "h-[70%] bg-line"}`}
+                />
+              ))}
+            </div>
+            <div className="mt-2.5 flex justify-between text-xs text-ink-2">
+              <span>{history[0]?.label}</span>
+              <span>{history[history.length - 1]?.label}</span>
+            </div>
+          </>
+        )}
       </section>
 
       {/* Trace technique et piste de correction */}
