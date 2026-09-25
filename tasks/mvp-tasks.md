@@ -46,7 +46,7 @@
   - **Vérification** : `npx prisma migrate status` ne signale aucune migration en attente sur l'environnement de production
   - **Taille** : S
 
-- [ ] **T005** [P] [SETUP] Intégrer PostHog (Cloud UE) pour les exceptions client et serveur et la mesure produit, en remplacement de Sentry (`docs/decisions/ADR-001-posthog-remplace-sentry.md`) — `cited/app/providers.tsx`, `cited/app/global-error.tsx`, `cited/lib/posthog-ai.ts`, `cited/app/layout.tsx` (amorcé en local par le fondateur, non commité au 24/09)
+- [x] **T005** [P] [SETUP] Intégrer PostHog (Cloud UE) pour les exceptions client et serveur et la mesure produit, en remplacement de Sentry (`docs/decisions/ADR-001-posthog-remplace-sentry.md`) — `cited/app/providers.tsx`, `cited/app/global-error.tsx`, `cited/lib/posthog-ai.ts`, `cited/app/layout.tsx` (amorcé en local par le fondateur, non commité au 24/09)
   - **Dépendances** : T001
   - **EF/ENF** : ENF-009
   - **Vérification** : une erreur provoquée manuellement côté client et côté serveur apparaît dans PostHog sous 1 minute ; sur les pages marketing, aucun cookie ni `localStorage` PostHog n'est écrit avant consentement (ou le mode sans persistance est actif), comme le prévoit l'ADR-001

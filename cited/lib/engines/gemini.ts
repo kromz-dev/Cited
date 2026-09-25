@@ -145,7 +145,7 @@ async function callGemini(body: unknown, grounded: boolean, maxRetries = 3): Pro
     let res: Response;
     try {
       // La clé passe par un en-tête, JAMAIS en query string : l'URL complète
-      // se retrouve dans les spans Inngest, les breadcrumbs Sentry et le
+      // se retrouve dans les spans Inngest, les événements PostHog et le
       // moindre console.error sur échec réseau. Un en-tête n'y est pas repris.
       res = await fetch(ENDPOINT, {
         method: "POST",
