@@ -1,8 +1,10 @@
 import { Resend } from "resend";
+import { db } from "@/lib/db";
 
 export type AlertKind = "REGRESSION" | "RESOLUTION";
 
 export interface AlertSiteChange {
+  siteId?: string;
   domain: string;
   cause: string;
   fix: string;
@@ -73,23 +75,12 @@ export function renderAlertEmail(input: {
   return { subject, text, html };
 }
 
-/**
- * Un seul e-mail pour tous les domaines d'un compte lors d'un passage du scan.
- */
-export async function sendUserDigest(
-  to: string,
-  kind: AlertKind,
-  domains: AlertSiteChange[],
-) {
-  if (domains.length === 0) return { success: true, skipped: true as const };
-
+async function deliver(to: string, email: { subject: string; text: string; html: string }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.warn("RESEND_API_KEY is not defined. Skipping alert email.");
-    return { success: false, error: "No API Key" };
+    return { success: false as const, error: "No API Key" };
   }
-
-  const email = renderAlertEmail({ kind, domains });
   try {
     const response = await new Resend(apiKey).emails.send({
       from: FROM,
@@ -98,11 +89,58 @@ export async function sendUserDigest(
       html: email.html,
       text: email.text,
     });
-    return { success: true, id: response.data?.id };
+    return { success: true as const, id: response.data?.id };
   } catch (error) {
     console.error("Failed to send alert digest:", error);
-    return { success: false, error };
+    return { success: false as const, error };
   }
+}
+
+async function recordAlerts(kind: AlertKind, domains: AlertSiteChange[]) {
+  const rows = domains.filter((item) => item.siteId);
+  if (rows.length === 0) return;
+  await db.alertEvent.createMany({
+    data: rows.map((item) => ({
+      siteId: item.siteId as string,
+      type: kind,
+      cause: item.cause,
+      fix: item.fix,
+      channel: "EMAIL",
+    })),
+  });
+}
+
+export async function listRecentAlerts(userId: string) {
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  return db.alertEvent.findMany({
+    where: { site: { userId }, sentAt: { gte: since } },
+    orderBy: { sentAt: "desc" },
+    select: {
+      id: true,
+      type: true,
+      cause: true,
+      fix: true,
+      sentAt: true,
+      site: { select: { id: true, url: true } },
+    },
+  });
+}
+
+/**
+ * Un seul e-mail pour tous les domaines d'un compte lors d'un passage du scan,
+ * puis une ligne AlertEvent par domaine concerné (T026) pour que le journal
+ * ne rate jamais une alerte réellement envoyée.
+ */
+export async function sendUserDigest(
+  to: string,
+  kind: AlertKind,
+  domains: AlertSiteChange[],
+) {
+  if (domains.length === 0) return { success: true as const, skipped: true as const };
+  const sent = await deliver(to, renderAlertEmail({ kind, domains }));
+  if (!sent.success) return sent;
+  await recordAlerts(kind, domains);
+  return sent;
 }
 
 /** Conservé pour les appelants existants : un domaine, gabarit de régression. */
@@ -113,5 +151,11 @@ export async function sendRegressionAlert(
   newStatus: string,
 ) {
   const cause = newStatus;
-  return sendUserDigest(to, "REGRESSION", [{ domain, cause, fix: suggestFix(cause) }]);
+  const site = await db.monitoredSite.findFirst({
+    where: { url: domain, user: { email: to } },
+    select: { id: true },
+  });
+  return sendUserDigest(to, "REGRESSION", [
+    { siteId: site?.id, domain, cause, fix: suggestFix(cause) },
+  ]);
 }

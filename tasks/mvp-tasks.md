@@ -196,7 +196,7 @@
   - **Vérification** : deux gabarits testés (`sendAlert.test.ts`, nouveau) — objet et ton différents entre régression et résolution ; le corps cite la cause identifiée (ex. "robots.txt interdit GPTBot") et un correctif
   - **Taille** : M
 
-- [ ] **T026** [P2] Journaliser chaque alerte envoyée dans `AlertEvent` et raccorder `app/(app)/alerts/page.tsx` au réel — `cited/lib/alerting/sendAlert.ts`, `cited/app/(app)/alerts/page.tsx`
+- [x] **T026** [P2] Journaliser chaque alerte envoyée dans `AlertEvent` et raccorder `app/(app)/alerts/page.tsx` au réel — `cited/lib/alerting/sendAlert.ts`, `cited/app/(app)/alerts/page.tsx`
   - **Dépendances** : T011, T025
   - **EF/ENF** : EF-037
   - **Vérification** : la page n'importe plus `initialAlerts` (tableau fictif) ; une alerte envoyée en test apparaît dans la liste au rechargement

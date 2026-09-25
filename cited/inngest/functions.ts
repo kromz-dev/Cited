@@ -8,5 +8,5 @@ export const functions = [
   scanSiteJob,
   pruneScanLogsJob,
   discoveryEmailDispatcher,
-  discoveryEmailSender
+  discoveryEmailSender,
 ];
