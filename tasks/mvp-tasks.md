@@ -336,7 +336,7 @@
 
 ## Phase 7 : Onboarding self-serve et e-mails automatisés
 
-- [ ] **T043** [ONB] Raccorder l'onboarding à `addMonitoredSitesBulk` et au lancement d'un vrai premier scan (événement Inngest) — `cited/app/(app)/onboarding/page.tsx`
+- [x] **T043** [ONB] Raccorder l'onboarding à `addMonitoredSitesBulk` et au lancement d'un vrai premier scan (événement Inngest) — `cited/app/(app)/onboarding/page.tsx`
   - **Dépendances** : T021
   - **EF/ENF** : EF-061, EF-062
   - **Vérification** : le délai artificiel (`setTimeout(800ms)`) disparaît ; les domaines collés créent réellement des `MonitoredSite` et un scan est déclenché

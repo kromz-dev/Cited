@@ -2,11 +2,11 @@
 
 import { useState, useTransition, ChangeEvent, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { buildAlertChannels } from "@/app/(app)/settings/alerts-summary";
+import { importOnboardingDomains } from "./actions";
 import posthog from "posthog-js";
 
 /**
@@ -16,13 +16,26 @@ import posthog from "posthog-js";
  * compte a déjà un abonnement actif — sinon `page.tsx` affiche
  * `OnboardingPlanStep` à la place.
  *
- * L'ajout de domaines déclenche encore une simulation côté client (aucune
- * écriture en base, aucun scan réel) : c'est T043, qui attend
- * `addMonitoredSitesBulk`. Les canaux d'alerte, eux, viennent de
+ * L'ajout de domaines appelle réellement `importOnboardingDomains` (T043,
+ * EF-061/EF-062) : création via `addMonitoredSitesBulk` (dé-duplication,
+ * garde SSRF, quota) puis déclenchement de l'événement Inngest de premier
+ * scan pour chaque site créé. Le résultat affiché (sites ajoutés, lignes
+ * ignorées et leur raison, scan démarré ou en attente) reflète toujours ce
+ * que l'action serveur a réellement fait — jamais un état simulé (principe
+ * II de la constitution). Les canaux d'alerte viennent de
  * `buildAlertChannels` (même source que la page Paramètres, EF-038) : seul
  * l'e-mail est réellement actif, Slack et le webhook restent des mentions
  * « en préparation » non interactives.
  */
+type ImportOutcome =
+  | { status: "idle" }
+  | { status: "error"; message: string }
+  | {
+      status: "success";
+      createdCount: number;
+      skipped: { line: string; reason: string }[];
+      scanTriggered: boolean;
+    };
 export function OnboardingClient({
   userEmail,
   maxSites,
@@ -31,7 +44,6 @@ export function OnboardingClient({
   /** Quota réel du palier de l'utilisateur (PLAN_LIMITS), jamais une valeur figée. */
   maxSites: number;
 }) {
-  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const initialDomains = `client-vitrine.bubbleapps.io
@@ -46,7 +58,7 @@ librairie-pas.fr`;
   const [threshold, setThreshold] = useState("200 car.");
 
   const [isPending, startTransition] = useTransition();
-  const [isScanning, setIsScanning] = useState(false);
+  const [outcome, setOutcome] = useState<ImportOutcome>({ status: "idle" });
 
   const alertChannels = buildAlertChannels(userEmail);
 
@@ -85,10 +97,26 @@ librairie-pas.fr`;
 
   const handleStartScan = () => {
     posthog.capture("onboarding_scan_started", { domain_count: domainCount });
-    setIsScanning(true);
     startTransition(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      router.push("/dashboard");
+      const result = await importOnboardingDomains(domainsText);
+
+      if ("error" in result) {
+        posthog.capture("onboarding_scan_failed", { reason: result.error });
+        setOutcome({ status: "error", message: result.error });
+        return;
+      }
+
+      posthog.capture("onboarding_scan_completed", {
+        created_count: result.data.created.length,
+        skipped_count: result.data.skipped.length,
+        scan_triggered: result.data.scanTriggered,
+      });
+      setOutcome({
+        status: "success",
+        createdCount: result.data.created.length,
+        skipped: result.data.skipped,
+        scanTriggered: result.data.scanTriggered,
+      });
     });
   };
 
@@ -158,13 +186,13 @@ librairie-pas.fr`;
                 type="button"
                 size="lg"
                 onClick={handleStartScan}
-                disabled={isPending || isScanning}
+                disabled={isPending}
                 className="flex-[1_1_200px]"
               >
-                {isPending || isScanning ? (
+                {isPending ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    Scan en cours…
+                    Import en cours…
                   </>
                 ) : (
                   "Lancer le premier scan"
@@ -174,6 +202,48 @@ librairie-pas.fr`;
                 Retour
               </Link>
             </div>
+
+            {outcome.status === "error" && (
+              <div
+                role="alert"
+                className="mt-3.5 rounded-sm border border-red-300 bg-red-50 p-3 text-sm text-red-800"
+              >
+                <p className="font-medium">L&apos;import a échoué, aucun site n&apos;a été ajouté.</p>
+                <p className="mt-1">{outcome.message}</p>
+              </div>
+            )}
+
+            {outcome.status === "success" && (
+              <div className="mt-3.5 rounded-sm border border-line bg-surface p-3.5 text-sm text-ink">
+                <p className="font-medium">
+                  {outcome.createdCount > 0
+                    ? `${outcome.createdCount} site${outcome.createdCount > 1 ? "s" : ""} ajouté${outcome.createdCount > 1 ? "s" : ""} à votre portefeuille.`
+                    : "Aucun site n'a été ajouté."}
+                </p>
+                {outcome.createdCount > 0 && (
+                  <p className="mt-1 text-ink-2">
+                    {outcome.scanTriggered
+                      ? "Le premier scan a démarré."
+                      : "Le premier scan n'a pas pu démarrer tout de suite ; il reste en attente et se lancera dès que possible."}
+                  </p>
+                )}
+                {outcome.skipped.length > 0 && (
+                  <div className="mt-2.5 border-t border-line pt-2.5">
+                    <p className="text-ink-2">
+                      {outcome.skipped.length} ligne{outcome.skipped.length > 1 ? "s" : ""} ignorée
+                      {outcome.skipped.length > 1 ? "s" : ""} :
+                    </p>
+                    <ul className="mt-1.5 max-h-40 space-y-1 overflow-y-auto font-mono text-[12px] leading-[1.6] text-ink-2">
+                      {outcome.skipped.map((row, index) => (
+                        <li key={`${row.line}-${index}`}>
+                          <span className="text-ink">{row.line}</span> — {row.reason}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
