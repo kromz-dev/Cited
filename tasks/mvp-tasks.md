@@ -46,7 +46,7 @@
   - **Vérification** : `npx prisma migrate status` ne signale aucune migration en attente sur l'environnement de production
   - **Taille** : S
 
-- [ ] **T005** [P] [SETUP] Intégrer PostHog (Cloud UE) pour les exceptions client et serveur et la mesure produit, en remplacement de Sentry (`docs/decisions/ADR-001-posthog-remplace-sentry.md`) — `cited/app/providers.tsx`, `cited/app/global-error.tsx`, `cited/lib/posthog-ai.ts`, `cited/app/layout.tsx` (amorcé en local par le fondateur, non commité au 24/09)
+- [x] **T005** [P] [SETUP] Intégrer PostHog (Cloud UE) pour les exceptions client et serveur et la mesure produit, en remplacement de Sentry (`docs/decisions/ADR-001-posthog-remplace-sentry.md`) — `cited/app/providers.tsx`, `cited/app/global-error.tsx`, `cited/lib/posthog-ai.ts`, `cited/app/layout.tsx` (amorcé en local par le fondateur, non commité au 24/09)
   - **Dépendances** : T001
   - **EF/ENF** : ENF-009
   - **Vérification** : une erreur provoquée manuellement côté client et côté serveur apparaît dans PostHog sous 1 minute ; sur les pages marketing, aucun cookie ni `localStorage` PostHog n'est écrit avant consentement (ou le mode sans persistance est actif), comme le prévoit l'ADR-001
@@ -392,7 +392,7 @@
   - **Vérification** : aucune section n'affiche une fonctionnalité inactive comme "Actif" (le badge Slack actuel, notamment) ; multi-utilisateur et clé API sont soit absents, soit "en préparation"
   - **Taille** : M
 
-- [ ] **T051** [MOCK] Audit final "aucune donnée fictive dans le chemin critique" — recherche des chaînes de démonstration restantes (`Atelier Boréal`, `client-vitrine`, `Laura Bréa`, etc.) hors fixtures de test, dans toute l'application authentifiée
+- [x] **T051** [MOCK] Audit final "aucune donnée fictive dans le chemin critique" — recherche des chaînes de démonstration restantes (`Atelier Boréal`, `client-vitrine`, `Laura Bréa`, etc.) hors fixtures de test, dans toute l'application authentifiée
   - **Dépendances** : T026, T027, T029a, T029b, T029c, T034, T040, T043, T049, T050
   - **EF/ENF** : principe II
   - **Vérification** : `grep -r "Atelier Boréal\|client-vitrine\|Laura Bréa" cited/app cited/components` ne retourne plus rien en dehors de `cited/**/*.test.ts` et des fixtures explicitement documentées comme telles

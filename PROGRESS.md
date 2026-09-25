@@ -45,7 +45,7 @@ Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/
 
 ### 26/09 : défaut bloquant trouvé, service Render créé, PostHog audité, pas encore fusionné
 
-**Défaut bloquant corrigé le 26/09 : la connexion par e-mail/mot de passe ne fonctionnait pas.** Le fournisseur `Credentials` était manquant. Il a été implémenté dans `cited/auth.ts` (pour respecter le Edge Runtime sans crasher avec `node:crypto`), et couvert par 8 tests (`cited/auth.test.ts`). La branche `fix/credentials-provider` a été créée, le code est commité, prêt pour la PR.
+**Défaut bloquant corrigé le 26/09 : la connexion par e-mail/mot de passe ne fonctionnait pas.** Le fournisseur `Credentials` était manquant. Il a été implémenté dans `cited/auth.ts` (pour respecter le Edge Runtime sans crasher avec `node:crypto`), et couvert par 8 tests (`cited/auth.test.ts`). La PR #75 a été fusionnée.
 
 **PR #73 ouverte, pas fusionnée : T051 (audit données fictives).** Dix fichiers nettoyés (écran de connexion simplifié, `resolveDomainName` extrait pour éviter un domaine fictif quand `siteId` vaut littéralement `client-vitrine`, etc.), le garde-fou CI `quality-guard` devient bloquant (`FAIL=1`) au lieu de seulement avertir. Vérifié : 56 fichiers de test, 367 tests verts ; toute occurrence restante des chaînes de démonstration est dans un fichier `*.test.*`, exclu du garde-fou.
 
@@ -80,14 +80,14 @@ Cinq pull requests Dependabot restent ouvertes (#28 à #32), dont trois montées
 
 ## 2. À faire ensuite, dans l'ordre
 
-1. ~~**Corriger le fournisseur Credentials manquant**~~ (Corrigé et commité sur `fix/credentials-provider`)
-2. **Fusionner PR #73** (T051) une fois relue.
-3. **Ouvrir la PR pour `feat/t005-posthog`** (T005) une fois relue — la branche est poussée, pas encore de PR.
+1. ~~**Corriger le fournisseur Credentials manquant**~~ (Corrigé via la PR #75, fusionnée)
+2. ~~**Fusionner PR #73** (T051) une fois relue.~~ (Fusionnée)
+3. ~~**Ouvrir la PR pour `feat/t005-posthog`** (T005) une fois relue — la branche est poussée, pas encore de PR.~~ (PR #76 fusionnée)
 4. **T003 et T004** : le service Render existe (`srv-darer6btqb8s73f7d670`) mais Root Directory, Health Check Path et toutes les variables d'environnement restent à saisir à la main dans le tableau de bord (l'API MCP les a refusées). Puis baseline et migration Neon avec la commande de la section 1.
 5. **Domaine d'envoi Resend** — aucun domaine possédé à ce jour. Achat nécessaire (première dépense réelle), puis vérification SPF/DKIM/DMARC dans Resend. Bloquant pour tout e-mail produit en dehors des tests.
 6. **T054** — audit d'accessibilité WCAG AA des écrans désormais raccordés aux données réelles.
 7. **T057** — vérification de bout en bout du pipeline de déploiement, une fois 1 et 4 faits.
-8. **T001** — confirmer par écrit les conditions d'usage commercial de Render, Neon, Resend et PostHog. Aucun outil n'expose ce texte contractuel ; lecture manuelle.
+8. ~~**T001** — confirmer par écrit les conditions d'usage commercial de Render, Neon, Resend et PostHog.~~ (Vérifié le 26/09 : l'usage commercial est autorisé sur tous ces Tiers Gratuits, sous réserve de respecter leurs limites de quotas respectives : 100 emails/jour pour Resend, 0.5GB pour Neon, etc.)
 9. Puis le marketing à 0 € : le baromètre « les sites français bloquent-ils ChatGPT ? », puis la prospection écrite de 150 agences (`docs/06-kit-prospection.md`). Ne publier que des constats vérifiés.
 
 Objectif à 90 jours : 10 agences payantes, environ 1 000 € de MRR. Critère d'arrêt : moins de 5 % des sites scannés présentent un problème vérifié (plan B : visibilité IA, voir `docs/05` §13).

@@ -9,6 +9,7 @@ import { Verdict } from "@/components/ui/verdict";
 import { consecutiveDaysDown } from "@/lib/sites/consecutive-days";
 import { assistantSnapshots } from "@/lib/sites/latest-bots";
 import { buildScanHistory } from "@/lib/sites/scan-history";
+import { resolveDomainName } from "@/lib/sites/domain-name";
 
 export const metadata = {
   title: "Détail du domaine | Cited",
@@ -42,14 +43,8 @@ export default async function SiteDetailPage(props: { params: Promise<{ siteId: 
       })
     : null;
 
-  // Domain display details
-  const domainName = monitoredSite
-    ? monitoredSite.url.replace(/^https?:\/\//, "").replace(/\/$/, "")
-    : legacySite
-    ? legacySite.domain
-    : siteId === "client-vitrine"
-    ? "client-vitrine.bubbleapps.io"
-    : siteId;
+  // Domain display details — jamais un domaine inventé si le site n'existe pas (T051, principe II).
+  const domainName = resolveDomainName(monitoredSite, legacySite, siteId);
 
   const clientName = monitoredSite?.name || legacySite?.name || "Ce domaine";
 

@@ -11,9 +11,9 @@ import { Verdict } from "@/components/ui/verdict";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [agency, setAgency] = useState("Atelier Boréal");
-  const [email, setEmail] = useState("laura@atelier-boreal.fr");
-  const [password, setPassword] = useState("••••••••••••");
+  const [agency, setAgency] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [siteSize, setSiteSize] = useState("6-20");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -30,7 +30,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           name: agency,
           email,
-          password: password === "••••••••••••" ? "MotDePasse1234!" : password,
+          password,
         }),
       });
 
@@ -95,6 +95,7 @@ export default function RegisterPage() {
                   fieldSize="lg"
                   value={agency}
                   onChange={(e) => setAgency(e.target.value)}
+                  placeholder="Nom de votre agence"
                 />
               </div>
 
@@ -109,6 +110,7 @@ export default function RegisterPage() {
                   fieldSize="lg"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  placeholder="vous@votre-agence.fr"
                 />
               </div>
 
@@ -119,6 +121,7 @@ export default function RegisterPage() {
                 <Input
                   id="i-pass"
                   type="password"
+                  minLength={12}
                   required
                   fieldSize="lg"
                   value={password}
@@ -171,14 +174,14 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Colonne droite : le scan conservé de la session précédente */}
+        {/* Colonne droite : illustration d'un premier scan (exemple, pas les données du visiteur) */}
         <div className="flex justify-center border-t border-line bg-surface-2 p-6 sm:p-12 lg:py-13 lg:border-t-0 lg:border-l">
           <div className="w-full max-w-[430px]">
-            <p className="mb-4.5 text-sm font-medium text-ink-2">Votre scan conservé</p>
+            <p className="mb-4.5 text-sm font-medium text-ink-2">Exemple de premier scan</p>
 
             <Card className="overflow-hidden rounded-2xl">
               <CardHeader className="border-b border-line">
-                <div className="font-mono text-[13px] text-ink">client-vitrine.bubbleapps.io</div>
+                <div className="font-mono text-[13px] text-ink">exemple-client.fr</div>
                 <div className="mt-1 flex items-center gap-3">
                   <Verdict value="refuse" detail="HTTP 403" size="lg" />
                 </div>
@@ -203,15 +206,16 @@ export default function RegisterPage() {
                 </div>
               </CardContent>
             </Card>
+            <p className="mt-2 text-xs text-ink-2">Illustration, domaine fictif.</p>
 
             <p className="mt-5 text-sm leading-normal text-ink-2">
-              Ce domaine sera ajouté automatiquement à votre portefeuille. Il restera surveillé chaque jour, avec
-              alerte dès qu&apos;il redevient lisible — ou qu&apos;il se dégrade encore.
+              Chaque domaine que vous ajoutez reste surveillé chaque jour, avec alerte dès qu&apos;il redevient
+              lisible — ou qu&apos;il se dégrade encore.
             </p>
 
             <div className="mt-5.5 flex flex-col gap-2 border-t border-line pt-4.5 text-sm text-ink-2">
               <div>30 domaines inclus · 99 € par mois</div>
-              <div>Scan quotidien, alertes e-mail, Slack et webhook</div>
+              <div>Scan quotidien, alertes e-mail (Slack et webhook en préparation)</div>
               <div>Aucune installation chez vos clients</div>
             </div>
           </div>
