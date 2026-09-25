@@ -6,6 +6,8 @@ import { ChevronLeft } from "lucide-react";
 import { SiteActions } from "./SiteActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Verdict } from "@/components/ui/verdict";
+import { consecutiveDaysDown } from "@/lib/sites/consecutive-days";
+import { assistantSnapshots } from "@/lib/sites/latest-bots";
 import { buildScanHistory } from "@/lib/sites/scan-history";
 
 export const metadata = {
@@ -49,17 +51,12 @@ export default async function SiteDetailPage(props: { params: Promise<{ siteId: 
     ? "client-vitrine.bubbleapps.io"
     : siteId;
 
-  const clientName = monitoredSite?.name || legacySite?.name || "Cabinet Vitrine";
-  const isBlocked =
-    monitoredSite?.status === "ERROR" ||
-    monitoredSite?.status === "BLOCKED" ||
-    (!monitoredSite && !legacySite) ||
-    domainName.includes("bubbleapps");
+  const clientName = monitoredSite?.name || legacySite?.name || "Ce domaine";
 
   const history = buildScanHistory(monitoredSite?.scanLogs ?? []);
-  const gptStatusCode = isBlocked ? 403 : 200;
-  const claudeStatusCode = isBlocked ? 403 : 200;
-  const daysInRed = isBlocked ? 6 : 0;
+  const latest = monitoredSite?.scanLogs?.[0] ?? null;
+  const bots = assistantSnapshots(latest);
+  const daysInRed = consecutiveDaysDown(history);
 
   return (
     <div className="mx-auto max-w-[1240px] pb-16 text-ink">
@@ -79,12 +76,8 @@ export default async function SiteDetailPage(props: { params: Promise<{ siteId: 
               {domainName}
             </h1>
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              <Verdict value={isBlocked ? "refuse" : "lu"} detail={isBlocked ? "403" : "200"} />
-              <span className="text-sm text-ink-2">
-                {isBlocked
-                  ? `En alerte depuis le 10 septembre, client : ${clientName}`
-                  : `Site surveillé, client : ${clientName}`}
-              </span>
+              <Verdict value={latest?.simpleStatus === "BLOQUÉ" ? "refuse" : latest?.simpleStatus === "OK" ? "lu" : "inconnu"} detail={latest ? String(latest.httpStatus) : "—"} />
+              <span className="text-sm text-ink-2">Site surveillé, client : {clientName}</span>
             </div>
           </div>
 
@@ -95,30 +88,26 @@ export default async function SiteDetailPage(props: { params: Promise<{ siteId: 
       {/* Indicateurs clés */}
       <section className="border-b border-line py-6">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Card size="sm">
-            <CardContent>
-              <div className="type-caption text-ink-2">GPTBot</div>
-              <div className={`mt-1 text-[28px] leading-8 font-semibold tnum ${isBlocked ? "text-stop" : "text-ink"}`}>
-                {gptStatusCode}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card size="sm">
-            <CardContent>
-              <div className="type-caption text-ink-2">ClaudeBot</div>
-              <div className={`mt-1 text-[28px] leading-8 font-semibold tnum ${isBlocked ? "text-stop" : "text-ink"}`}>
-                {claudeStatusCode}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card size="sm">
-            <CardContent>
-              <div className="type-caption text-ink-2">Navigateur</div>
-              <div className="mt-1 text-[28px] leading-8 font-semibold text-ink tnum">200</div>
-            </CardContent>
-          </Card>
+          {bots.length === 0 ? (
+            <Card size="sm">
+              <CardContent>
+                <div className="type-caption text-ink-2">Dernier scan</div>
+                <div className="mt-1 text-sm text-ink-2">Aucun journal pour ce domaine.</div>
+              </CardContent>
+            </Card>
+          ) : (
+            bots.slice(0, 3).map((bot) => (
+              <Card size="sm" key={bot.agent}>
+                <CardContent>
+                  <div className="type-caption text-ink-2">{bot.agent}</div>
+                  <div className={`mt-1 text-[28px] leading-8 font-semibold tnum ${bot.httpStatus !== null && bot.httpStatus >= 400 ? "text-stop" : "text-ink"}`}>
+                    {bot.httpStatus ?? "—"}
+                  </div>
+                  <p className="mt-1 text-sm text-ink-2">{bot.cause}</p>
+                </CardContent>
+              </Card>
+            ))
+          )}
 
           <Card size="sm">
             <CardContent>
@@ -166,48 +155,36 @@ export default async function SiteDetailPage(props: { params: Promise<{ siteId: 
           <h2 className="mb-2.5 text-[22px] leading-7 font-semibold text-ink">
             Réponse servie aux bots IA
           </h2>
-          <div className="overflow-x-auto whitespace-pre rounded-lg border border-line bg-surface-2 p-4 font-mono text-[12.5px] leading-[1.75] text-ink select-all">
-{`GET / HTTP/1.1
-user-agent: GPTBot/1.2
-
-HTTP/1.1 403 Forbidden
-server: cloudflare
-cf-mitigated: challenge
-content-length: 0`}
-          </div>
+          {bots.length === 0 ? (
+            <p className="text-sm text-ink-2">Aucune trace : ce domaine n&apos;a pas encore de scan.</p>
+          ) : (
+            <ul className="space-y-3 text-sm text-ink">
+              {bots.map((bot) => (
+                <li key={bot.agent}>
+                  <span className="font-medium">{bot.agent}</span>
+                  <span className="tnum text-ink-2"> · HTTP {bot.httpStatus ?? "—"}</span>
+                  <p className="text-ink-2">{bot.cause}</p>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
-        {/* Correctif */}
         <div>
           <h2 className="mb-2.5 text-[22px] leading-7 font-semibold text-ink">
             Piste de correction
           </h2>
-          <p className="mb-3.5 text-sm leading-relaxed text-ink-2">
-            Le blocage vient d&apos;une règle de sécurité du pare-feu, pas du site lui-même. Cited documente le problème ; la correction se fait côté plateforme.
-          </p>
-          <div className="flex flex-col gap-2.5 border-t border-line pt-3.5 text-sm text-ink">
-            <div>
-              1. Autoriser les user-agents{" "}
-              <span className="rounded-xs bg-surface-2 px-1 py-0.5 font-mono text-[13px]">
-                GPTBot
-              </span>{" "}
-              et{" "}
-              <span className="rounded-xs bg-surface-2 px-1 py-0.5 font-mono text-[13px]">
-                ClaudeBot
-              </span>{" "}
-              dans les règles du pare-feu applicatif (WAF).
-            </div>
-            <div>
-              2. Vérifier que{" "}
-              <span className="rounded-xs bg-surface-2 px-1 py-0.5 font-mono text-[13px]">
-                robots.txt
-              </span>{" "}
-              n&apos;interdit pas ces mêmes agents.
-            </div>
-            <div>
-              3. Relancer un scan : le verdict repasse à Lu en moins d&apos;une minute.
-            </div>
-          </div>
+          {bots.length === 0 ? (
+            <p className="text-sm text-ink-2">Le correctif apparaîtra après le premier scan.</p>
+          ) : (
+            <ul className="space-y-3 text-sm text-ink">
+              {bots.map((bot) => (
+                <li key={`${bot.agent}-fix`}>
+                  <span className="font-medium">{bot.agent}.</span> {bot.fix}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </section>
 
@@ -231,45 +208,23 @@ content-length: 0`}
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                <tr className="h-11 hover:bg-paper">
-                  <td className="px-3 py-2 font-medium text-ink">/</td>
-                  <td className="px-3 py-2"><Verdict value="refuse" variant="inline" /></td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">403</td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">0 car.</td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">il y a 2 h</td>
-                </tr>
-
-                <tr className="h-11 hover:bg-paper">
-                  <td className="px-3 py-2 font-medium text-ink">/services</td>
-                  <td className="px-3 py-2"><Verdict value="refuse" variant="inline" /></td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">403</td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">0 car.</td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">il y a 2 h</td>
-                </tr>
-
-                <tr className="h-11 hover:bg-paper">
-                  <td className="px-3 py-2 font-medium text-ink">/equipe</td>
-                  <td className="px-3 py-2"><Verdict value="refuse" variant="inline" /></td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">403</td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">0 car.</td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">il y a 2 h</td>
-                </tr>
-
-                <tr className="h-11 hover:bg-paper">
-                  <td className="px-3 py-2 font-medium text-ink">/contact</td>
-                  <td className="px-3 py-2"><Verdict value="refuse" variant="inline" /></td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">403</td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">0 car.</td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">il y a 2 h</td>
-                </tr>
-
-                <tr className="h-11 hover:bg-paper">
-                  <td className="px-3 py-2 font-medium text-ink">/robots.txt</td>
-                  <td className="px-3 py-2"><Verdict value="lu" variant="inline" /></td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">200</td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">92 car.</td>
-                  <td className="px-3 py-2 text-right text-ink-2 tnum">il y a 2 h</td>
-                </tr>
+                {bots.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-8 text-center text-sm text-ink-2">Aucun scan enregistré.</td>
+                  </tr>
+                ) : (
+                  bots.map((bot) => (
+                    <tr key={bot.agent} className="h-11 hover:bg-paper">
+                      <td className="px-3 py-2 font-medium text-ink">{domainName}</td>
+                      <td className="px-3 py-2 text-ink-2">{bot.agent}</td>
+                      <td className="px-3 py-2 text-right text-ink-2 tnum">{bot.httpStatus ?? "—"}</td>
+                      <td className="px-3 py-2 text-right text-ink-2">{bot.cause}</td>
+                      <td className="px-3 py-2 text-right text-ink-2 tnum">
+                        {latest ? latest.createdAt.toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" }) : "—"}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
