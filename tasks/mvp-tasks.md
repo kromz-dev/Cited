@@ -276,7 +276,7 @@
   - **Vérification** : la liste "six clients fictifs" disparaît du code source ; le bouton télécharge un vrai fichier PDF
   - **Taille** : M
 
-- [ ] **T035** [P] [P3] Regroupement des sites par `Client` depuis les paramètres ou le portefeuille — `cited/app/actions/clients.ts` (nouveau), UI d'association dans `DashboardSites.tsx`
+- [x] **T035** [P] [P3] Regroupement des sites par `Client` depuis les paramètres ou le portefeuille — `cited/app/actions/clients.ts` (nouveau), UI d'association dans `DashboardSites.tsx`
   - **Dépendances** : T007
   - **EF/ENF** : EF-052
   - **Vérification** : un site peut être associé à un client existant ou rester sans client (champ optionnel respecté)
