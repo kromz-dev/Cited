@@ -216,7 +216,7 @@ export function Verdict({
       <VerdictGlyph value={value} size={size} />
       <span>{label}</span>
       {detail != null && (
-        <span className="font-normal opacity-80 tnum">{detail}</span>
+        <span className="font-normal tnum">{detail}</span>
       )}
     </span>
   )

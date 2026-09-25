@@ -40,6 +40,7 @@ if (projectToken && host) {
     // le code (ex. "scan_completed", "onboarding_scan_started",
     // "lead_submitted", "user_logged_in", "audit_completed").
     autocapture: false,
+    capture_dead_clicks: false,
     // L'enregistrement de session n'est jamais activé, quel que soit le
     // réglage du projet PostHog : à 5 000 sessions/mois, le palier gratuit
     // se viderait en quelques jours de trafic public, sans apporter
