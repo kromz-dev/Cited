@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { schibsted } from "@/components/home/fonts";
@@ -21,7 +22,7 @@ type PlanColumn = {
   cta: { label: string; href: string; primary?: boolean };
 };
 
-const PLANS: PlanColumn[] = [
+const getPlans = (isLoggedIn: boolean): PlanColumn[] => [
   {
     id: "FREE",
     name: "Scan libre",
@@ -33,7 +34,7 @@ const PLANS: PlanColumn[] = [
     name: "Freelance",
     price: "39 €",
     priceUnit: "/mois",
-    cta: { label: "Essayer Freelance", href: "/register?plan=SOLO" },
+    cta: { label: isLoggedIn ? "Gérer l'abonnement" : "Essayer Freelance", href: isLoggedIn ? "/settings#abonnement" : "/register?plan=SOLO" },
   },
   {
     id: "PRO",
@@ -41,14 +42,14 @@ const PLANS: PlanColumn[] = [
     price: "99 €",
     priceUnit: "/mois",
     recommended: true,
-    cta: { label: "Choisir Agence", href: "/register?plan=PRO", primary: true },
+    cta: { label: isLoggedIn ? "Gérer l'abonnement" : "Choisir Agence", href: isLoggedIn ? "/settings#abonnement" : "/register?plan=PRO", primary: true },
   },
   {
     id: "SCALE",
     name: "Studio",
     price: "249 €",
     priceUnit: "/mois",
-    cta: { label: "Choisir Studio", href: "/register?plan=SCALE" },
+    cta: { label: isLoggedIn ? "Gérer l'abonnement" : "Choisir Studio", href: isLoggedIn ? "/settings#abonnement" : "/register?plan=SCALE" },
   },
 ];
 
@@ -105,7 +106,10 @@ function Cell({ value }: { value: CellValue }) {
   return <span>{value}</span>;
 }
 
-export default function PricingPage() {
+
+export default async function PricingPage() {
+  const session = await auth();
+
   return (
     <div className={`${schibsted.variable} ${tokens.root} ${styles.page}`}>
       <header className={styles.header}>
@@ -120,9 +124,15 @@ export default function PricingPage() {
             <Link href="/pricing" className={styles.navLinkActive} aria-current="page">
               Tarifs
             </Link>
-            <Link href="/login" className={styles.navLink}>
-              Connexion
-            </Link>
+            {session ? (
+              <Link href="/dashboard" className={styles.navLink}>
+                Tableau de bord
+              </Link>
+            ) : (
+              <Link href="/login" className={styles.navLink}>
+                Connexion
+              </Link>
+            )}
           </nav>
         </div>
       </header>
@@ -156,7 +166,7 @@ export default function PricingPage() {
                   <th scope="col">
                     <span className={styles.srOnly}>Fonctionnalité</span>
                   </th>
-                  {PLANS.map((plan) => (
+                  {getPlans(!!session).map((plan) => (
                     <th
                       key={plan.id}
                       scope="col"
@@ -189,9 +199,9 @@ export default function PricingPage() {
                     </th>
                     {row.values.map((value, i) => (
                       <td
-                        key={PLANS[i].id}
+                        key={getPlans(!!session)[i].id}
                         className={
-                          PLANS[i].recommended ? styles.planColumn : undefined
+                          getPlans(!!session)[i].recommended ? styles.planColumn : undefined
                         }
                       >
                         <Cell value={value} />
@@ -203,7 +213,7 @@ export default function PricingPage() {
                   <th scope="row" className={styles.rowHead}>
                     <span className={styles.srOnly}>Choisir ce palier</span>
                   </th>
-                  {PLANS.map((plan) => (
+                  {getPlans(!!session).map((plan) => (
                     <td
                       key={plan.id}
                       className={`${styles.ctaCell} ${
@@ -341,3 +351,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+
