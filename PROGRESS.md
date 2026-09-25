@@ -41,10 +41,10 @@ Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/
 
 | Service | Ressource | Identifiants non secrets |
 |---|---|---|
-| Neon | Projet `cited`, Postgres 17, Francfort (`aws-eu-central-1`), base `cited` | `billowing-resonance-22258158`. Schéma poussé (`db push`), **aucune table `_prisma_migrations`** : à baseliner avant le premier `migrate deploy` en production (T004). |
+| Neon | Projet `cited`, Postgres 17, Francfort (`aws-eu-central-1`), base `cited` | `billowing-resonance-22258158`. Schéma poussé (`db push`), **aucune table `_prisma_migrations`** : à baseliner avant le premier `migrate deploy` en production (T004). Procédure détaillée : `docs/runbooks/deploiement-render-neon.md`. |
 | Stripe (test) | 3 prix + coupon fondateur | `STRIPE_PRICE_SOLO/PRO/SCALE`, coupon `FONDATEUR50` (−50 %, à vie, 10 utilisations max) — tous vérifiés via MCP le 24/09. |
 | PostHog | Cloud UE, erreurs + mesure produit (remplace Sentry, voir ADR-001) | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST`. Setup côté code amorcé localement par le fondateur (T005), pas encore commité au 24/09. |
-| Render | Espace « My Workspace » (`tea-d97ap06rnols73ck4o20`) | **Aucun service créé** (T003, tentative en cours au 24/09, interrompue). |
+| Render | Espace « My Workspace » (`tea-d97ap06rnols73ck4o20`) | **Aucun service créé** (T003, tentative en cours au 24/09, interrompue). `render.yaml` (racine du dépôt) et `docs/runbooks/deploiement-render-neon.md` préparés le 25/09 ; le fondateur doit encore appliquer le Blueprint et saisir les secrets. |
 | Resend | Compte | 2 clés API existantes, aucun domaine d'envoi configuré. |
 | Inngest | Env `production`/`branch` | Aucune app synchronisée. `INNGEST_SIGNING_KEY`/`INNGEST_EVENT_KEY` à créer. |
 

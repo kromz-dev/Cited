@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: cited
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: cited
+    branch: main
+    autoDeployTrigger: commit
+    # Le plan free n'a pas de preDeployCommand (réservé aux plans payants) : la
+    # migration Prisma tourne donc en fin de buildCommand, avant que le nouveau
+    # build ne serve du trafic. Voir docs/runbooks/deploiement-render-neon.md.
+    buildCommand: npm ci && npx prisma generate && npx prisma migrate deploy && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # URL Neon POOLÉE (hôte avec suffixe -pooler) — voir runbook §a
+      - key: DIRECT_URL
+        sync: false # URL Neon DIRECTE / non poolée (hôte sans -pooler), requise par Prisma Migrate — voir runbook §a
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: AUTH_GOOGLE_ID
+        sync: false
+      - key: AUTH_GOOGLE_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false # à saisir une fois l'URL *.onrender.com connue — voir runbook §b
+      - key: NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
+        sync: false
+      - key: NEXT_PUBLIC_POSTHOG_HOST
+        value: https://eu.i.posthog.com
+      - key: INNGEST_SIGNING_KEY
+        sync: false
+      - key: INNGEST_EVENT_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_SOLO
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_SCALE
+        sync: false
+      - key: STRIPE_FOUNDER_COUPON
+        value: FONDATEUR50
+      - key: RESEND_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_BILLING_TIER
+        value: free
+      - key: ENGINE_CACHE_SECRET
+        sync: false
