@@ -232,10 +232,10 @@
   - **Vérification** : test unitaire de la fonction de calcul (`lib/reports/consecutiveDaysDown.ts` ou équivalent) sur une série de statuts connue
   - **Taille** : S
 
-- [ ] **T030** [P] [P2] Test d'intégration du parcours P2 complet (ajout → scan → changement de statut → une seule alerte) — `cited/inngest/functions/scan-site.test.ts`
-  - **Dépendances** : T019, T023, T025, T026
+- [x] **T030** [P] [P2] Test d'intégration du parcours P2 complet (ajout → scan → changement de statut → une seule alerte) — `cited/inngest/functions/scan-site.test.ts`
+  - **Dépendances** : T019, T023, T025
   - **EF/ENF** : EF-034 (non-régression du dédoublonnage déjà en place)
-  - **Vérification** : `npx vitest run` — deux scans identiques consécutifs après une régression ne produisent qu'une seule ligne `AlertEvent`
+  - **Vérification** : `npx vitest run` — deux scans identiques consécutifs après une régression n'appellent `sendRegressionAlert` qu'une seule fois (T026, qui ajoutera `AlertEvent`, n'est pas encore fusionnée)
   - **Taille** : M
 
 **Point de contrôle Phase 4** : une agence abonnée gère son portefeuille dans la limite de son plan, voit un état réel et à jour, et reçoit une alerte exploitable en cas de régression — sans aucune donnée fictive dans ce chemin.
