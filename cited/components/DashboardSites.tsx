@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { addMonitoredSite, deleteMonitoredSite } from "@/app/actions/sites";
-import { Loader2, Plus, ShieldAlert, X, Download, Trash2 } from "lucide-react";
+import { Loader2, Plus, ShieldAlert, X, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,9 +164,6 @@ export function DashboardSites({ initialSites }: { initialSites: MonitoredSite[]
           </div>
         </div>
         <div className="flex w-full shrink-0 items-center gap-3 md:w-auto">
-          <Button variant="outline" className="flex-1 md:flex-none">
-            <Download className="h-4 w-4" data-icon="inline-start" /> <span className="hidden sm:inline">Exporter</span>
-          </Button>
           <Button className="flex-1 md:flex-none" onClick={() => setShowAddForm(!showAddForm)} aria-expanded={showAddForm}>
             <Plus className="h-4 w-4" data-icon="inline-start" /> Ajouter un domaine
           </Button>

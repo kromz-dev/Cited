@@ -208,7 +208,7 @@
   - **Vérification** : le quota affiché change réellement selon le plan de l'utilisateur connecté (vérifié avec deux comptes de plans différents en test manuel)
   - **Taille** : M
 
-- [ ] **T028** [P2] Retirer le bouton "Exporter" du tableau de bord ou lui donner un effet réel — `cited/components/DashboardSites.tsx`
+- [x] **T028** [P2] Retirer le bouton "Exporter" du tableau de bord ou lui donner un effet réel — `cited/components/DashboardSites.tsx`
   - **Dépendances** : Aucune (retrait) ou T031 (si implémenté)
   - **EF/ENF** : EF-042
   - **Vérification** : aucun bouton sans effet ne subsiste dans l'interface authentifiée (principe II)
