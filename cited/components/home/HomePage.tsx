@@ -110,7 +110,7 @@ const faqs = [
   },
 ];
 
-export function HomePage() {
+export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
   return (
     <div className={`${schibsted.variable} ${tokens.root} ${styles.page}`}>
       <a href="#contenu" className={styles.skipLink}>
@@ -127,12 +127,20 @@ export function HomePage() {
               <Link href="#faq">Questions</Link>
             </nav>
             <div className={styles.headerCtas}>
-              <Link href="/login" className={styles.headerLogin}>
-                Connexion
-              </Link>
-              <Link href="/register" className={styles.btnPrimary}>
-                Essai gratuit
-              </Link>
+              {isLoggedIn ? (
+                <Link href="/dashboard" className={styles.btnPrimary}>
+                  Tableau de bord
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login" className={styles.headerLogin}>
+                    Connexion
+                  </Link>
+                  <Link href="/register" className={styles.btnPrimary}>
+                    Essai gratuit
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -164,9 +172,11 @@ export function HomePage() {
                   <a href="#scan" className={styles.btnPrimary}>
                     Scanner un site
                   </a>
-                  <Link href="/register" className={styles.btnGhost}>
-                    Essai gratuit
-                  </Link>
+                  {isLoggedIn ? null : (
+                    <Link href="/register" className={styles.btnGhost}>
+                      Essai gratuit
+                    </Link>
+                  )}
                 </div>
                 <div id="scan" className={styles.scanFormWrap}>
                   <ScanForm />
@@ -407,9 +417,11 @@ export function HomePage() {
               <a href="#scan" className={styles.btnPrimary}>
                 Scanner un site
               </a>
-              <Link href="/register" className={styles.btnGhost}>
-                Essai gratuit
-              </Link>
+              {isLoggedIn ? null : (
+                    <Link href="/register" className={styles.btnGhost}>
+                      Essai gratuit
+                    </Link>
+                  )}
             </div>
           </div>
         </section>
@@ -423,7 +435,7 @@ export function HomePage() {
               <Link href="#comment-ca-marche">Fonctionnement</Link>
               <Link href="/pricing">Tarifs</Link>
               <Link href="#faq">Questions</Link>
-              <Link href="/register">Essai gratuit</Link>
+              {isLoggedIn ? null : <Link href="/register">Essai gratuit</Link>}
             </nav>
             <p className={styles.footerNote}>
               Cited est un outil de vérification technique. Il ne mesure pas
@@ -435,3 +447,5 @@ export function HomePage() {
     </div>
   );
 }
+
+
