@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { aggregateMonthlyReport, getMonthlyReportData } from "./reports";
+import { getMonthlyReportData } from "./reports";
+import { aggregateMonthlyReport } from "@/lib/reports/monthlyReport";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
