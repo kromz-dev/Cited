@@ -366,7 +366,7 @@
   - **Vérification** : l'e-mail envoyé affiche une date limite d'activation claire ; aucune automatisation de la lecture des réponses au questionnaire n'est requise (EF-065)
   - **Taille** : S
 
-- [ ] **T048** [P] [ONB] E-mail "votre rapport mensuel est disponible" à la génération d'un `MonthlyReport` — `cited/lib/alerting/sendReportReady.ts` (nouveau)
+- [x] **T048** [P] [ONB] E-mail "votre rapport mensuel est disponible" à la génération d'un `MonthlyReport` — `cited/lib/alerting/sendReportReady.ts` (nouveau)
   - **Dépendances** : T032b
   - **EF/ENF** : —
   - **Vérification** : test — la génération d'un rapport en test déclenche l'envoi (mock Resend)

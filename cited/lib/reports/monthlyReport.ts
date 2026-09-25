@@ -11,6 +11,7 @@ import {
   ReportTechnicalAppendixSite,
   ReportTechnicalEntry,
 } from "./renderMonthlyReportPdf";
+import { sendReportReady } from "@/lib/alerting/sendReportReady";
 
 export interface ReportPeriod {
   start: Date;
@@ -259,6 +260,27 @@ export async function generateMonthlyReportForUser(userId: string, clientId: str
         generatedAt: new Date(),
       },
     });
+
+    // T048 : notifier l'agence une fois le MonthlyReport réellement persisté
+    // (jamais avant l'écriture, jamais si l'écriture a échoué — voir le
+    // catch ci-dessous qui aurait déjà interrompu l'exécution). Ce point est
+    // commun aux deux déclencheurs (génération à la demande via l'action
+    // serveur `generateMonthlyReport`, et génération automatisée via le
+    // job Inngest `monthlyReportGenerator`) : les deux appellent cette
+    // fonction, donc un seul appel ici suffit à couvrir les deux chemins
+    // sans dupliquer la logique. `sendReportReady` porte déjà sa propre
+    // déduplication (1 e-mail par agence et par période, fenêtre 24h) pour
+    // qu'une régénération manuelle du même mois ne spamme pas l'agence.
+    // Un échec d'envoi ne doit jamais faire échouer ni annuler la
+    // génération du rapport : celui-ci reste disponible dans l'application.
+    try {
+      const sendResult = await sendReportReady(report.id);
+      if (!sendResult.success) {
+        console.error("Failed to send report-ready email:", sendResult.error);
+      }
+    } catch (error) {
+      console.error("Failed to send report-ready email:", error);
+    }
 
     return { data: { id: report.id, period: report.period } };
   } catch (error) {
