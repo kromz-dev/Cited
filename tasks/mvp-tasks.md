@@ -410,7 +410,7 @@
   - **Vérification** : test d'intégration — un jeton de réinitialisation à usage unique expire après un délai raisonnable et ne peut être rejoué
   - **Taille** : M
 
-- [ ] **T053** [P] [QUAL] Journalisation structurée des échecs de scan et d'envoi d'alerte (remplace les `console.error` isolés) — `cited/inngest/functions/scan-site.ts`, `cited/lib/alerting/sendAlert.ts`
+- [x] **T053** [P] [QUAL] Journalisation structurée des échecs de scan et d'envoi d'alerte (remplace les `console.error` isolés) — `cited/inngest/functions/scan-site.ts`, `cited/lib/alerting/sendAlert.ts`
   - **Dépendances** : T005
   - **EF/ENF** : ENF-009
   - **Vérification** : un échec simulé d'envoi Resend apparaît dans PostHog (`posthog-node`) avec `siteId` et cause, pas seulement un message générique
