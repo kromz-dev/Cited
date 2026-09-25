@@ -59,7 +59,7 @@ type Row = {
 const rows: Row[] = [
   { domain: "maison-verdier.com", client: "Maison Verdier", chatgpt: "refuse", claude: "refuse", perplexity: "lu", checked: "04:12", since: "2 j" },
   { domain: "cabinet-lherbier.fr", client: "Cabinet Lherbier", chatgpt: "lu", claude: "lu", perplexity: "lu", checked: "04:12", since: "41 j" },
-  { domain: "atelier-boreal.fr", client: "Atelier Boréal", chatgpt: "vide", claude: "lu", perplexity: "vide", checked: "04:11", since: "6 j" },
+  { domain: "brasserie-du-nord.fr", client: "Brasserie du Nord", chatgpt: "vide", claude: "lu", perplexity: "vide", checked: "04:11", since: "6 j" },
   { domain: "clinique-des-lilas.fr", client: "Clinique des Lilas", chatgpt: "lu", claude: "lu", perplexity: "lu", checked: "04:11", since: "112 j" },
   { domain: "menuiserie-rocher.fr", client: "Menuiserie Rocher", chatgpt: "lu", claude: "inconnu", perplexity: "lu", checked: "04:10", since: "8 j" },
   { domain: "hotel-le-cap.com", client: "Hôtel Le Cap", chatgpt: "refuse", claude: "refuse", perplexity: "refuse", checked: "04:10", since: "1 j" },

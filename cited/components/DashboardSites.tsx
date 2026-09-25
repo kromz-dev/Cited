@@ -304,7 +304,7 @@ export function DashboardSites({
             id="client-name"
             value={clientName}
             onChange={(event) => setClientName(event.target.value)}
-            placeholder="Nom du client, par exemple Atelier Boréal"
+            placeholder="Nom du client"
             maxLength={80}
           />
         </div>

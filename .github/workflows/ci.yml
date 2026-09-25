@@ -340,21 +340,23 @@ jobs:
 
           FAIL=0
 
-          # Check for known mock data strings (from T051)
+          # Check for known mock data strings (T051 : audit final, chemin critique nettoyé)
           MOCK_PATTERNS="Atelier Boréal|client-vitrine|Laura Bréa|Agence Lumière|placeholder@example"
           MOCK_HITS=$(grep -rn "$MOCK_PATTERNS" \
             --include="*.ts" --include="*.tsx" \
             --exclude-dir=node_modules --exclude-dir=.next \
             --exclude="*.test.*" --exclude="*.spec.*" \
             --exclude="*.fixture.*" \
-            cited/app cited/components cited/lib 2>/dev/null || true)
+            cited/app cited/components cited/lib cited/inngest 2>/dev/null || true)
 
           if [ -n "$MOCK_HITS" ]; then
-            echo "⚠️  Mock data found in production code:" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Mock data found in production code:" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
             echo "$MOCK_HITS" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-            # Warning only — will become a hard failure after T051
+            # Hard failure since T051 — le chemin critique authentifié ne contient
+            # plus aucune de ces chaînes de démonstration hors tests/fixtures.
+            FAIL=1
           fi
 
           # Check for new @ts-ignore / @ts-expect-error
