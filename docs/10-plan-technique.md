@@ -2,7 +2,7 @@
 
 **Branche** : `main` | **Date** : 24 septembre 2026 | **Constitution** : `docs/08-constitution.md` (v1.0.0)
 **Entrée** : `docs/09-prd-mvp.md` (exigences EF-xxx / ENF-xxx), `docs/07-design-system.md`, `docs/05-analyse-strategique.md` §3
-**Dépôt de code** : `cited/` (Next.js 16, TypeScript strict, Prisma 5 / PostgreSQL, Inngest, Stripe, Resend)
+**Dépôt de code** : `decelio/` (Next.js 16, TypeScript strict, Prisma 5 / PostgreSQL, Inngest, Stripe, Resend)
 **Contrainte transverse** : budget **0 €**, fondateur solo, bootstrap à 100 % (PRD §14). Toute dépense n'est engagée qu'une fois couverte par le MRR.
 
 Ce document est le plan **HOW** : il ne redéfinit ni les exigences (PRD `09`) ni les principes (constitution `08`), il documente comment les satisfaire avec l'existant du dépôt et ce qu'il reste à construire.
@@ -129,7 +129,7 @@ Principe directeur (ENF-016) : chaque service a une offre gratuite qui autorise 
 
 ## 6. Modèle de données cible
 
-Le schéma actuel (`cited/prisma/schema.prisma`) reste la base. Ajouts nécessaires, sans supprimer les modèles `Site`/`Page`/`BotScan`/`ScanResult` (V2, dormants, PRD §9) :
+Le schéma actuel (`decelio/prisma/schema.prisma`) reste la base. Ajouts nécessaires, sans supprimer les modèles `Site`/`Page`/`BotScan`/`ScanResult` (V2, dormants, PRD §9) :
 
 ```prisma
 model Client {

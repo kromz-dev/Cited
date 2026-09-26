@@ -1,10 +1,10 @@
 services:
   - type: web
-    name: cited
+    name: decelio
     runtime: node
     plan: free
     region: frankfurt
-    rootDir: cited
+    rootDir: decelio
     branch: main
     autoDeployTrigger: commit
     # Le plan free n'a pas de preDeployCommand (réservé aux plans payants) : la

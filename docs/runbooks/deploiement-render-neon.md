@@ -20,7 +20,7 @@ que la migration locale unique est déjà appliquée — avant le premier vrai `
 L'historique des migrations a été fusionné (PR #68, `main`) en une migration unique
 `20260925000000_init` — les trois anciennes migrations (`20260916055018_init`,
 `20260916181000_add_password_hash`, `20260924040100_mvp_entities`) n'existent plus dans
-`cited/prisma/migrations/`. Le baseline ci-dessous ne référence donc que cette migration
+`decelio/prisma/migrations/`. Le baseline ci-dessous ne référence donc que cette migration
 unique.
 
 1. **Récupérer les deux URL de connexion** dans la console Neon (Dashboard → projet
@@ -51,7 +51,7 @@ unique.
    et le schéma versionné, en comparant la base (via `DIRECT_URL`) au schéma :
 
    ```bash
-   cd cited
+   cd decelio
    npx prisma migrate diff \
      --from-url "$DIRECT_URL" \
      --to-schema-datamodel prisma/schema.prisma \
@@ -67,7 +67,7 @@ unique.
      pas à l'identique. Dans ce cas :
      a. Ne PAS lancer `migrate resolve` tant que le diff n'est pas expliqué.
      b. Comparer le diff ligne à ligne avec la migration locale unique
-        (`cited/prisma/migrations/20260925000000_init/migration.sql`) pour identifier
+        (`decelio/prisma/migrations/20260925000000_init/migration.sql`) pour identifier
         ce qui manque ou diffère.
      c. Si le diff révèle un oubli côté schéma (colonne ajoutée manuellement en base,
         jamais migrée), générer la migration manquante en local
@@ -107,7 +107,7 @@ unique.
 1. Dashboard Render → espace **My Workspace** → **New** → **Blueprint**.
 2. Connecter le dépôt GitHub `kromz-dev/Decelio` (OAuth Git si demandé).
 3. Render détecte `render.yaml` à la racine du dépôt — le sélectionner. Il décrit un
-   service web unique `cited` (`rootDir: cited`, runtime Node 22, région Francfort,
+   service web unique `cited` (`rootDir: decelio`, runtime Node 22, région Francfort,
    plan `free`, branche `main`, déploiement auto à chaque commit).
 4. Renseigner chaque variable marquée `sync: false` dans le formulaire de Blueprint
    (ou ensuite dans Dashboard → service `cited` → **Environment**) :
@@ -168,7 +168,7 @@ unique.
 1. Stripe Dashboard (mode test) → **Developers → Webhooks → Add endpoint**.
 2. URL : `https://<service>.onrender.com/api/webhooks/stripe`.
 3. Événements à sélectionner — exactement ceux gérés par
-   `cited/app/api/webhooks/stripe/route.ts` :
+   `decelio/app/api/webhooks/stripe/route.ts` :
    - `checkout.session.completed`
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
@@ -192,7 +192,7 @@ unique.
 
 Le service `free` se met en veille après ~15 min sans trafic (réveil ~1 min à la
 requête suivante). Un scan public déclenché pendant la veille subirait ce délai. La
-route `GET /api/health` (voir `cited/app/api/health/route.ts`) ne touche **jamais** la
+route `GET /api/health` (voir `decelio/app/api/health/route.ts`) ne touche **jamais** la
 base — c'est volontaire (§8 du plan technique) : un ping fréquent qui interrogerait Neon
 empêcherait Neon de se mettre en veille à son tour et consommerait tout le quota gratuit
 de calcul (100 CU-h/mois).
@@ -223,7 +223,7 @@ Rappel budget Render : 750 h gratuites par espace de travail et par mois couvren
       (T004).
 - [ ] Les 4 portes de qualité restent vertes en CI sur `main`
       (`npx tsc --noEmit`, `npm run lint`, `npx vitest run`, `npm run build`).
-- [ ] T057 : depuis une PR de test (changement trivial dans `cited/`), vérifier que la
+- [ ] T057 : depuis une PR de test (changement trivial dans `decelio/`), vérifier que la
       CI passe, que la fusion sur `main` déclenche automatiquement un déploiement
       Render, et que `/api/health` répond une fois le déploiement `live` — sans
       intervention manuelle autre que la fusion de la PR.

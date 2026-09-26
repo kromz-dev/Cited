@@ -74,7 +74,7 @@ Sources : [OpenAI](https://platform.openai.com/docs/bots), [Anthropic](https://s
 | # | Contrôle | Fiabilité |
 |---|---|---|
 | 1 | Analyse de `robots.txt` par jeton de bot, conforme à la RFC 9309 (le groupe le plus spécifique l'emporte) | Certaine |
-| 2 | Requête honnête (`DecelioBot/1.0 (+https://cited…)`) : statut, en-tête `cf-mitigated: challenge`, page « Just a moment… » / Turnstile, redirections suivies et revalidées contre le SSRF | Certaine |
+| 2 | Requête honnête (`DecelioBot/1.0 (+https://decelio…)`) : statut, en-tête `cf-mitigated: challenge`, page « Just a moment… » / Turnstile, redirections suivies et revalidées contre le SSRF | Certaine |
 | 3 | `meta robots`, `X-Robots-Tag`, `noindex`, `canonical` | Certaine |
 | 4 | Écart entre le texte du HTML brut et celui du rendu headless, sous forme de score de *dépendance au JavaScript* (pas « ce que voit GPTBot ») | Probable |
 | 5 | Test avec User-Agent imité, **étiqueté** « requête non vérifiée se présentant comme X », jamais « ce que voit GPTBot » | Indicatif |

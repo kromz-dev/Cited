@@ -35,8 +35,8 @@ yarn-error.log*
 Claude-Production-Grade-Suite/
 
 # fichiers de test / scratch, jamais destinés à être commités
-cited/dist/
-cited/scratch-*.js
-cited/scratch-*.tsx
-cited/screenshot.png
-cited/test-*.pdf
+decelio/dist/
+decelio/scratch-*.js
+decelio/scratch-*.tsx
+decelio/screenshot.png
+decelio/test-*.pdf

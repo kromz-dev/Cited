@@ -19,7 +19,7 @@ export async function GET() {
   return new NextResponse(JSON.stringify(result.data, null, 2), {
     headers: {
       "Content-Type": "application/json",
-      "Content-Disposition": `attachment; filename="cited-export-${date}.json"`,
+      "Content-Disposition": `attachment; filename="decelio-export-${date}.json"`,
     },
   });
 }

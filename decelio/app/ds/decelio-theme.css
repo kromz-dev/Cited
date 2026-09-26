@@ -1,4 +1,4 @@
-/* Cited — surcouche du design system Modernist : polices douces, angles arrondis */
+/* Decelio — surcouche du design system Modernist : polices douces, angles arrondis */
 
 
 :root {
@@ -8,14 +8,14 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
-  --cited-shell: 1240px;
+  --decelio-shell: 1240px;
 }
 
 body { font-family: var(--font-body); color: var(--color-text); background: var(--color-bg); }
 
 .lbl { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.shell { width: 100%; max-width: var(--cited-shell); margin: 0 auto; padding-inline: 24px; box-sizing: border-box; }
+.shell { width: 100%; max-width: var(--decelio-shell); margin: 0 auto; padding-inline: 24px; box-sizing: border-box; }
 
 /* Barre de navigation sombre */
 .topbar { background: var(--color-text); color: var(--color-bg); }

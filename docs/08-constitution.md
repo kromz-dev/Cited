@@ -2,7 +2,7 @@
 
 Ce document fixe les principes non négociables du produit et de son développement. Il prime sur toute décision ponctuelle : une tâche, un ticket ou une demande qui le contredit doit d'abord faire modifier ce texte, par un amendement explicite (voir Gouvernance), pas être exécutée en douce.
 
-Portée : le produit Decelio décrit dans `docs/05-analyse-strategique.md` et `docs/09-prd-mvp.md`. Dépôt de code : `cited/` (Next.js 16, TypeScript strict, Prisma/PostgreSQL, Inngest, Stripe).
+Portée : le produit Decelio décrit dans `docs/05-analyse-strategique.md` et `docs/09-prd-mvp.md`. Dépôt de code : `decelio/` (Next.js 16, TypeScript strict, Prisma/PostgreSQL, Inngest, Stripe).
 
 ## Principes fondateurs
 
