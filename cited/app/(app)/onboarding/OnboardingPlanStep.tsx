@@ -6,6 +6,7 @@ import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
 import { createCheckoutSession } from "@/lib/billing/actions";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ONBOARDING_PLANS } from "./onboarding-plan";
 
 /**
@@ -51,13 +52,14 @@ export function OnboardingPlanStep() {
             <label htmlFor="o-coupon" className="text-sm font-medium text-ink">
               Code fondateur (optionnel)
             </label>
-            <input
+            <Input
               id="o-coupon"
               type="text"
+              fieldSize="lg"
               autoComplete="off"
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value)}
-              className="w-full max-w-[280px] rounded-sm border border-line-strong bg-surface p-2.5 text-sm text-ink outline-none transition-colors focus-visible:border-cobalt focus-visible:ring-3 focus-visible:ring-cobalt/25"
+              className="max-w-[280px]"
               placeholder="Reçu par e-mail si applicable"
             />
           </div>
@@ -99,7 +101,7 @@ function PlanSubmitButton({ label, primary }: { label: string; primary: boolean 
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" variant={primary ? "default" : "outline"} disabled={pending} className="w-full">
+    <Button type="submit" size="lg" variant={primary ? "default" : "outline"} disabled={pending} className="w-full">
       {pending ? (
         <>
           <Loader2 className="size-4 animate-spin" />

@@ -416,7 +416,7 @@
   - **Vérification** : un échec simulé d'envoi Resend apparaît dans PostHog (`posthog-node`) avec `siteId` et cause, pas seulement un message générique
   - **Taille** : S
 
-- [ ] **T054** [P] [QUAL] Audit d'accessibilité AA des écrans raccordés au réel (contraste, clavier, cibles tactiles 44 px) — checklist `docs/07-design-system.md` §6, appliquée à `DashboardSites.tsx`, `alerts/page.tsx`, `reports/page.tsx`, `sites/[siteId]/page.tsx`, `settings/page.tsx`, `onboarding/page.tsx`
+- [x] **T054** [P] [QUAL] Audit d'accessibilité AA des écrans raccordés au réel (contraste, clavier, cibles tactiles 44 px) — checklist `docs/07-design-system.md` §6, appliquée à `DashboardSites.tsx`, `alerts/page.tsx`, `reports/page.tsx`, `sites/[siteId]/page.tsx`, `settings/page.tsx`, `onboarding/page.tsx`
   - **Dépendances** : T026, T027, T029a-c, T034, T040, T043
   - **EF/ENF** : ENF-007
   - **Vérification** : navigation clavier complète sur chaque écran listé, contrôle de contraste ≥ 4.5:1 sur le texte courant

@@ -68,8 +68,9 @@ export function SettingsClient({
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
                   type="button"
+                  aria-current={isActive ? "true" : undefined}
                   className={
-                    "rounded-sm px-3 py-2 text-left text-sm whitespace-nowrap transition-colors " +
+                    "min-h-11 flex items-center rounded-sm px-3 text-left text-sm whitespace-nowrap transition-colors " +
                     (isActive ? "bg-surface-2 font-medium text-ink" : "text-ink-2 hover:bg-surface-2 hover:text-ink")
                   }
                 >

@@ -174,7 +174,7 @@ export function ReportsClient({
                 <Button
                   key={p.period}
                   type="button"
-                  size="sm"
+                  size="lg"
                   variant={selectedPeriod === p.period ? "default" : "ghost"}
                   onClick={() => setSelectedPeriod(p.period)}
                 >
@@ -188,7 +188,7 @@ export function ReportsClient({
             <a
               href={`/api/reports/${firstAvailableReport.id}/pdf`}
               download
-              className={cn(buttonVariants({ variant: "default" }), "gap-2")}
+              className={cn(buttonVariants({ variant: "default", size: "lg" }), "gap-2")}
             >
               <Download className="size-4" />
               Exporter en PDF
@@ -197,6 +197,7 @@ export function ReportsClient({
             <Button
               type="button"
               variant="default"
+              size="lg"
               disabled={generatingAll}
               onClick={handleGenerateAll}
             >
@@ -281,7 +282,7 @@ export function ReportsClient({
               Ajoutez vos clients et associez leurs domaines pour générer et télécharger automatiquement vos rapports PDF.
             </p>
             <div className="mt-6">
-              <Link href="/dashboard" className={buttonVariants({ variant: "default" })}>
+              <Link href="/dashboard" className={buttonVariants({ variant: "default", size: "lg" })}>
                 Gérer mes domaines
               </Link>
             </div>
@@ -387,7 +388,7 @@ export function ReportsClient({
                             )}
                           </Button>
                         ) : (
-                          <span className="text-xs text-ink-3">Aucun domaine</span>
+                          <span className="text-xs text-ink-2">Aucun domaine</span>
                         )}
                       </td>
                     </tr>
@@ -409,7 +410,11 @@ export function ReportsClient({
 
           {dailyPoints.length > 0 ? (
             <>
-              <div className="mt-6 flex h-[130px] items-end gap-1.5 px-1 pt-4">
+              <div
+                className="mt-6 flex h-[130px] items-end gap-1.5 px-1 pt-4"
+                role="img"
+                aria-label={`Disponibilité IA quotidienne du ${dailyPoints[0]?.day} au ${dailyPoints[dailyPoints.length - 1]?.day} : ${dailyPoints.map((item) => `${item.day} ${item.value} %`).join(", ")}`}
+              >
                 {dailyPoints.map((item, index) => (
                   <div
                     key={index}
@@ -455,7 +460,7 @@ export function ReportsClient({
           </div>
 
           <div className="mt-6">
-            <Link href="/settings" className={buttonVariants({ variant: "outline" })}>
+            <Link href="/settings" className={buttonVariants({ variant: "outline", size: "lg" })}>
               Personnaliser l&apos;en-tête
             </Link>
           </div>

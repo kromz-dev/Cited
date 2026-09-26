@@ -61,13 +61,13 @@ export async function SubscriptionSection() {
 
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
         {summary.showPricingLink && (
-          <Button type="button" render={<Link href="/pricing" />}>
+          <Button type="button" size="lg" render={<Link href="/pricing" />}>
             Choisir une offre
           </Button>
         )}
         {summary.showManageButton && (
           <form action={createCustomerPortalSession}>
-            <Button type="submit" variant={summary.showPricingLink ? "outline" : "default"}>
+            <Button type="submit" size="lg" variant={summary.showPricingLink ? "outline" : "default"}>
               Gérer l&apos;abonnement
             </Button>
           </form>

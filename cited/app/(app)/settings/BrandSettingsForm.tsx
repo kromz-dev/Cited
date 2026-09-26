@@ -56,11 +56,14 @@ export function BrandSettingsForm({
         </label>
         <Input
           id="brand-agency-name"
+          fieldSize="lg"
           value={agencyName}
           onChange={(event) => setAgencyName(event.target.value)}
           maxLength={80}
           required
           placeholder="Nom affiché sur vos rapports"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? "brand-settings-error" : undefined}
         />
       </div>
 
@@ -71,10 +74,13 @@ export function BrandSettingsForm({
         <Input
           id="brand-logo-url"
           type="url"
+          fieldSize="lg"
           value={logoUrl}
           onChange={(event) => setLogoUrl(event.target.value)}
           maxLength={2048}
           placeholder="https://…/logo.png"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? "brand-settings-error" : undefined}
         />
         <p className="type-caption text-ink-2">
           Lien https:// direct vers un PNG ou JPEG. Un logo inaccessible n&apos;empêche jamais la génération du
@@ -92,27 +98,33 @@ export function BrandSettingsForm({
             type="color"
             value={/^#[0-9a-fA-F]{6}$/.test(accentColor) ? accentColor : "#18213a"}
             onChange={(event) => setAccentColor(event.target.value)}
-            className="h-9 w-11 shrink-0 cursor-pointer rounded-sm border border-line-strong bg-surface"
+            className="h-11 w-11 shrink-0 cursor-pointer rounded-sm border border-line-strong bg-surface"
             aria-label="Sélecteur de couleur d'accent"
           />
+          <label htmlFor="brand-accent-color-hex" className="sr-only">
+            Couleur d&apos;accent (hexadécimal)
+          </label>
           <Input
+            id="brand-accent-color-hex"
+            fieldSize="lg"
             value={accentColor}
             onChange={(event) => setAccentColor(event.target.value)}
             maxLength={7}
             className="w-32"
-            aria-label="Couleur d'accent (hexadécimal)"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "brand-settings-error" : undefined}
           />
         </div>
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-stop">
+        <p id="brand-settings-error" role="alert" className="text-sm text-stop">
           {error}
         </p>
       )}
       {saved && !error && <p className="text-sm text-ok">Réglages enregistrés.</p>}
 
-      <Button type="submit" disabled={isPending}>
+      <Button type="submit" size="lg" disabled={isPending}>
         {isPending ? "Enregistrement…" : "Enregistrer"}
       </Button>
     </form>
