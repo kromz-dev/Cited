@@ -434,7 +434,7 @@
   - **Vérification** : test — un `ScanLog` de plus de 90 jours voit son `payload` vidé, ses colonnes dérivées (`simpleStatus`, `cause`) restent intactes pour l'historique
   - **Taille** : S
 
-- [ ] **T057** [QUAL] Vérification de bout en bout du pipeline de déploiement (CI → migration → déploiement Render) sur un environnement de préproduction — pas de nouveau fichier, exécution documentée
+- [x] **T057** [QUAL] Vérification de bout en bout du pipeline de déploiement (CI → migration → déploiement Render) sur un environnement de préproduction — exécution documentée dans docs/production-audit-report.md
   - **Dépendances** : T002, T003, T004
   - **EF/ENF** : —
   - **Vérification** : un déploiement complet depuis une PR de test jusqu'à la disponibilité en préproduction, sans intervention manuelle autre que la fusion de la PR
