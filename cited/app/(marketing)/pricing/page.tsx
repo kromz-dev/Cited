@@ -1,3 +1,4 @@
+import { createCheckoutSession } from "@/lib/billing/actions";
 import { auth } from "@/auth";
 import { createCheckoutSession } from "@/lib/billing/actions";
 import type { Metadata } from "next";
@@ -214,25 +215,38 @@ export default async function PricingPage() {
                   <th scope="row" className={styles.rowHead}>
                     <span className={styles.srOnly}>Choisir ce palier</span>
                   </th>
-                  {getPlans(!!session).map((plan) => (
-                    <td
-                      key={plan.id}
-                      className={`${styles.ctaCell} ${
-                        plan.recommended ? styles.planColumn : ""
-                      }`}
-                    >
-                      <Link
-                        href={plan.cta.href}
-                        className={
-                          plan.cta.primary
-                            ? styles.ctaButtonPrimary
-                            : styles.ctaButton
-                        }
-                      >
-                        {plan.cta.label}
-                      </Link>
-                    </td>
-                  ))}
+                  {getPlans(!!session).map((plan) => {
+                    const cellClass = `${styles.ctaCell} ${
+                      plan.recommended ? styles.planColumn : ""
+                    }`;
+                    const btnClass = plan.cta.primary
+                      ? styles.ctaButtonPrimary
+                      : styles.ctaButton;
+
+                    if (session && plan.id !== "FREE") {
+                      const handleCheckout = async () => {
+                        "use server";
+                        await createCheckoutSession(plan.id);
+                      };
+                      return (
+                        <td key={plan.id} className={cellClass}>
+                          <form action={handleCheckout}>
+                            <button type="submit" className={btnClass} style={{ width: "100%" }}>
+                              {plan.cta.label}
+                            </button>
+                          </form>
+                        </td>
+                      );
+                    }
+
+                    return (
+                      <td key={plan.id} className={cellClass}>
+                        <Link href={plan.cta.href} className={btnClass}>
+                          {plan.cta.label}
+                        </Link>
+                      </td>
+                    );
+                  })}
                 </tr>
               </tbody>
             </table>
@@ -352,6 +366,8 @@ export default async function PricingPage() {
     </div>
   );
 }
+
+
 
 
 
