@@ -5,6 +5,6 @@ import { Inngest } from "inngest";
 // une campagne sur n'importe quelle marque : le `matcher` du middleware
 // exclut /api, donc rien d'autre ne le protège.
 export const inngest = new Inngest({
-  id: "cited",
+  id: "decelio",
   signingKey: process.env.INNGEST_SIGNING_KEY,
 });

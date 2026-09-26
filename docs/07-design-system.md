@@ -1,6 +1,6 @@
 # Système de design Decelio (septembre 2026)
 
-Source unique : `cited/app/globals.css`. Vitrine : `/design-system` (noindex). Primitives : `cited/components/ui/`.
+Source unique : `decelio/app/globals.css`. Vitrine : `/design-system` (noindex). Primitives : `decelio/components/ui/`.
 
 ## 1. Direction
 
