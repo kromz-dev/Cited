@@ -287,3 +287,4 @@ model PageView {
 
   @@index([path, createdAt(sort: Desc)])
 }
+
