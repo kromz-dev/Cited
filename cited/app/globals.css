@@ -308,3 +308,26 @@
     animation-iteration-count: 1 !important;
   }
 }
+
+@keyframes float-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-cascade {
+  opacity: 0;
+  animation: float-up 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-900 { animation-delay: 900ms; }
+
+
+.delay-\[1100ms\] { animation-delay: 1100ms; }
+.delay-\[1300ms\] { animation-delay: 1300ms; }
+.delay-\[1500ms\] { animation-delay: 1500ms; }
+
+.rounded-full { border-radius: 9999px !important; }
