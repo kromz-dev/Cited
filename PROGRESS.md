@@ -61,7 +61,21 @@ Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/
 
 **Incident du 24/09 (clos)** : T040, T041, T050 (PR #14-#16) et T047 (PR #20) étaient des PR empilées, fusionnées dans leur branche de base au lieu de `main`. Restaurées par les PR #33 et #34. Règle depuis : pas de PR empilées, ou fusion avec `--delete-branch`.
 
-### Services provisionnés (mode test, 0 €)
+
+### 26/09 : Refonte Landing Page AEO et Optimisation DB
+
+**Améliorations Frontend & Landing Page** :
+La page d'accueil (HomePage.tsx) a été entièrement réécrite pour se concentrer sur l'AEO (Answer Engine Optimization) et s'inspirer des meilleurs templates SaaS (style Cruip / Astrowind).
+- Mise en place d'une grille Bento (.bentoGrid) pour les fonctionnalités.
+- Ajout de fonds radiaux (radial-gradients) et d'ombres portées modernes (--shadow-float).
+- Refonte des sections : H1 percutant, blockquote AEO, grille Bento, preuve sociale, tableau comparatif, FAQ.
+
+**Améliorations Base de données** :
+- Ajout de la contrainte d'unicité @@unique([userId, url]) sur MonitoredSite pour empêcher la double surveillance.
+- Ajout systématisé du champ updatedAt sur les modèles User, Client et MonitoredSite.
+- Base locale mise à jour via prisma db push.
+
+### Services provisionnés (mode test, 0 ?)
 
 | Service | Ressource | Identifiants non secrets |
 |---|---|---|
@@ -113,3 +127,4 @@ Colle ceci au début d'une nouvelle session :
 > Lis `PROGRESS.md` et `tasks/mvp-tasks.md`. Budget 0 €, sois économe en tokens. Prends la prochaine tâche non cochée, fais-la sur sa propre branche depuis `main`, vérifie (tsc, eslint, vitest), ouvre une PR, coche-la dans `tasks/mvp-tasks.md` une fois fusionnée, puis mets à jour `PROGRESS.md`.
 
 Règle de tenue : **à chaque tâche terminée, cocher la case dans `tasks/mvp-tasks.md`, et mettre à jour la section 1 de ce fichier à chaque fin de session.**
+

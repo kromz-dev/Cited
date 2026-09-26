@@ -267,7 +267,7 @@ model MonthlyReport {
   id              String   @id @default(cuid())
   clientId        String
   period          String
-  pdfUrl          String?
+  pdf             Bytes?
   availabilityPct Float?
   incidentCount   Int      @default(0)
   generatedAt     DateTime @default(now())
@@ -287,4 +287,3 @@ model PageView {
 
   @@index([path, createdAt(sort: Desc)])
 }
-

@@ -471,3 +471,18 @@ Les phases 3 (P1), 4 (P2) et 6 (Facturation) peuvent être menées en parallèle
 6. **Fermeture** : Phases 8-9 — plus aucune donnée fictive, qualité et déploiement vérifiés avant la prospection à grande échelle (critères de sortie du MVP, PRD §15).
 
 Chaque phase se termine par son point de contrôle avant de passer à la suivante ; les quatre portes de qualité (`tsc`, `eslint`, `vitest`, `build`) sont vérifiées après chaque tâche qui touche du code, pas seulement en fin de phase.
+
+
+## Phase 10 : Améliorations post-MVP (26/09)
+- [x] **T058** [MARKETING] Refonte de la page d'accueil (AEO, Bento Grid, Gradients style SaaS) - `HomePage.tsx`, `home.module.css`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : -
+  - **Vérification** : La page d'accueil affiche le nouveau design.
+  - **Taille** : S
+
+- [x] **T059** [DB] Robustesse du schéma : unicité de la surveillance par URL et utilisateur, ajout de `updatedAt` - `schema.prisma`
+  - **Dépendances** : Aucune
+  - **EF/ENF** : -
+  - **Vérification** : Impossible d'insérer deux fois la même URL pour un même utilisateur.
+  - **Taille** : S
+
