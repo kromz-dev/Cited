@@ -152,6 +152,8 @@ export function OnboardingClient({
                 onChange={(e) => setDomainsText(e.target.value)}
                 className="w-full rounded-sm border border-line-strong bg-surface p-3 font-mono text-[13px] leading-[1.8] text-ink outline-none transition-colors focus-visible:border-cobalt focus-visible:ring-3 focus-visible:ring-cobalt/25"
                 placeholder="exemple.com"
+                aria-invalid={outcome.status === "error" ? true : undefined}
+                aria-describedby={outcome.status === "error" ? "onboarding-import-error" : undefined}
               />
               <p className="type-caption text-ink-2">Un domaine par ligne, sans http(s)://.</p>
             </div>
@@ -198,6 +200,7 @@ export function OnboardingClient({
 
             {outcome.status === "error" && (
               <div
+                id="onboarding-import-error"
                 role="alert"
                 className="mt-3.5 rounded-sm border border-red-300 bg-red-50 p-3 text-sm text-red-800"
               >
@@ -280,7 +283,7 @@ export function OnboardingClient({
                   <Button
                     key={opt}
                     type="button"
-                    size="sm"
+                    size="lg"
                     variant={recapSchedule === opt ? "default" : "outline"}
                     onClick={() => setRecapSchedule(opt)}
                   >
@@ -298,7 +301,7 @@ export function OnboardingClient({
                   <Button
                     key={opt}
                     type="button"
-                    size="sm"
+                    size="lg"
                     variant={threshold === opt ? "default" : "outline"}
                     onClick={() => setThreshold(opt)}
                   >

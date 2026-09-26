@@ -45,7 +45,7 @@ export function AlertsJournal({ alerts }: { alerts: AlertRow[] }) {
           <Button
             key={item.id}
             type="button"
-            size="sm"
+            size="lg"
             variant={filter === item.id ? "default" : "outline"}
             onClick={() => setFilter(item.id)}
           >

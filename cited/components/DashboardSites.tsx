@@ -212,6 +212,7 @@ export function DashboardSites({
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
           <Input
+            fieldSize="lg"
             placeholder="Filtrer un domaine"
             className="w-full md:w-[220px]"
             value={search}
@@ -224,7 +225,7 @@ export function DashboardSites({
                 key={opt}
                 type="button"
                 onClick={() => setFilter(opt)}
-                className={`rounded-xs px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`min-h-11 rounded-xs px-3 text-sm font-medium transition-colors ${
                   filter === opt ? "bg-surface-2 text-ink" : "text-ink-2 hover:text-ink"
                 }`}
                 aria-pressed={filter === opt}
@@ -235,26 +236,41 @@ export function DashboardSites({
           </div>
         </div>
         <div className="flex w-full shrink-0 items-center gap-3 md:w-auto">
-          <Button className="flex-1 md:flex-none" onClick={() => setShowAddForm(!showAddForm)} aria-expanded={showAddForm}>
+          <Button size="lg" className="flex-1 md:flex-none" onClick={() => setShowAddForm(!showAddForm)} aria-expanded={showAddForm}>
             <Plus className="h-4 w-4" data-icon="inline-start" /> Ajouter un domaine
           </Button>
         </div>
       </div>
 
       {/* Formulaire d'ajout */}
+      {error && !showAddForm && (
+        <div className="flex items-start gap-3 rounded-sm border border-stop/30 bg-stop-soft px-4 py-3 text-stop" role="alert" id="sites-form-error">
+          <ShieldAlert className="mt-0.5 h-[18px] w-[18px] shrink-0" />
+          <div>
+            <p className="text-sm font-medium">Opération refusée</p>
+            <p className="mt-0.5 text-sm">{error}</p>
+          </div>
+        </div>
+      )}
       {showAddForm && (
         <Card className="animate-fade-in">
           <CardContent>
             <form onSubmit={handleAddSite}>
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-[17px] font-semibold text-ink">Nouveau domaine à surveiller</h3>
-                <button type="button" onClick={() => setShowAddForm(false)} className="rounded-sm p-1 text-ink-2 hover:text-ink" aria-label="Fermer le formulaire">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-lg"
+                  onClick={() => setShowAddForm(false)}
+                  aria-label="Fermer le formulaire"
+                >
                   <X className="h-[18px] w-[18px]" />
-                </button>
+                </Button>
               </div>
 
               {error && (
-                <div className="mb-4 flex items-start gap-3 rounded-sm border border-stop/30 bg-stop-soft px-4 py-3 text-stop" role="alert">
+                <div className="mb-4 flex items-start gap-3 rounded-sm border border-stop/30 bg-stop-soft px-4 py-3 text-stop" role="alert" id="sites-form-error">
                   <ShieldAlert className="mt-0.5 h-[18px] w-[18px] shrink-0" />
                   <div>
                     <p className="text-sm font-medium">Domaine non ajouté</p>
@@ -266,13 +282,32 @@ export function DashboardSites({
               <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
                 <div className="w-full flex-1">
                   <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-ink">Nom du projet</label>
-                  <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Mon projet" />
+                  <Input
+                    id="name"
+                    fieldSize="lg"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Mon projet"
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={error ? "sites-form-error" : undefined}
+                  />
                 </div>
                 <div className="w-full flex-1">
                   <label htmlFor="url" className="mb-1.5 block text-sm font-medium text-ink">Adresse du site</label>
-                  <Input id="url" type="url" required value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://mon-site.com" />
+                  <Input
+                    id="url"
+                    type="url"
+                    fieldSize="lg"
+                    required
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://mon-site.com"
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={error ? "sites-form-error" : undefined}
+                  />
                 </div>
-                <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+                <Button type="submit" size="lg" disabled={isPending} className="w-full sm:w-auto">
                   {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ajouter"}
                 </Button>
               </div>
@@ -289,7 +324,7 @@ export function DashboardSites({
                 className="w-full rounded-sm border border-line bg-surface px-3 py-2 text-sm text-ink"
               />
               {bulkReport && <p className="mt-2 text-sm text-ink-2">{bulkReport}</p>}
-              <Button type="submit" variant="outline" className="mt-3" disabled={isPending || bulk.trim().length === 0}>
+              <Button type="submit" variant="outline" size="lg" className="mt-3" disabled={isPending || bulk.trim().length === 0}>
                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ajouter la liste"}
               </Button>
             </form>
@@ -302,13 +337,16 @@ export function DashboardSites({
           <label htmlFor="client-name" className="mb-1.5 block text-sm font-medium text-ink">Nouveau client</label>
           <Input
             id="client-name"
+            fieldSize="lg"
             value={clientName}
             onChange={(event) => setClientName(event.target.value)}
             placeholder="Nom du client"
             maxLength={80}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "sites-form-error" : undefined}
           />
         </div>
-        <Button type="submit" variant="outline" disabled={isPending || clientName.trim().length === 0}>
+        <Button type="submit" variant="outline" size="lg" disabled={isPending || clientName.trim().length === 0}>
           Créer le client
         </Button>
       </form>
