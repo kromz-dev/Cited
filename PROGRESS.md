@@ -1,4 +1,4 @@
-# Cited — état du projet et reprise
+# Decelio — état du projet et reprise
 
 Source de vérité pour reprendre le travail, avec un humain ou un agent.
 **Dernière mise à jour :** 26 septembre 2026.
@@ -20,7 +20,7 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 
 Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/`, `docs/`, `chore/`), une PR par tâche, fusion par l'humain une fois la CI verte.
 
-**Deux agents en parallèle** : Claude (dossier `Cited-claude`, facturation, réglages, onboarding, infra, CI) et Grok (dossier `Cited-grok`, cœur produit : T019-T036, T053, T055). Une branche et une PR par tâche vers `main`, jamais de PR empilées.
+**Deux agents en parallèle** : Claude (dossier `Decelio-claude`, facturation, réglages, onboarding, infra, CI) et Grok (dossier `Decelio-grok`, cœur produit : T019-T036, T053, T055). Une branche et une PR par tâche vers `main`, jamais de PR empilées.
 
 ### 25/09 : `main` remis au vert, historique de migrations reconstruit
 
@@ -57,7 +57,7 @@ Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/
 
 **Test local effectué, interrompu avant la connexion.** Branche Neon jetable `local-dev` (`br-old-mode-b21jizov`), séparée de la production, créée et **baselinée** (`prisma migrate resolve --applied 20260925000000_init`) — confirme en conditions réelles que la procédure du runbook fonctionne. Serveur `next dev` démarré, page d'accueil affichée avec du contenu réel, `/api/health` répond `{"status":"ok"}`. Interrompu juste avant de tester `/register`, qui aurait immédiatement buté sur le défaut Credentials ci-dessus. `cited/.env` et `cited/.env.local` créés dans ce worktree uniquement (ignorés par git, jamais poussés) — à recréer dans tout autre worktree ou machine, et à saisir séparément dans Render, qui ne les lit pas.
 
-**Ménage** : 6 branches distantes entièrement fusionnées supprimées de GitHub. Les checkouts locaux `Cited-claude` et `Cited-claude-2` avaient les symlinks `.claude/agents` et `.claude/skills` cassés sous Windows (`core.symlinks=false` posé pour corriger). Dependabot invité à rebaser #28 et #30 sur le `main` réparé ; #28 a été remplacé par #72 (nouveau groupe minor/patch) après rebase, à revérifier.
+**Ménage** : 6 branches distantes entièrement fusionnées supprimées de GitHub. Les checkouts locaux `Decelio-claude` et `Decelio-claude-2` avaient les symlinks `.claude/agents` et `.claude/skills` cassés sous Windows (`core.symlinks=false` posé pour corriger). Dependabot invité à rebaser #28 et #30 sur le `main` réparé ; #28 a été remplacé par #72 (nouveau groupe minor/patch) après rebase, à revérifier.
 
 **Incident du 24/09 (clos)** : T040, T041, T050 (PR #14-#16) et T047 (PR #20) étaient des PR empilées, fusionnées dans leur branche de base au lieu de `main`. Restaurées par les PR #33 et #34. Règle depuis : pas de PR empilées, ou fusion avec `--delete-branch`.
 

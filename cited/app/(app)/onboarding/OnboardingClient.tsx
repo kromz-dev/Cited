@@ -118,7 +118,7 @@ export function OnboardingClient({
       <header className="bg-ink text-paper">
         <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 py-3.5">
           <Link href="/" className="mr-auto inline-flex items-center text-[19px] font-semibold tracking-tight">
-            Cited<span className="text-cobalt">.</span>
+            Decelio<span className="text-cobalt">.</span>
           </Link>
           <span className="type-caption font-medium opacity-70">Étapes 2 et 3 sur 3</span>
         </div>

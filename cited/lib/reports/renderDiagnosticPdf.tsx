@@ -105,7 +105,7 @@ const DiagnosticPdf = ({ report, results }: { report: ScanReport, results: ScanC
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.logo}>Cited.</Text>
+          <Text style={styles.logo}>Decelio.</Text>
           <View>
             <Text style={styles.headerText}>AI Visibility Report</Text>
             <Text style={styles.headerText}>{formatDate(report.scannedAt)}</Text>

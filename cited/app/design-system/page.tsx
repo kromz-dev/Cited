@@ -23,8 +23,8 @@ import { Separator } from "@/components/ui/separator";
 import { Verdict, VERDICTS, type VerdictValue } from "@/components/ui/verdict";
 
 export const metadata: Metadata = {
-  title: "Système de design | Cited",
-  description: "Jetons, composants et règles d'interface de Cited. Page interne.",
+  title: "Système de design | Decelio",
+  description: "Jetons, composants et règles d'interface de Decelio. Page interne.",
   robots: { index: false, follow: false },
 };
 
@@ -145,7 +145,7 @@ function Typography() {
         <div>
           <Label>Corps marketing, 17px / 26px, 400</Label>
           <p className="max-w-[60ch] text-[17px] leading-[26px] text-ink">
-            Chaque matin, Cited vérifie que ChatGPT, Claude et Perplexity lisent encore chacun des sites que vous
+            Chaque matin, Decelio vérifie que ChatGPT, Claude et Perplexity lisent encore chacun des sites que vous
             maintenez. Quand un site casse, vous recevez la cause et le correctif avant que le client ne s&apos;en
             aperçoive.
           </p>
@@ -528,7 +528,7 @@ function Surfaces({ prefix }: { prefix: string }) {
             <AccordionItem value={`${prefix}-q1`}>
               <AccordionTrigger>Faut-il installer quelque chose chez le client ?</AccordionTrigger>
               <AccordionContent>
-                Non. Cited interroge le site depuis l&apos;extérieur, comme le font les assistants. Une lecture seule
+                Non. Decelio interroge le site depuis l&apos;extérieur, comme le font les assistants. Une lecture seule
                 de Cloudflare permet en plus de voir les règles qui bloquent.
               </AccordionContent>
             </AccordionItem>
@@ -590,7 +590,7 @@ export default function DesignSystemPage() {
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-[1120px] flex-col gap-6 px-4 py-10 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="type-table font-medium text-ink-2">Cited, page interne</p>
+            <p className="type-table font-medium text-ink-2">Decelio, page interne</p>
             <h1 className="mt-2 text-[28px] leading-[34px] font-semibold tracking-[-0.02em] text-ink sm:text-[36px] sm:leading-10">
               Système de design
             </h1>

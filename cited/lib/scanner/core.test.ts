@@ -35,15 +35,15 @@ describe("runScan", () => {
   beforeEach(() => vi.unstubAllGlobals());
   afterEach(() => vi.unstubAllGlobals());
 
-  it("sends an honest CitedBot User-Agent by default", async () => {
+  it("sends an honest DecelioBot User-Agent by default", async () => {
     const fetchMock = stubFetch((url) =>
       url.endsWith("/robots.txt") ? new Response("", { status: 404 }) : new Response(LONG_PAGE),
     );
     const report = await runScan("https://example.com/");
     const uas = fetchMock.mock.calls.map(([, init]) => (init?.headers as Record<string, string>)["User-Agent"]);
     expect(uas.length).toBeGreaterThan(0);
-    for (const ua of uas) expect(ua).toMatch(/^CitedBot\/1\.0 \(\+https?:\/\/.+\)$/);
-    expect(report.access.userAgent).toMatch(/^CitedBot\/1\.0/);
+    for (const ua of uas) expect(ua).toMatch(/^DecelioBot\/1\.0 \(\+https?:\/\/.+\)$/);
+    expect(report.access.userAgent).toMatch(/^DecelioBot\/1\.0/);
     expect(report.access.unverifiedProbes).toEqual([]);
   });
 

@@ -50,7 +50,7 @@ export function CoverageGrid({ data }: CoverageGridProps) {
     setLoading(false);
   }
 
-  // Robots sondés par /api/audit (la requête de référence CitedBot n'est pas affichée)
+  // Robots sondés par /api/audit (la requête de référence DecelioBot n'est pas affichée)
   const aiBots = DEFAULT_PROBE_BOTS;
 
   // Convertir les résultats de l'API pour le CoverageMatrix
@@ -101,7 +101,7 @@ export function CoverageGrid({ data }: CoverageGridProps) {
           <div className="mt-6 flex flex-col gap-4 rounded-lg border border-stop/30 bg-stop-soft p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h4 className="flex items-center gap-2 font-semibold text-stop"><TriangleAlert className="h-4 w-4" /> Correctif recommandé</h4>
-              <p className="mt-1 text-sm text-ink">Vos pages apparaissent vides ou inaccessibles pour certains bots IA. Installez le middleware Edge Cited pour servir une version pré-rendue.</p>
+              <p className="mt-1 text-sm text-ink">Vos pages apparaissent vides ou inaccessibles pour certains bots IA. Installez le middleware Edge Decelio pour servir une version pré-rendue.</p>
             </div>
           </div>
         ) : (

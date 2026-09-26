@@ -29,7 +29,7 @@ export default async function LoginPage(props: {
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 py-3.5">
           <Link href="/" className="text-[19px] font-bold tracking-tight text-ink hover:opacity-80 transition-opacity">
-            Cited
+            Decelio
           </Link>
           <Link href="/register" className="text-sm text-ink-2 hover:text-ink transition-colors">
             Créer un compte

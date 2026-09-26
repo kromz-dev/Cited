@@ -57,7 +57,7 @@ export default function RegisterPage() {
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 py-3.5">
           <Link href="/" className="text-[19px] font-bold tracking-tight text-ink hover:opacity-80 transition-opacity">
-            Cited
+            Decelio
           </Link>
           <span className="text-sm text-ink-2">Étape 1 sur 3</span>
         </div>

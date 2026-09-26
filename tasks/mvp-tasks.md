@@ -1,4 +1,4 @@
-# Tâches : MVP Cited
+# Tâches : MVP Decelio
 
 **Entrées** : `docs/09-prd-mvp.md` (exigences EF-xxx/ENF-xxx), `docs/10-plan-technique.md` (architecture, pile 0 €, contrats), `docs/08-constitution.md` (portes de qualité)
 **Constitution** : quatre portes obligatoires avant toute fusion — `npx tsc --noEmit`, `npm run lint`, `npx vitest run`, `npm run build`.
@@ -134,7 +134,7 @@
   - **Vérification** : test manuel sur un site avec `robots.txt` bloquant un seul bot — les trois verdicts restent visuellement distincts (composant `Verdict`, jamais fondus)
   - **Taille** : M
 
-- [x] **T017** [P1] Export PDF du diagnostic public, au logo Cited — `cited/app/actions/publicReport.ts`, `cited/lib/reports/renderDiagnosticPdf.ts`
+- [x] **T017** [P1] Export PDF du diagnostic public, au logo Decelio — `cited/app/actions/publicReport.ts`, `cited/lib/reports/renderDiagnosticPdf.ts`
   - **Dépendances** : T016, T031 (moteur PDF partagé — voir Phase 5, réutilisé ici en avance)
   - **EF/ENF** : EF-011
   - **Vérification** : le PDF généré contient les trois verdicts et ne porte aucune marque blanche cliente

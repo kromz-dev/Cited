@@ -12,7 +12,7 @@ const steps = [
   },
   {
     title: "2. Surveillance automatique",
-    body: "Cited vérifie chaque site, chaque jour : le robots.txt par robot IA, la réponse au pare-feu, et la présence du texte utile sans JavaScript.",
+    body: "Decelio vérifie chaque site, chaque jour : le robots.txt par robot IA, la réponse au pare-feu, et la présence du texte utile sans JavaScript.",
   },
   {
     title: "3. Vous recevez la cause, pas juste l'alerte",
@@ -48,20 +48,20 @@ const comparison = [
 
 const faqs = [
   {
-    q: "Qu'est-ce que Cited ?",
-    a: "Cited est un outil de surveillance automatisé pour agences web. Il centralise le contrôle technique de l'accessibilité AEO pour tout votre portefeuille de sites.",
+    q: "Qu'est-ce que Decelio ?",
+    a: "Decelio est un outil de surveillance automatisé pour agences web. Il centralise le contrôle technique de l'accessibilité AEO pour tout votre portefeuille de sites.",
   },
   {
     q: "Quelle différence avec Semrush ?",
-    a: "Semrush audite le référencement classique. Cited vérifie uniquement l'accès technique des robots IA à vos sites.",
+    a: "Semrush audite le référencement classique. Decelio vérifie uniquement l'accès technique des robots IA à vos sites.",
   },
   {
     q: "Faut-il installer un plugin WordPress ?",
-    a: "Non. Cited interroge chaque site depuis l'extérieur, comme le ferait un visiteur IA. Aucun script ni accès requis.",
+    a: "Non. Decelio interroge chaque site depuis l'extérieur, comme le ferait un visiteur IA. Aucun script ni accès requis.",
   },
   {
     q: "Est-ce compatible avec tous les hébergeurs ?",
-    a: "Oui. Cited analyse la réponse HTTP publique de votre site, quel que soit l'hébergeur ou le CMS utilisé.",
+    a: "Oui. Decelio analyse la réponse HTTP publique de votre site, quel que soit l'hébergeur ou le CMS utilisé.",
   },
   {
     q: "Comment sont envoyées les alertes ?",
@@ -81,7 +81,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
       <header className={styles.header}>
         <div className={styles.shell}>
           <div className={styles.headerInner}>
-            <span className={styles.logo}>Cited</span>
+            <span className={styles.logo}>Decelio</span>
             <nav className={styles.nav} aria-label="Navigation principale">
               <Link href="#comment-ca-marche">Fonctionnement</Link>
               <Link href="/pricing">Tarifs</Link>
@@ -112,7 +112,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
                 </div>
                 <h1 className={styles.h1}>Pourquoi l'IA ignore vos sites clients ?</h1>
                 <blockquote className={styles.aeoBlockquote}>
-                  Cited est un outil de surveillance automatisé pour agences web qui vérifie quotidiennement si les sites clients sont accessibles aux robots d'intelligence artificielle comme ChatGPT, Claude et Perplexity.
+                  Decelio est un outil de surveillance automatisé pour agences web qui vérifie quotidiennement si les sites clients sont accessibles aux robots d'intelligence artificielle comme ChatGPT, Claude et Perplexity.
                 </blockquote>
                 <div className={styles.heroCtas}>
                   <a href="#scan" className={styles.btnPrimary}>Scanner un site</a>
@@ -149,7 +149,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
             <div className={styles.sectionHead}>
               <h2 className={styles.h2}>La solution : Une surveillance proactive de l'accessibilité IA</h2>
               <p className={styles.sectionLead} style={{ marginTop: "1rem" }}>
-                Cited agit comme votre système d'alerte précoce. Nous simulons l'accès des robots IA à vos sites pour détecter le moindre blocage. Avant même que votre client ne s'aperçoive d'une baisse de trafic, vous recevez une notification précise de l'erreur et de sa solution. Prouvez votre valeur d'expert AEO.
+                Decelio agit comme votre système d'alerte précoce. Nous simulons l'accès des robots IA à vos sites pour détecter le moindre blocage. Avant même que votre client ne s'aperçoive d'une baisse de trafic, vous recevez une notification précise de l'erreur et de sa solution. Prouvez votre valeur d'expert AEO.
               </p>
             </div>
           </div>
@@ -222,14 +222,14 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
         <section className={styles.section} style={{ backgroundColor: "var(--paper)" }}>
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
-              <h2 className={styles.h2}>Comparaison : Cited vs Outils traditionnels</h2>
+              <h2 className={styles.h2}>Comparaison : Decelio vs Outils traditionnels</h2>
             </div>
             <div style={{ overflowX: "auto" }}>
               <table className={styles.checksTable}>
                 <thead>
                   <tr>
                     <th scope="col">Fonctionnalité</th>
-                    <th scope="col">Cited</th>
+                    <th scope="col">Decelio</th>
                     <th scope="col">Semrush</th>
                     <th scope="col">ManageWP</th>
                   </tr>
@@ -238,7 +238,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
                   {comparison.map((c) => (
                     <tr key={c.feature}>
                       <th scope="row" data-label="Fonctionnalité" style={{ fontWeight: 600 }}>{c.feature}</th>
-                      <td data-label="Cited" style={{ fontWeight: c.cited === 'Oui' ? 'bold' : 'normal', color: c.cited === 'Oui' ? 'var(--ok)' : 'inherit' }}>{c.cited}</td>
+                      <td data-label="Decelio" style={{ fontWeight: c.cited === 'Oui' ? 'bold' : 'normal', color: c.cited === 'Oui' ? 'var(--ok)' : 'inherit' }}>{c.cited}</td>
                       <td data-label="Semrush" style={{ color: "var(--ink-3)" }}>{c.semrush}</td>
                       <td data-label="ManageWP" style={{ color: "var(--ink-3)" }}>{c.managewp}</td>
                     </tr>
@@ -291,7 +291,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
       <footer className={styles.footer}>
         <div className={styles.shell}>
           <div className={styles.footerInner}>
-            <span className={styles.logo}>Cited</span>
+            <span className={styles.logo}>Decelio</span>
             <nav className={styles.footerLinks} aria-label="Pied de page">
               <Link href="#comment-ca-marche">Fonctionnement</Link>
               <Link href="/pricing">Tarifs</Link>
@@ -299,7 +299,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
               {isLoggedIn ? null : <Link href="/register">Essai gratuit</Link>}
             </nav>
             <p className={styles.footerNote}>
-              Cited est un outil de vérification technique. Il ne mesure pas vos citations dans les réponses des assistants IA.
+              Decelio est un outil de vérification technique. Il ne mesure pas vos citations dans les réponses des assistants IA.
             </p>
           </div>
         </div>

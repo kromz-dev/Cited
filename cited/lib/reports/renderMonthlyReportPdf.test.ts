@@ -176,9 +176,9 @@ describe('buildReportSections', () => {
 });
 
 describe('resolveBrandName', () => {
-  it('returns "Cited" when branding is absent', () => {
+  it('returns "Decelio" when branding is absent', () => {
     expect(resolveBrandName(undefined)).toBe(DEFAULT_BRAND_NAME);
-    expect(resolveBrandName(undefined)).toBe('Cited');
+    expect(resolveBrandName(undefined)).toBe('Decelio');
   });
 
   it('returns the branding name when provided', () => {

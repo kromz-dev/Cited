@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-paper text-ink">
       <div className="flex items-center justify-between border-b border-line bg-surface px-5 py-4 md:hidden">
         <Link href="/dashboard" className="text-xl font-semibold tracking-tight">
-          Cited<span className="text-cobalt">.</span>
+          Decelio<span className="text-cobalt">.</span>
         </Link>
         <details className="relative">
           <summary className="cursor-pointer list-none rounded-sm border border-line-strong px-3 py-2 text-sm font-medium text-ink">
@@ -31,7 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="flex min-h-[calc(100vh-65px)] md:min-h-screen">
         <aside className="hidden w-64 border-r border-line bg-surface p-5 md:flex md:flex-col">
           <Link href="/dashboard" className="mb-10 text-xl font-semibold tracking-tight text-ink">
-            Cited<span className="text-cobalt">.</span>
+            Decelio<span className="text-cobalt">.</span>
           </Link>
           <nav className="flex-1 space-y-1">
             <Link href="/dashboard" className="flex items-center gap-2 rounded-sm px-3 py-2.5 text-sm font-medium text-ink-2 hover:bg-surface-2 hover:text-ink">

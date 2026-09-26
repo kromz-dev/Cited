@@ -1,4 +1,4 @@
-# Plan technique — MVP Cited
+# Plan technique — MVP Decelio
 
 **Branche** : `main` | **Date** : 24 septembre 2026 | **Constitution** : `docs/08-constitution.md` (v1.0.0)
 **Entrée** : `docs/09-prd-mvp.md` (exigences EF-xxx / ENF-xxx), `docs/07-design-system.md`, `docs/05-analyse-strategique.md` §3
@@ -106,7 +106,7 @@ Principe directeur (ENF-016) : chaque service a une offre gratuite qui autorise 
 | CI / qualité | **GitHub Actions** | Dépôt déjà sur GitHub | Gratuit illimité sur dépôt public ; 2000 min/mois sur dépôt privé | À surveiller si le dépôt reste privé et que les builds s'allongent | — |
 | Observabilité / erreurs / mesure produit | **PostHog Cloud UE — gratuit** (remplace Sentry, voir `docs/decisions/ADR-001-posthog-remplace-sentry.md`) | Un seul outil pour les exceptions client et serveur et le parcours produit | Non précisé sur la page de tarifs : **à confirmer (T001)** | Par mois : 1 M d'événements, 100 000 exceptions, 5 000 enregistrements de session | Palier payant à l'usage si un quota est dépassé ; consentement RGPD à trancher avant la mise en ligne (ADR-001) |
 | Mesure d'audience (marketing) | **Compteur maison** : route `app/api/beacon/route.ts` + table `PageView` minimaliste, sans cookie ni tiers | Respecte le principe VI (pas de nouvelle dépendance externe) et RGPD par construction (aucune donnée personnelle, pas de traceur tiers) | — | Rudimentaire : pas de tunnel de conversion détaillé | Umami auto-hébergé (MIT, léger, RGPD) dès qu'une instance dédiée existe (ex. si le rendu headless finit par justifier un VPS) |
-| Domaine | Sous-domaine gratuit de l'hébergeur (`*.onrender.com` en développement) | Coût nul le temps de valider la traction | — | Image de marque moindre pour la prospection écrite | Achat de `cited.app` (≈ 10-15 €/an) dès le premier client payant — seule dépense actée du plan |
+| Domaine | Sous-domaine gratuit de l'hébergeur (`*.onrender.com` en développement) | Coût nul le temps de valider la traction | — | Image de marque moindre pour la prospection écrite | Achat de `decelio.app` (≈ 10-15 €/an) dès le premier client payant — seule dépense actée du plan |
 
 ### 5.2 Sources et vérification
 
@@ -287,7 +287,7 @@ Inngest Hobby compte **une exécution par lancement de fonction et une par step*
 **Choix** : [`@react-pdf/renderer`](https://react-pdf.org/) — composition du PDF par des composants React déclaratifs (`<Document>`, `<Page>`, `<View>`, `<Text>`), rendu par un moteur de mise en page en JavaScript pur, **sans navigateur headless**. Ce choix est délibérément indépendant de la disponibilité incertaine du rendu Playwright (§5.1) : le rapport mensuel — fonctionnalité anti-résiliation numéro un (PRD §12) — ne doit pas dépendre d'une capacité Oracle Cloud qui peut ne jamais être disponible dans une région donnée.
 
 - Fonction pure `lib/reports/renderMonthlyReportPdf.ts` : prend les données agrégées (verdict actuel et historique par domaine, incidents datés, réponse brute en annexe, identité de marque) et retourne un `Buffer`.
-- Utilisée à deux endroits : `generateMonthlyReport` (rapport client, marque blanche, EF-047 à EF-051) et l'export du diagnostic public (`app/actions/publicReport.ts`, au logo Cited, EF-011).
+- Utilisée à deux endroits : `generateMonthlyReport` (rapport client, marque blanche, EF-047 à EF-051) et l'export du diagnostic public (`app/actions/publicReport.ts`, au logo Decelio, EF-011).
 - Le document du diagnostic public **n'inclut jamais** l'identité de l'agence (marque blanche réservée aux comptes payants, cohérent avec EF-011 et EF-048).
 - Testable unitairement (rendu déterministe à partir de données figées), sans navigateur ni service externe — cohérent avec la stratégie de test (§13).
 
@@ -323,7 +323,7 @@ Inngest Hobby compte **une exécution par lancement de fonction et une par step*
 2. **Migrations** : `npx prisma migrate deploy` exécuté en étape de déploiement (avant le démarrage du nouveau processus), jamais `db push` en production.
 3. **Déploiement continu** : push sur `main` → build Next.js → déploiement sur Render (service unique, région Francfort). Variables d'environnement répliquées depuis `.env.example`.
 4. **Bascule Inngest** : `INNGEST_SIGNING_KEY` et l'URL publique de `/api/inngest` enregistrées dans le tableau de bord Inngest à chaque changement d'hébergeur (pas d'automatisation nécessaire au stade MVP, un seul environnement de production).
-5. **Domaine** : sous-domaine `*.onrender.com` jusqu'au premier client payant, puis `cited.app` (DNS pointé vers Render), TLS géré par l'hébergeur.
+5. **Domaine** : sous-domaine `*.onrender.com` jusqu'au premier client payant, puis `decelio.app` (DNS pointé vers Render), TLS géré par l'hébergeur.
 6. **Rollback** : Render conserve les déploiements précédents ; un rollback est une action manuelle depuis son tableau de bord (pas d'automatisation dédiée au stade solo-fondateur, cohérent avec le principe VI).
 
 ## 14. Risques

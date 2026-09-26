@@ -1,4 +1,4 @@
-# Kit de prospection — Cited
+# Kit de prospection — Decelio
 
 > Complément de `05-analyse-strategique.md`. Règle absolue : **n'envoyer un constat que s'il est vérifié** avec la méthode du §3 (cause identifiée, capture datée). Un faux constat envoyé à une agence SEO est irrécupérable.
 
@@ -16,7 +16,7 @@
 
 **Préparation par prospect (10 minutes) :**
 1. Relever 5 à 10 sites clients dans « Réalisations » ou « Études de cas ».
-2. Les scanner avec Cited.
+2. Les scanner avec Decelio.
 3. Garder uniquement les constats vérifiés.
 4. Noter le prénom du fondateur.
 
@@ -32,11 +32,11 @@
 >
 > Voici le rapport complet : [lien]. Je peux faire la même vérification sur tout votre parc de maintenance si ça vous intéresse.
 >
-> [Prénom], fondateur de Cited
+> [Prénom], fondateur de Decelio
 
 **J+4 — Objet : `Une ligne de plus dans votre rapport de maintenance`**
 
-> Beaucoup de freelances WP ajoutent maintenant une ligne « lisibilité IA » à leur rapport mensuel et la facturent 10 à 20 € par site. Cited la surveille chaque jour sur tous vos sites et génère le rapport à votre logo. Essai gratuit, sans carte, sur vos propres sites : [lien]. Exemple de rapport : [lien PDF].
+> Beaucoup de freelances WP ajoutent maintenant une ligne « lisibilité IA » à leur rapport mensuel et la facturent 10 à 20 € par site. Decelio la surveille chaque jour sur tous vos sites et génère le rapport à votre logo. Essai gratuit, sans carte, sur vos propres sites : [lien]. Exemple de rapport : [lien PDF].
 
 **J+9 — Objet : `Je ferme le dossier`**
 
@@ -50,7 +50,7 @@
 >
 > Vous vendez du référencement IA. J'ai vérifié [site-client.fr], cité dans vos références : [constat vérifié, avec la cause]. Tant que ce blocage existe, aucun travail de contenu ne pourra être cité par [ChatGPT / Perplexity].
 >
-> Rapport : [lien]. Cited surveille ce point chaque jour sur tout un portefeuille et produit un rapport mensuel à votre marque, à glisser dans votre reporting GEO.
+> Rapport : [lien]. Decelio surveille ce point chaque jour sur tout un portefeuille et produit un rapport mensuel à votre marque, à glisser dans votre reporting GEO.
 
 **J+4 — Objet : `Le livrable technique de votre offre GEO`**
 
@@ -62,19 +62,19 @@
 
 | Objection | Réponse |
 |---|---|
-| « J'ai déjà Semrush / Screaming Frog. » | Semrush signale des pages bloquées lors d'un audit ponctuel. Screaming Frog demande de changer l'User-Agent à la main. Cited surveille chaque jour, trouve la cause et vous alerte avant le client. Les outils sont complémentaires. |
+| « J'ai déjà Semrush / Screaming Frog. » | Semrush signale des pages bloquées lors d'un audit ponctuel. Screaming Frog demande de changer l'User-Agent à la main. Decelio surveille chaque jour, trouve la cause et vous alerte avant le client. Les outils sont complémentaires. |
 | « WP Umbrella / ManageWP fait déjà ça. » | Ils surveillent la disponibilité et les mises à jour. Aucun ne teste ce que reçoivent les bots IA. Faites le test sur un site en 30 secondes. |
 | « Mes clients s'en fichent. » | Aujourd'hui, peut-être. Mais le jour où un client demande pourquoi ChatGPT recommande son concurrent, vous avez l'historique et la preuve. En attendant, c'est une ligne qui justifie le prix du contrat. |
 | « Le GEO, c'est une mode. » | Justement : c'est la partie *technique* du GEO, celle qui reste vraie quelle que soit la mode. Si le bot ne peut pas lire le site, rien d'autre ne compte. |
 | « 99 €, c'est cher. » | Pour 30 sites, c'est 3,30 € par site. Refacturé 10 €, cela vous rapporte environ 200 € par mois. Un plan Freelance à 39 € existe aussi. |
 | « Je peux le faire moi-même. » | Oui, pour un site, une fois. Pour 40 sites chaque jour, avec 8 bots, le `robots.txt`, Cloudflare et un rapport client, non. |
-| « Pourquoi ne pas simplement utiliser Cloudflare AI Crawl Control ? » | Il est gratuit et excellent, mais seulement pour les sites derrière votre compte Cloudflare, un par un, sans rapport client. Cited couvre tout le portefeuille, quel que soit l'hébergeur. |
+| « Pourquoi ne pas simplement utiliser Cloudflare AI Crawl Control ? » | Il est gratuit et excellent, mais seulement pour les sites derrière votre compte Cloudflare, un par un, sans rapport client. Decelio couvre tout le portefeuille, quel que soit l'hébergeur. |
 
 ## 5. Découverte par écrit (aucun appel)
 
 Ce questionnaire part automatiquement par e-mail 3 jours après l'inscription à l'essai. On le renvoie aussi à toute agence qui répond à la prospection. Réponse libre, par retour d'e-mail ou via un formulaire (Tally, gratuit).
 
-> Objet : `5 questions pour régler Cited sur votre parc`
+> Objet : `5 questions pour régler Decelio sur votre parc`
 >
 > 1. Combien de sites avez-vous sous contrat récurrent, et chez quels hébergeurs ?
 > 2. Que contient votre rapport mensuel aujourd'hui ? Combien de temps vous prend-il ?

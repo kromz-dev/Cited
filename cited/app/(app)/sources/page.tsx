@@ -4,7 +4,7 @@ import { Globe, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Sources | Cited",
+  title: "Sources | Decelio",
   description: "Gérez vos sources et moteurs d'IA surveillés.",
 };
 

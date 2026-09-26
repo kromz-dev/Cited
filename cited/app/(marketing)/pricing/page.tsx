@@ -7,7 +7,7 @@ import tokens from "@/components/home/tokens.module.css";
 import styles from "./pricing.module.css";
 
 export const metadata: Metadata = {
-  title: "Tarifs — Cited",
+  title: "Tarifs — Decelio",
   description:
     "Le prix d'une ligne de plus dans votre forfait de maintenance. Scan gratuit sans compte, paliers de 10 à 249 € par mois, sans engagement.",
 };
@@ -116,7 +116,7 @@ export default async function PricingPage() {
       <header className={styles.header}>
         <div className={`${styles.shell} ${styles.headerRow}`}>
           <Link href="/" className={styles.logo}>
-            Cited<span className={styles.logoMark}>.</span>
+            Decelio<span className={styles.logoMark}>.</span>
           </Link>
           <nav aria-label="Navigation principale" className={styles.nav}>
             <Link href="/#fonctionnement" className={styles.navLink}>
@@ -144,7 +144,7 @@ export default async function PricingPage() {
             Le prix d&apos;une ligne de plus dans votre forfait de maintenance.
           </h1>
           <p className={styles.lede}>
-            Cited vérifie chaque jour que ChatGPT, Claude et Perplexity peuvent
+            Decelio vérifie chaque jour que ChatGPT, Claude et Perplexity peuvent
             lire vos sites clients, et vous prévient avant que le client ne
             s&apos;en aperçoive. Facturation mensuelle, sans engagement. Le
             scan d&apos;un site reste gratuit et sans compte.
@@ -280,7 +280,7 @@ export default async function PricingPage() {
               Refacturez 10 à 20 € par site à vos clients
             </h2>
             <p>
-              Cited s&apos;ajoute à votre forfait de maintenance comme une
+              Decelio s&apos;ajoute à votre forfait de maintenance comme une
               ligne de plus. Vos clients paient un peu plus cher leur
               maintenance ; vous gardez la différence.
             </p>
@@ -292,7 +292,7 @@ export default async function PricingPage() {
               <span className={styles.num}>300 €</span> facturés par mois
             </div>
             <div className={styles.equationRow}>
-              − <span className={styles.num}>99 €</span> payés à Cited
+              − <span className={styles.num}>99 €</span> payés à Decelio
               (palier Agence)
             </div>
             <div className={styles.equationResult}>
@@ -335,7 +335,7 @@ export default async function PricingPage() {
               <summary>Le rapport mensuel porte-t-il ma marque ?</summary>
               <p className={styles.faqAnswer}>
                 Oui, à partir du palier Agence. Le rapport mensuel affiche le
-                logo de votre agence, pas celui de Cited : vos clients voient
+                logo de votre agence, pas celui de Decelio : vos clients voient
                 votre suivi.
               </p>
             </details>

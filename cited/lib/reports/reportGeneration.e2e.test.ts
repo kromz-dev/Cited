@@ -483,7 +483,7 @@ describe('Report Generation E2E Integration', () => {
         httpStatus: 200,
         reachable: true,
         blocked: false,
-        userAgent: 'CitedBot/1.0',
+        userAgent: 'DecelioBot/1.0',
         unverifiedProbes: [],
       } as never,
       jsDependency: {

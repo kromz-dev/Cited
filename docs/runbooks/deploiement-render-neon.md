@@ -105,7 +105,7 @@ unique.
 ## b. Créer le service Render (T003)
 
 1. Dashboard Render → espace **My Workspace** → **New** → **Blueprint**.
-2. Connecter le dépôt GitHub `kromz-dev/Cited` (OAuth Git si demandé).
+2. Connecter le dépôt GitHub `kromz-dev/Decelio` (OAuth Git si demandé).
 3. Render détecte `render.yaml` à la racine du dépôt — le sélectionner. Il décrit un
    service web unique `cited` (`rootDir: cited`, runtime Node 22, région Francfort,
    plan `free`, branche `main`, déploiement auto à chaque commit).

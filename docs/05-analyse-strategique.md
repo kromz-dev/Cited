@@ -1,4 +1,4 @@
-# Analyse stratégique — Cited (septembre 2026)
+# Analyse stratégique — Decelio (septembre 2026)
 
 > Synthèse de 8 recherches menées le 24 septembre 2026 (segments, ICP, marché France, canaux, plateformes Lovable/Bolt/Bubble, indépendants, validité technique, concurrence), relue contre le code du dépôt.
 > Les chiffres sourcés portent un lien. Les estimations sont signalées comme telles.
@@ -7,10 +7,10 @@
 
 ## 0. Verdict en une page
 
-1. **La cible actuelle (agences no-code Webflow / Framer / Bubble) est la mauvaise.** Webflow, Framer, Wix et Squarespace servent du HTML rendu côté serveur, sur un hébergement que l'agence ne contrôle pas. Le problème que Cited détecte y est rare. Le vivier est minuscule en France (7 à 27 agences listées par plateforme). Note : 9/25, la plus basse des six cibles évaluées.
+1. **La cible actuelle (agences no-code Webflow / Framer / Bubble) est la mauvaise.** Webflow, Framer, Wix et Squarespace servent du HTML rendu côté serveur, sur un hébergement que l'agence ne contrôle pas. Le problème que Decelio détecte y est rare. Le vivier est minuscule en France (7 à 27 agences listées par plateforme). Note : 9/25, la plus basse des six cibles évaluées.
 2. **Les indépendants et e-commerçants ne sont pas une bonne cible pour le produit actuel.** Leurs plateformes sont rendues côté serveur et laissent passer les bots IA par défaut. Ils ne parlent pas de `robots.txt` : ils veulent savoir si ChatGPT les recommande. Ce marché existe, mais il est déjà occupé à 20–75 €/mois, y compris par des acteurs français.
 3. **Cibles recommandées : les agences de maintenance WordPress (19/25) et les agences SEO/GEO (18/25).** Chez les premières, le blocage est réel, récurrent et invisible (Cloudflare, Wordfence, pare-feu d'hébergeurs), et il existe un budget récurrent : le contrat de maintenance. Les secondes vendent déjà du « référencement IA » à 800–5 000 €/mois et n'ont pas d'outil de preuve technique. Un même produit sert les deux.
-4. **Bloquant avant toute vente : la méthode de mesure.** Imiter l'User-Agent de GPTBot depuis un datacenter ne reproduit pas ce que voit le vrai GPTBot. Preuve : Lovable ne sert la version pré-rendue qu'aux bots vérifiés ([docs Lovable](https://lovable.dev/faq/deployment/rendering/ssr-prerendering-when-needed)). Cited déclarerait donc « coquille vide » des sites qui vont bien. Une fausse alerte envoyée à une agence SEO détruit la crédibilité du produit.
+4. **Bloquant avant toute vente : la méthode de mesure.** Imiter l'User-Agent de GPTBot depuis un datacenter ne reproduit pas ce que voit le vrai GPTBot. Preuve : Lovable ne sert la version pré-rendue qu'aux bots vérifiés ([docs Lovable](https://lovable.dev/faq/deployment/rendering/ssr-prerendering-when-needed)). Decelio déclarerait donc « coquille vide » des sites qui vont bien. Une fausse alerte envoyée à une agence SEO détruit la crédibilité du produit.
 5. **Conséquence produit :** le blocage le plus courant (le bouton Cloudflare « Block AI bots ») est invisible depuis l'extérieur. La mesure doit reposer sur des contrôles honnêtes (`robots.txt` par bot, challenge, rendu JavaScript) et sur une **intégration Cloudflare en lecture seule**. C'est la fonctionnalité payante la plus défendable (§3).
 6. **Repositionnement proposé :** passer de « le scanner qui se fait passer pour une IA » à « **l'état de lisibilité IA de tout votre portefeuille client, prouvé et rapporté chaque mois en marque blanche** ».
 
@@ -63,9 +63,9 @@ Sources : [OpenAI](https://platform.openai.com/docs/bots), [Anthropic](https://s
 ### 3.2 Pourquoi imiter l'User-Agent ne marche pas
 
 - Cloudflare reconnaît un bot « vérifié » par son IP (plages publiées), son reverse DNS et, de plus en plus, par signature HTTP (Web Bot Auth). Il ne se fie **pas** à l'User-Agent ([Cloudflare Bot Fight Mode](https://developers.cloudflare.com/bots/get-started/bot-fight-mode/), [Super Bot Fight Mode](https://developers.cloudflare.com/bots/get-started/super-bot-fight-mode/)).
-- **Faux positif :** le faux GPTBot de Cited, parti d'un datacenter, reçoit un challenge du Bot Fight Mode. Cited conclut « bloqué », alors que le vrai GPTBot, vérifié, passe.
-- Il en va de même pour le pré-rendu réservé aux bots vérifiés (cas Lovable) : Cited conclut « coquille vide » à tort.
-- **Faux négatif :** le site a activé « Block AI bots », qui vise les bots *vérifiés*. Le faux GPTBot n'est pas reconnu comme bot IA et passe, alors que le vrai est bloqué. Cited conclut « OK » à tort.
+- **Faux positif :** le faux GPTBot de Decelio, parti d'un datacenter, reçoit un challenge du Bot Fight Mode. Decelio conclut « bloqué », alors que le vrai GPTBot, vérifié, passe.
+- Il en va de même pour le pré-rendu réservé aux bots vérifiés (cas Lovable) : Decelio conclut « coquille vide » à tort.
+- **Faux négatif :** le site a activé « Block AI bots », qui vise les bots *vérifiés*. Le faux GPTBot n'est pas reconnu comme bot IA et passe, alors que le vrai est bloqué. Decelio conclut « OK » à tort.
 - **Conséquence importante :** le blocage le plus courant (le bouton Cloudflare « Block AI bots ») est **invisible depuis l'extérieur**. Seul un accès aux logs, ou à l'API Cloudflare en lecture seule, le révèle.
 - *Correction de §5 :* le Bot Fight Mode laisse passer les bots vérifiés. Ce qui bloque vraiment les bots IA légitimes, ce sont le bouton « Block AI bots », les règles WAF sur mesure, les plugins (Wordfence) et `robots.txt`.
 
@@ -74,7 +74,7 @@ Sources : [OpenAI](https://platform.openai.com/docs/bots), [Anthropic](https://s
 | # | Contrôle | Fiabilité |
 |---|---|---|
 | 1 | Analyse de `robots.txt` par jeton de bot, conforme à la RFC 9309 (le groupe le plus spécifique l'emporte) | Certaine |
-| 2 | Requête honnête (`CitedBot/1.0 (+https://cited…)`) : statut, en-tête `cf-mitigated: challenge`, page « Just a moment… » / Turnstile, redirections suivies et revalidées contre le SSRF | Certaine |
+| 2 | Requête honnête (`DecelioBot/1.0 (+https://cited…)`) : statut, en-tête `cf-mitigated: challenge`, page « Just a moment… » / Turnstile, redirections suivies et revalidées contre le SSRF | Certaine |
 | 3 | `meta robots`, `X-Robots-Tag`, `noindex`, `canonical` | Certaine |
 | 4 | Écart entre le texte du HTML brut et celui du rendu headless, sous forme de score de *dépendance au JavaScript* (pas « ce que voit GPTBot ») | Probable |
 | 5 | Test avec User-Agent imité, **étiqueté** « requête non vérifiée se présentant comme X », jamais « ce que voit GPTBot » | Indicatif |
@@ -101,7 +101,7 @@ Sources : [OpenAI](https://platform.openai.com/docs/bots), [Anthropic](https://s
 | Rétention des contrats de maintenance WP | 85 % contre 52 % pour les projets ponctuels | [Codeable](https://www.codeable.io/blog/wordpress-website-maintenance-cost/) |
 
 **Lecture :**
-- Le budget existe déjà chez les 2 cibles retenues. À 99 €/mois, Cited représente moins de 10 % d'un abonnement GEO, et moins de 5 €/site pour une agence WordPress qui facture 30–80 €/site.
+- Le budget existe déjà chez les 2 cibles retenues. À 99 €/mois, Decelio représente moins de 10 % d'un abonnement GEO, et moins de 5 €/site pour une agence WordPress qui facture 30–80 €/site.
 - Le vivier no-code français se compte en dizaines d'agences. Même à 100 % de conversion, il ne paie pas un SMIC.
 - Estimation (non sourcée) : il existe plusieurs centaines d'agences SEO en France qui ont ajouté une offre GEO en 2025–2026. Aucun décompte officiel n'existe, seulement des classements de 10 à 27 noms ([agencegeo.pro](https://agencegeo.pro/)).
 
@@ -122,7 +122,7 @@ Notation de 1 à 5 sur cinq critères (5 = favorable), soit 25 au maximum.
 
 **Preuves principales :**
 - **WordPress.** Cloudflare a bloqué les bots IA par défaut sur les nouveaux domaines à partir de juillet 2025, et les refus opposés à GPTBot et ClaudeBot dépassent 22 % ([digitalapplied](https://www.digitalapplied.com/blog/ai-crawler-bot-traffic-statistics-2026-data-reference)). Les réglages anti-bots de Wordfence ralentissent GPTBot, ClaudeBot et PerplexityBot, et il n'existe pas de liste blanche IA ([powerfulcombo](https://powerfulcombo.com/blog/wordfence-ai-bots/)). Les protections de Hostinger bloquent aussi ([stonegatewebsecurity](https://stonegatewebsecurity.com/articles/hostinger-bot-protection-blocking-ai-crawlers/)), de même que les WordPress managés ([Search Engine Land](https://searchengineland.com/managed-wordpress-blocking-ai-bots-476510)). Yoast propose un blocage GPTBot en un clic ([yoast.com](https://yoast.com/features/bot-blocker/)). *Réserve : une partie de ces sources sont des blogs. Le comportement exact de Cloudflare est traité au §3.*
-- **SEO/GEO.** Les outils de visibilité IA sont une catégorie payante établie : Otterly à 29 $, Peec AI à 89 €, Profound à 499 $/mois ([aiaethon](https://aiaethon.com/geo-software-pricing/)). Ils mesurent la présence dans les *réponses*, pas la *lisibilité technique*. Cited vient donc en complément.
+- **SEO/GEO.** Les outils de visibilité IA sont une catégorie payante établie : Otterly à 29 $, Peec AI à 89 €, Profound à 499 $/mois ([aiaethon](https://aiaethon.com/geo-software-pricing/)). Ils mesurent la présence dans les *réponses*, pas la *lisibilité technique*. Decelio vient donc en complément.
 - **Lovable.** Depuis le 13 mai 2026, les nouveaux projets sont rendus côté serveur, et les anciens sont pré-rendus pour les bots vérifiés, gratuitement sur tous les plans ([docs Lovable](https://docs.lovable.dev/features/seo-aeo)). Un concurrent l'écrit lui-même : « you don't need to prerender your Lovable site anymore » ([lovableseo.ai](https://lovableseo.ai/blog/you-dont-need-to-prerender-your-lovable-site-anymore)). Bubble reste mal servi ([forum Bubble](https://forum.bubble.io/t/frustration-with-bubbles-seo-and-dynamic-rendering/354113)), mais c'est un marché d'applications, pas de sites vitrines.
 
 ### Et les indépendants / business en ligne ?
@@ -130,7 +130,7 @@ Notation de 1 à 5 sur cinq critères (5 = favorable), soit 25 au maximum.
 - **Plateformes :** Shopify, Wix, Webflow et Framer sont rendus côté serveur et autorisent les bots IA par défaut ([Framer](https://www.framer.com/help/articles/make-site-readable-by-ai-agents/)). Squarespace a une case « Block known AI crawlers », désactivée par défaut ([squareranked](https://squareranked.com/squarespace-ai-search/ai-crawlers/)). Des marchands Shopify ont bloqué les bots eux-mêmes en 2023–2024 ([craftshift](https://craftshift.com/dont-block-ai-bots-shopify-robots-txt/)).
 - **Demande :** elle est formulée en termes de recommandation (« ChatGPT me recommande-t-il ? »), jamais en `robots.txt`.
 - **Concurrence déjà en place :** HubSpot AI Search Grader (gratuit), Rankscale (dès 20 $), Otterly (29 $), HubSpot AEO (49 €), Hikoo (gratuit puis 69 €), Botrank (75 €), Semrush AI (99 $) ([seo.fr](https://www.seo.fr/blog/outils-geo-comparatif-solutions-ia), [otterly.ai](https://otterly.ai/pricing), [semrush.com](https://www.semrush.com/pricing/ai/)).
-- **Verdict :** pas avec le produit actuel. C'est viable seulement si Cited devient « ChatGPT vous recommande-t-il ? + liste de corrections » à 19–39 €/mois. On arriverait alors tard sur un marché encombré, avec beaucoup de résiliations. C'est l'option de repli du §13, pas le plan A.
+- **Verdict :** pas avec le produit actuel. C'est viable seulement si Decelio devient « ChatGPT vous recommande-t-il ? + liste de corrections » à 19–39 €/mois. On arriverait alors tard sur un marché encombré, avec beaucoup de résiliations. C'est l'option de repli du §13, pas le plan A.
 
 ---
 
@@ -183,7 +183,7 @@ Notation de 1 à 5 sur cinq critères (5 = favorable), soit 25 au maximum.
 
 - Agences no-code Webflow / Framer : pas de problème récurrent.
 - Freelances sans portefeuille récurrent.
-- Clients qui **veulent** bloquer les bots IA (presse, contenus payants). Pour eux, Cited devient un outil de vérification du blocage. C'est un autre produit, à garder pour plus tard.
+- Clients qui **veulent** bloquer les bots IA (presse, contenus payants). Pour eux, Decelio devient un outil de vérification du blocage. C'est un autre produit, à garder pour plus tard.
 - Grandes agences avec leur propre outillage (cycles longs).
 - Sites 100 % Shopify ou Wix : peu de risque technique.
 
@@ -217,7 +217,7 @@ Sources : [Conductor](https://www.conductor.com/platform/features/ai-crawler-act
 2. **Peec AI et Profound.** Ils ont déjà le moteur. Il leur manque un planificateur et un PDF en marque blanche.
 3. **Little Warden.** Il surveille déjà `robots.txt` pour les agences. Il lui suffit d'étendre ses règles aux bots IA.
 
-**Conséquence :** l'avantage de Cited ne tiendra pas sur la détection seule, qui sera copiée. Il tiendra sur **(a)** le diagnostic de la *cause* (quelle règle Cloudflare, quel plugin, quel hébergeur) avec la correction pas à pas, **(b)** le rapport client en français et en marque blanche, et **(c)** la distribution : baromètre, communautés WordPress et SEO françaises. Un partenariat ou un rachat par un outil de maintenance WP est une sortie crédible.
+**Conséquence :** l'avantage de Decelio ne tiendra pas sur la détection seule, qui sera copiée. Il tiendra sur **(a)** le diagnostic de la *cause* (quelle règle Cloudflare, quel plugin, quel hébergeur) avec la correction pas à pas, **(b)** le rapport client en français et en marque blanche, et **(c)** la distribution : baromètre, communautés WordPress et SEO françaises. Un partenariat ou un rachat par un outil de maintenance WP est une sortie crédible.
 
 ---
 
@@ -237,7 +237,7 @@ Principe (skill `pricing`) : l'unité de valeur reste **le site surveillé**. El
 - **Offre fondatrice :** −50 % à vie pour les 10 premières agences, en échange d'un retour écrit mensuel (5 questions par e-mail) et d'une étude de cas.
 - **Pourquoi 30 sites et non 20 au plan Agence :** l'agence WP type gère 20–150 sites. À 20, le plan paraît juste, et on pousse l'agence vers des arbitrages au lieu de l'adoption.
 - **Pourquoi pas 9 € :** la leçon de tes propres docs tient toujours. Les petits prix attirent des clients qui partent vite et donnent de faux signaux.
-- **Refacturation :** la page de prix doit dire « **refacturez 10 à 20 €/site** dans votre contrat ». L'agence gagne de l'argent avec Cited. C'est l'argument central.
+- **Refacturation :** la page de prix doit dire « **refacturez 10 à 20 €/site** dans votre contrat ». L'agence gagne de l'argent avec Decelio. C'est l'argument central.
 - **Code :** les plans `SOLO / PRO / SCALE` de `lib/billing/plans.ts` correspondent déjà à Freelance / Agence / Studio. Il suffit de créer les prix Stripe.
 
 ---
@@ -263,10 +263,10 @@ Classés par rapport effet / effort pour un fondateur solo.
    - **Critère d'arrêt :** moins de 5 backlinks qualifiés.
    - **Condition :** méthode du §3 corrigée avant publication.
 2. **Prospection appuyée sur des preuves.** On scanne le portefeuille visible d'une agence (réalisations, études de cas), puis on lui écrit avec un constat vérifié. Séquence en 3 e-mails à J0, J+4 et J+9 (voir `06-kit-prospection.md`). Critère d'arrêt : moins de 3 % de réponses sur 100 envois.
-3. **Scan gratuit amélioré.** Il doit accepter les redirections (P1) et afficher un verdict par bot avec la cause. Il permet d'exporter un PDF « à envoyer à mon client », avec le logo Cited. Critère d'arrêt : moins de 20 scans par semaine après 6 semaines.
+3. **Scan gratuit amélioré.** Il doit accepter les redirections (P1) et afficher un verdict par bot avec la cause. Il permet d'exporter un PDF « à envoyer à mon client », avec le logo Decelio. Critère d'arrêt : moins de 20 scans par semaine après 6 semaines.
 4. **Contenu SEO pour agences :** « Cloudflare bloque-t-il ChatGPT sur votre site ? », « Wordfence et les bots IA », « GPTBot, OAI-SearchBot, ChatGPT-User : lequel autoriser ? », « Checklist GEO technique pour agence ».
 5. **Marketplaces :**
-   - Plugin WordPress.org en lecture seule, qui vérifie la configuration locale et renvoie vers Cited ([guide de soumission](https://freemius.com/blog/submit-plugin-wordpress-repository/)).
+   - Plugin WordPress.org en lecture seule, qui vérifie la configuration locale et renvoie vers Decelio ([guide de soumission](https://freemius.com/blog/submit-plugin-wordpress-repository/)).
    - Chrome Web Store, 5 $ d'inscription ([doc](https://developer.chrome.com/docs/webstore/publish/)).
    - Framer et Webflow : non prioritaires, car ce ne sont plus les cibles.
 6. **Programme partenaire :** 20 % récurrents pour les formateurs WordPress et SEO, et pour les communautés du type WP Marmite ou SEOCamp.
@@ -313,7 +313,7 @@ Classés par rapport effet / effort pour un fondateur solo.
 0. **Budget : 0 €, autofinancement à 100 %.** Aucune dépense fixe avant le premier revenu. Toute la pile technique et marketing repose sur des offres gratuites qui autorisent un usage commercial. Une dépense n'est engagée qu'une fois couverte par le MRR.
 1. **Rendu headless : 0 €.** Le moteur mesure le HTML brut (texte utile, racine SPA vide, `noscript`). Le rendu Playwright reste optionnel, et ne tourne que s'il est hébergé gratuitement. Aucun service payant avant que le MRR ne le finance.
 2. **Vente 100 % écrite, sans appel.** L'essai est gratuit et sans carte, avec onboarding en autonomie. La découverte se fait par un questionnaire de 5 questions envoyé par e-mail (voir `06-kit-prospection.md` §5). Une démo écrite remplace la démo en direct : un exemple de rapport en marque blanche en PDF et une page « visite guidée ». Conséquence : le cycle de vente est plus long, la conversion plus faible. D'où l'objectif de 15 essais au lieu de 15 démos.
-3. **Nom : on garde « Cited ».** Il reste juste si le plan B (visibilité IA) arrive, et changer de nom coûte du temps. La promesse précise vient du slogan : « Cited — la lisibilité IA de tout votre portefeuille client ».
+3. **Nom : on garde « Decelio ».** Il reste juste si le plan B (visibilité IA) arrive, et changer de nom coûte du temps. La promesse précise vient du slogan : « Decelio — la lisibilité IA de tout votre portefeuille client ».
 
 ---
 

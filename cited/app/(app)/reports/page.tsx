@@ -14,7 +14,7 @@ import {
 } from "./reports-data";
 
 export const metadata = {
-  title: "Rapports | Cited",
+  title: "Rapports | Decelio",
   description: "Rapports mensuels de visibilité IA par client, exportables en PDF.",
 };
 

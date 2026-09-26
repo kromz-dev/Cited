@@ -67,11 +67,11 @@ export async function sendFounderOffer({
       <p>${greeting}</p>
       <p>Merci pour vos réponses. Vous faites partie des 10 premières agences : <strong>-50 % à vie</strong> sur le plan Agence si vous activez votre compte ${deadlineText}.</p>
       <p>Code à saisir au moment du paiement : <strong>${couponCode}</strong></p>
-      <p>En échange : un retour écrit chaque mois sur votre usage de Cited, et l'autorisation de citer votre agence.</p>
+      <p>En échange : un retour écrit chaque mois sur votre usage de Decelio, et l'autorisation de citer votre agence.</p>
       <p><a href="${pricingUrl}">Activer mon offre fondatrice</a></p>
       <p>Cette offre est limitée à 10 comptes au total et expire ${deadlineText}.</p>
       <br />
-      <p>À bientôt,<br/>L'équipe Cited</p>
+      <p>À bientôt,<br/>L'équipe Decelio</p>
     </div>
   `;
 
@@ -82,21 +82,21 @@ export async function sendFounderOffer({
     "",
     `Code à saisir au moment du paiement : ${couponCode}`,
     "",
-    "En échange : un retour écrit chaque mois sur votre usage de Cited, et l'autorisation de citer votre agence.",
+    "En échange : un retour écrit chaque mois sur votre usage de Decelio, et l'autorisation de citer votre agence.",
     "",
     `Activer mon offre fondatrice : ${pricingUrl}`,
     "",
     `Cette offre est limitée à 10 comptes au total et expire ${deadlineText}.`,
     "",
     "À bientôt,",
-    "L'équipe Cited",
+    "L'équipe Decelio",
   ].join("\n");
 
   try {
     const response = await getResend().emails.send({
-      from: "Cited <bonjour@cited.app>", // Update with a verified domain
+      from: "Decelio <bonjour@decelio.app>", // Update with a verified domain
       to: email,
-      subject: "Votre offre fondatrice Cited : -50 % à vie",
+      subject: "Votre offre fondatrice Decelio : -50 % à vie",
       html,
       text,
     });

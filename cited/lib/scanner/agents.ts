@@ -134,8 +134,8 @@ export const DEFAULT_PROBE_BOTS: BotAgent[] = ["GPTBot", "ClaudeBot", "Perplexit
  * User-Agent honnête du scanner : il dit qui nous sommes et où lire pourquoi
  * nous passons. C'est la requête par défaut ; tout le reste est secondaire.
  */
-export function citedUserAgent(siteUrl: string = process.env.NEXT_PUBLIC_APP_URL || "https://cited.app"): string {
-  return `CitedBot/1.0 (+${siteUrl})`;
+export function decelioUserAgent(siteUrl: string = process.env.NEXT_PUBLIC_APP_URL || "https://decelio.app"): string {
+  return `DecelioBot/1.0 (+${siteUrl})`;
 }
 
 export function isBotAgent(value: string): value is BotAgent {

@@ -11,7 +11,7 @@ export interface AlertSiteChange {
   fix: string;
 }
 
-const FROM = "Cited <bonjour@cited.app>";
+const FROM = "Decelio <bonjour@decelio.app>";
 
 export function suggestFix(cause: string): string {
   if (/robots\.txt/i.test(cause)) {
@@ -44,11 +44,11 @@ export function renderAlertEmail(input: {
   const regression = input.kind === "REGRESSION";
   const subject = regression
     ? count === 1
-      ? "Cited — un domaine n'est plus lisible"
-      : `Cited — ${count} domaines ne sont plus lisibles`
+      ? "Decelio — un domaine n'est plus lisible"
+      : `Decelio — ${count} domaines ne sont plus lisibles`
     : count === 1
-      ? "Cited — un domaine est de nouveau lisible"
-      : `Cited — ${count} domaines sont de nouveau lisibles`;
+      ? "Decelio — un domaine est de nouveau lisible"
+      : `Decelio — ${count} domaines sont de nouveau lisibles`;
 
   const intro = regression
     ? count === 1

@@ -88,7 +88,7 @@ export interface MonthlyReportBranding {
   logoDataUri?: string;
 }
 
-export const DEFAULT_BRAND_NAME = 'Cited';
+export const DEFAULT_BRAND_NAME = 'Decelio';
 /** Encre du système de design (`--ink`), utilisée quand `accentColor` est absente ou invalide. */
 export const DEFAULT_ACCENT_COLOR = '#18213a';
 
@@ -114,7 +114,7 @@ export class WhiteLabelNotAllowedError extends Error {
  * (EF-048, EF-050) — seule autorité : `whiteLabelFor` (lib/billing/plans.ts).
  * Renvoie `undefined` pour `FREE`/`SOLO`, ou si le compte n'a encore
  * enregistré aucun `BrandSettings` : dans les deux cas le rapport retombe
- * silencieusement sur l'identité par défaut (« Cited »).
+ * silencieusement sur l'identité par défaut (« Decelio »).
  *
  * Ne charge jamais le logo (pas d'accès réseau ici) : `logoUrl` est transmis
  * tel quel, à charger séparément via `loadBrandLogo` avant de renseigner
@@ -136,7 +136,7 @@ export function resolveReportBranding(
  * Lève `WhiteLabelNotAllowedError` si le palier n'a pas droit à la marque
  * blanche. À appeler quand la génération est *explicitement* demandée en
  * marque blanche (bouton dédié) : contrairement à `resolveReportBranding`,
- * qui retombe silencieusement sur « Cited », ce cas doit échouer de façon
+ * qui retombe silencieusement sur « Decelio », ce cas doit échouer de façon
  * explicite (vérification T033 : un compte SOLO ne peut pas générer de
  * rapport en marque blanche).
  */

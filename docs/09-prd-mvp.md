@@ -1,4 +1,4 @@
-# PRD — MVP Cited
+# PRD — MVP Decelio
 
 **Statut** : Draft prêt pour développement | **Créé** : 24 septembre 2026 | **Constitution** : `docs/08-constitution.md`
 **Sources** : `docs/05-analyse-strategique.md`, `docs/06-kit-prospection.md`, code du dépôt `cited/` (lecture au 24 septembre 2026)
@@ -13,7 +13,7 @@ Légende des états utilisés dans les exigences fonctionnelles :
 
 ## 1. Résumé
 
-Cited est un diagnostic gratuit qui explique, cause à l'appui, pourquoi ChatGPT, Claude ou Perplexity ne lisent pas ou ne citent pas un site — en commençant par ce qui bloque techniquement (pare-feu, `robots.txt`, dépendance JavaScript). Ce diagnostic sert d'aimant à prospects pour un produit payant : la surveillance quotidienne, en marque blanche, du portefeuille client complet d'une agence de maintenance WordPress ou d'une agence SEO/GEO. L'agence est alertée par e-mail dès qu'un site régresse, avec la cause et le correctif, et reçoit chaque mois un rapport PDF à son logo à glisser dans son propre reporting client.
+Decelio est un diagnostic gratuit qui explique, cause à l'appui, pourquoi ChatGPT, Claude ou Perplexity ne lisent pas ou ne citent pas un site — en commençant par ce qui bloque techniquement (pare-feu, `robots.txt`, dépendance JavaScript). Ce diagnostic sert d'aimant à prospects pour un produit payant : la surveillance quotidienne, en marque blanche, du portefeuille client complet d'une agence de maintenance WordPress ou d'une agence SEO/GEO. L'agence est alertée par e-mail dès qu'un site régresse, avec la cause et le correctif, et reçoit chaque mois un rapport PDF à son logo à glisser dans son propre reporting client.
 
 Le moteur d'audit technique et l'infrastructure (authentification, base de données, tâche planifiée, Stripe, alerting) sont déjà largement construits dans le dépôt `cited/`, à la suite d'un premier pivot (« Scanner Black-Box »). Ce PRD ne repart pas de zéro : il documente ce qui est solide, ce qui est en cours de correction par ailleurs, et ce qui manque pour atteindre le positionnement et la cible décidés en septembre 2026 (`docs/05-analyse-strategique.md`).
 
@@ -88,9 +88,9 @@ Agence de 3 personnes à Lyon, 15 à 60 clients en abonnement SEO, vient de pack
 
 **Scénarios d'acceptation :**
 1. **Étant donné** une agence venant de créer un compte, **quand** elle colle une liste de 20 domaines ou importe un CSV, **alors** les sites valides sont ajoutés en une fois, dans la limite du quota de son plan, avec un message clair pour les lignes invalides ou dupliquées.
-2. **Étant donné** une agence qui choisit le plan Agence (99 €, 30 sites), **quand** elle valide le paiement, **alors** elle est immédiatement débloquée pour ajouter jusqu'à 30 sites, sans étape manuelle côté Cited.
+2. **Étant donné** une agence qui choisit le plan Agence (99 €, 30 sites), **quand** elle valide le paiement, **alors** elle est immédiatement débloquée pour ajouter jusqu'à 30 sites, sans étape manuelle côté Decelio.
 3. **Étant donné** un compte créé depuis 3 jours, **quand** ce délai est écoulé, **alors** un e-mail avec les 5 questions de découverte part automatiquement, sans intervention humaine.
-4. **Étant donné** une agence sur le plan Agence ou Studio, **quand** elle configure son logo et sa couleur dans les paramètres, **alors** le rapport mensuel PDF généré porte cette identité, sans mention visible de Cited.
+4. **Étant donné** une agence sur le plan Agence ou Studio, **quand** elle configure son logo et sa couleur dans les paramètres, **alors** le rapport mensuel PDF généré porte cette identité, sans mention visible de Decelio.
 5. **Étant donné** les 10 premiers comptes payants, **quand** un onzième prospect tente d'activer le coupon fondateur, **alors** le coupon n'est plus disponible et le prospect paie le tarif plein.
 
 ### Cas limites (transverses aux trois parcours)
@@ -118,7 +118,7 @@ Agence de 3 personnes à Lyon, 15 à 60 clients en abonnement SEO, vient de pack
 - **EF-008** [À construire] Le diagnostic DOIT couvrir, en plus des bots d'entraînement déjà scannés (GPTBot, ClaudeBot, PerplexityBot, `lib/scanner/agents.ts`), les bots de citation qui déterminent si un site peut être *cité* (OAI-SearchBot, ChatGPT-User, Claude-SearchBot, Claude-User, Perplexity-User — §3.1). Le rapport doit préciser qu'un blocage de bot d'entraînement n'empêche pas la citation, et inversement.
 - **EF-009** [Existant] Le diagnostic public NE DOIT PAS exiger de compte pour lancer un scan (`ScanForm`, `/api/scan`).
 - **EF-010** [En cours] Le diagnostic public DOIT être protégé contre le SSRF (résolution DNS, refus des plages privées, `lib/scanner/crawler.ts::assertSafeUrl` et `app/api/scan/route.ts::isSafeUrl`) et limité en débit par une ressource partagée en base — déjà le cas pour `/api/audit` (`lib/rate-limit.ts`), à généraliser à `/api/scan` qui reste aujourd'hui en mémoire de processus (P8 de l'analyse stratégique).
-- **EF-011** [À construire] Le résultat du diagnostic public DOIT proposer un export PDF « à envoyer à mon client », au logo Cited (la marque blanche du client final reste réservée aux comptes payants, EF-047 et suivants).
+- **EF-011** [À construire] Le résultat du diagnostic public DOIT proposer un export PDF « à envoyer à mon client », au logo Decelio (la marque blanche du client final reste réservée aux comptes payants, EF-047 et suivants).
 
 ### B. Compte et authentification
 *Fondation technique de tous les autres domaines ; largement livrée, les manques sont ponctuels (RGPD visible, mot de passe oublié).*
@@ -183,7 +183,7 @@ Agence de 3 personnes à Lyon, 15 à 60 clients en abonnement SEO, vient de pack
 *Fonctionnalité anti-résiliation numéro un (§12 de l'analyse stratégique) ; entièrement à construire, y compris le modèle de données du regroupement par client.*
 
 - **EF-047** [À construire] Le système DOIT générer un rapport mensuel par regroupement de sites (« client » de l'agence), incluant le verdict actuel et l'historique de chaque domaine, la liste des incidents datés (apparition et résolution), et la réponse brute des bots en annexe technique.
-- **EF-048** [À construire] Le rapport DOIT porter le logo, le nom et la couleur d'accent de l'agence, sans mention visible de Cited sur le document final, réservé aux plans Agence et Studio (cohérent avec la grille tarifaire déjà publiée).
+- **EF-048** [À construire] Le rapport DOIT porter le logo, le nom et la couleur d'accent de l'agence, sans mention visible de Decelio sur le document final, réservé aux plans Agence et Studio (cohérent avec la grille tarifaire déjà publiée).
 - **EF-049** [À construire] Le rapport DOIT être exportable en PDF depuis l'application — la page `app/(app)/reports/page.tsx` existe avec une maquette complète (six clients fictifs) et un bouton d'export qui déclenche `window.print()` sans générer de PDF réel ; à remplacer par une génération PDF serveur.
 - **EF-050** [À construire] Les paramètres de marque blanche (nom affiché, logo, couleur) DOIVENT être enregistrés et effectivement appliqués au rendu du rapport — la section « Marque blanche » de `app/(app)/settings/page.tsx` est aujourd'hui un formulaire purement local (état React) qui n'écrit rien en base.
 - **EF-051** [À construire] Le rapport DOIT pouvoir être régénéré à la demande (pas seulement le 1er du mois), pour un usage commercial immédiat pendant la prospection (kit de prospection §1, préparation par prospect).

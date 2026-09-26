@@ -8,7 +8,7 @@ import { analyzeResponse, AnalyzerResult, ScannerStatus } from "@/lib/scanner/an
 export const runtime = "nodejs";
 export const maxDuration = 30; // 30s max (comme défini dans le cahier des charges)
 
-const BASELINE_AGENT = "CitedBot";
+const BASELINE_AGENT = "DecelioBot";
 const AUDIT_LIMIT_PER_HOUR = 10; // On peut augmenter un peu la limite vu que c'est moins coûteux qu'un LLM
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
@@ -101,7 +101,7 @@ export async function POST(req: Request) {
       const targetUrl = new URL(path, urlObj.origin).toString();
       console.log(`\n▶ Scannage de ${targetUrl}...`);
       
-      // 1. D'abord la requête honnête (User-Agent CitedBot) pour avoir la référence (baseline)
+      // 1. D'abord la requête honnête (User-Agent DecelioBot) pour avoir la référence (baseline)
       const browserCrawl = await crawlUrl(targetUrl);
       const browserAnalysis = analyzeResponse(browserCrawl, BASELINE_AGENT);
       

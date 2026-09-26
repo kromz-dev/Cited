@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 /**
- * Bouton du système Cited.
+ * Bouton du système Decelio.
  * - `default` : encre pleine, une seule par écran (action principale).
  * - `outline` : action secondaire, même poids visuel que le texte.
  * - `secondary` : fond discret pour les actions de groupe (filtres, exports).

@@ -42,7 +42,7 @@ export async function WhiteLabelSection() {
         {!hasAccess && <Badge variant="outline">En préparation</Badge>}
       </div>
       <p className="mb-4.5 max-w-[60ch] text-sm text-ink-2">
-        Les rapports clients porteront votre identité, sans mention de Cited.
+        Les rapports clients porteront votre identité, sans mention de Decelio.
         {!hasAccess && ` ${whiteLabelMessage(false)}`}
       </p>
 

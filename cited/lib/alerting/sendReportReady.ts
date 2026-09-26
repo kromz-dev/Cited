@@ -29,7 +29,7 @@ export interface SendReportReadyResult {
  *
  * RESPECT DU PALIER GRATUIT RESEND (100 E-MAILS / JOUR, §8.1 docs/10-plan-technique.md) :
  * ---------------------------------------------------------------------------------------
- * Dans le modèle de Cited, une agence (User) gère plusieurs clients (Client), chacun
+ * Dans le modèle de Decelio, une agence (User) gère plusieurs clients (Client), chacun
  * possédant un ou plusieurs sites surveillés (MonitoredSite).
  * Le plan Agence inclut jusqu'à 30 sites et autant de clients possibles.
  *

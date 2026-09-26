@@ -8,7 +8,7 @@ export function getStripe(): Stripe {
 
   return new Stripe(secretKey, {
     appInfo: {
-      name: "Cited",
+      name: "Decelio",
       version: "0.1.0",
     },
   });

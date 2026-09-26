@@ -12,7 +12,7 @@ import type { CrawlResult } from "./crawler";
 const crawl = (status: number, html = "", headers: Record<string, string> = {}): CrawlResult => ({
   url: "https://example.com/",
   finalUrl: "https://example.com/",
-  userAgent: "CitedBot/1.0",
+  userAgent: "DecelioBot/1.0",
   status,
   headers,
   html,

@@ -1,10 +1,10 @@
-# Système de design Cited (septembre 2026)
+# Système de design Decelio (septembre 2026)
 
 Source unique : `cited/app/globals.css`. Vitrine : `/design-system` (noindex). Primitives : `cited/components/ui/`.
 
 ## 1. Direction
 
-**Chrome silencieux, verdicts parlants.** Cited vend de la tranquillité à des agences qui doivent savoir *avant leur client*. L'interface se tait : papier froid, encre marine, filets fins. La couleur n'a qu'un sens, le verdict d'un site pour un assistant (Lu, Refusé, Vide, Inconnu). Tout état porte sa date, comme sur un rapport imprimé.
+**Chrome silencieux, verdicts parlants.** Decelio vend de la tranquillité à des agences qui doivent savoir *avant leur client*. L'interface se tait : papier froid, encre marine, filets fins. La couleur n'a qu'un sens, le verdict d'un site pour un assistant (Lu, Refusé, Vide, Inconnu). Tout état porte sa date, comme sur un rapport imprimé.
 
 Cinq principes :
 

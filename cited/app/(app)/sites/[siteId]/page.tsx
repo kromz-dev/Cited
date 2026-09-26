@@ -12,7 +12,7 @@ import { buildScanHistory } from "@/lib/sites/scan-history";
 import { resolveDomainName } from "@/lib/sites/domain-name";
 
 export const metadata = {
-  title: "Détail du domaine | Cited",
+  title: "Détail du domaine | Decelio",
 };
 
 export default async function SiteDetailPage(props: { params: Promise<{ siteId: string }> }) {

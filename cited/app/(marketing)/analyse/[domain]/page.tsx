@@ -21,7 +21,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const domain = decodeDomain((await params).domain);
   return {
-    title: `Diagnostic Cited pour ${domain}`,
+    title: `Diagnostic Decelio pour ${domain}`,
     description: `Ce que ChatGPT, Claude et Perplexity voient réellement sur ${domain} : politique robots.txt, accès et dépendance JavaScript.`,
   };
 }
@@ -34,7 +34,7 @@ export default async function AnalyseDomainPage({ params }: PageProps) {
     <main className="min-h-screen bg-paper px-6 py-8 text-ink">
       <header className="mx-auto flex max-w-6xl items-center justify-between">
         <Link href="/" className="text-xl font-semibold tracking-tight">
-          Cited<span className="text-cobalt">.</span>
+          Decelio<span className="text-cobalt">.</span>
         </Link>
         <nav className="flex gap-5 text-sm text-ink-2">
           <Link href="/pricing" className="hover:text-ink">Tarifs</Link>

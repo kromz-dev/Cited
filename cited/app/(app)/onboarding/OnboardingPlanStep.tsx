@@ -25,7 +25,7 @@ export function OnboardingPlanStep() {
       <header className="bg-ink text-paper">
         <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 py-3.5">
           <Link href="/" className="mr-auto inline-flex items-center text-[19px] font-semibold tracking-tight">
-            Cited<span className="text-cobalt">.</span>
+            Decelio<span className="text-cobalt">.</span>
           </Link>
           <span className="type-caption font-medium opacity-70">Étape 2 sur 3</span>
         </div>
@@ -44,7 +44,7 @@ export function OnboardingPlanStep() {
           </h1>
           <p className="mb-[22px] text-sm leading-6 text-ink-2">
             Choisissez un palier pour surveiller votre portefeuille en continu. Le paiement se fait sur
-            Stripe ; vous revenez ensuite directement sur Cited.
+            Stripe ; vous revenez ensuite directement sur Decelio.
           </p>
 
           <div className="flex flex-col gap-1.5">

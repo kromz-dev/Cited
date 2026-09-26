@@ -35,7 +35,7 @@ function makeReport(overrides: {
       redirects: [],
       signals: [],
       durationMs: 120,
-      userAgent: "CitedBot/1.0",
+      userAgent: "DecelioBot/1.0",
       unverifiedProbes: [],
       ...overrides.access,
     },

@@ -4,11 +4,11 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Cited | La lisibilité IA de tout votre portefeuille client",
-  description: "Cited vérifie chaque jour que les sites que vous maintenez restent lisibles par ChatGPT, Claude et Perplexity, et vous alerte avec la cause et le correctif dès qu'un site casse. Pour les agences de maintenance WordPress et les agences SEO/GEO.",
+  title: "Decelio | La lisibilité IA de tout votre portefeuille client",
+  description: "Decelio vérifie chaque jour que les sites que vous maintenez restent lisibles par ChatGPT, Claude et Perplexity, et vous alerte avec la cause et le correctif dès qu'un site casse. Pour les agences de maintenance WordPress et les agences SEO/GEO.",
   keywords: ["lisibilité IA", "GEO", "AEO", "robots.txt", "GPTBot", "ChatGPT bot", "Claude bot", "Perplexity bot", "maintenance WordPress", "agence SEO"],
   openGraph: {
-    title: "Cited | La lisibilité IA de tout votre portefeuille client",
+    title: "Decelio | La lisibilité IA de tout votre portefeuille client",
     description: "Un scan quotidien, une alerte avec la cause et le correctif, et un rapport mensuel à votre marque. Pour les agences de maintenance WordPress et SEO/GEO.",
   },
 };

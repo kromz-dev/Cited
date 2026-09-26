@@ -28,7 +28,7 @@ describe("renderAlertEmail", () => {
       domains: [{ domain: "exemple.fr", cause, fix: suggestFix(cause) }],
     });
 
-    expect(email.subject).toBe("Cited — un domaine n'est plus lisible");
+    expect(email.subject).toBe("Decelio — un domaine n'est plus lisible");
     expect(email.text).toContain("n'est plus lisible");
     expect(email.text).toContain("exemple.fr");
     expect(email.text).toContain(cause);
@@ -42,7 +42,7 @@ describe("renderAlertEmail", () => {
       domains: [{ domain: "exemple.fr", cause: "le site répond de nouveau", fix: "Rien à changer." }],
     });
 
-    expect(email.subject).toBe("Cited — un domaine est de nouveau lisible");
+    expect(email.subject).toBe("Decelio — un domaine est de nouveau lisible");
     expect(email.text).toContain("est de nouveau lisible");
     expect(email.text).toContain("exemple.fr");
     expect(email.text).toContain("le site répond de nouveau");
@@ -58,7 +58,7 @@ describe("renderAlertEmail", () => {
       ],
     });
 
-    expect(email.subject).toBe("Cited — 2 domaines ne sont plus lisibles");
+    expect(email.subject).toBe("Decelio — 2 domaines ne sont plus lisibles");
     expect(email.text).toContain("a.fr");
     expect(email.text).toContain("b.fr");
   });

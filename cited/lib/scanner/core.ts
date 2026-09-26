@@ -11,7 +11,7 @@ import {
   JsDependencyCheck,
   parseIndexingDirectives,
 } from "./analyzer";
-import { ALL_BOTS, BOTS, BotAgent, citedUserAgent, DEFAULT_PROBE_BOTS } from "./agents";
+import { ALL_BOTS, BOTS, BotAgent, decelioUserAgent, DEFAULT_PROBE_BOTS } from "./agents";
 import { fetchRobotsReport, RobotsReport } from "./robots";
 import { getDefaultRenderer, Renderer } from "./renderer";
 
@@ -66,7 +66,7 @@ export interface ScanOptions {
 }
 
 export async function runScan(url: string, options: ScanOptions = {}): Promise<ScanReport> {
-  const userAgent = citedUserAgent();
+  const userAgent = decelioUserAgent();
   const reportBots = options.reportBots ?? ALL_BOTS;
   const renderer = options.renderer ?? getDefaultRenderer();
 

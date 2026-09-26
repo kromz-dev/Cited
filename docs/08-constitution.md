@@ -1,13 +1,13 @@
-# Constitution Cited
+# Constitution Decelio
 
 Ce document fixe les principes non négociables du produit et de son développement. Il prime sur toute décision ponctuelle : une tâche, un ticket ou une demande qui le contredit doit d'abord faire modifier ce texte, par un amendement explicite (voir Gouvernance), pas être exécutée en douce.
 
-Portée : le produit Cited décrit dans `docs/05-analyse-strategique.md` et `docs/09-prd-mvp.md`. Dépôt de code : `cited/` (Next.js 16, TypeScript strict, Prisma/PostgreSQL, Inngest, Stripe).
+Portée : le produit Decelio décrit dans `docs/05-analyse-strategique.md` et `docs/09-prd-mvp.md`. Dépôt de code : `cited/` (Next.js 16, TypeScript strict, Prisma/PostgreSQL, Inngest, Stripe).
 
 ## Principes fondateurs
 
 ### I. Honnêteté de la mesure avant toute promesse
-Cited vend la preuve d'un problème technique, pas un chiffre séduisant. Toute donnée affichée à un client (verdict, score, historique) doit être :
+Decelio vend la preuve d'un problème technique, pas un chiffre séduisant. Toute donnée affichée à un client (verdict, score, historique) doit être :
 - **vérifiable** : reliée à une cause identifiable (règle `robots.txt`, code HTTP, challenge, dépendance JS), jamais un score agrégé qui masque la cause ;
 - **honnêtement étiquetée** : une requête qui imite l'User-Agent d'un bot IA depuis un serveur non vérifié est présentée comme « requête non vérifiée se présentant comme X », jamais comme « ce que voit GPTBot » (§3.2 de l'analyse stratégique) ;
 - **sans faux positif toléré** : une alerte envoyée sans cause confirmée détruit la crédibilité du produit plus vite qu'elle ne le construit. En cas de doute sur la fiabilité d'un signal, le produit affiche « à vérifier », jamais un verdict tranché.
@@ -31,7 +31,7 @@ La landing page, la page de tarifs et l'application n'affichent jamais une fonct
 Toute interface livrée (marketing, application, e-mails transactionnels, rapport PDF) respecte WCAG 2.1 niveau AA : contraste suffisant, navigation clavier complète, libellés explicites pour les lecteurs d'écran, cibles tactiles d'au moins 44 px. Une fonctionnalité qui ne peut pas être livrée accessible n'est pas livrée dans cet état ; elle est retardée ou simplifiée jusqu'à l'être.
 
 ### VI. Simplicité radicale, pensée pour un fondateur solo
-Cited est développé et exploité par une seule personne au stade MVP. Toute décision technique se pose la question : « est-ce que je peux encore comprendre et réparer ceci seul, à 2 h du matin, six mois après l'avoir écrit ? ». En conséquence :
+Decelio est développé et exploité par une seule personne au stade MVP. Toute décision technique se pose la question : « est-ce que je peux encore comprendre et réparer ceci seul, à 2 h du matin, six mois après l'avoir écrit ? ». En conséquence :
 - pas d'infrastructure qu'un fondateur solo ne peut pas superviser (pas de flotte de microservices, pas de file d'attente maison quand Inngest suffit) ;
 - toute dépendance nouvelle se justifie par un problème réel déjà rencontré, pas par anticipation ;
 - le rendu headless reste l'exception (pages suspectes seulement) tant que le volume ne justifie pas un service dédié payant (§13 de l'analyse stratégique).

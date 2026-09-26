@@ -4,7 +4,7 @@ import { listRecentAlerts } from "@/lib/alerting/sendAlert";
 import { AlertsJournal } from "./AlertsJournal";
 
 export const metadata = {
-  title: "Alertes | Cited",
+  title: "Alertes | Decelio",
 };
 
 export default async function AlertsPage() {

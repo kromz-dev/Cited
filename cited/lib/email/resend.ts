@@ -31,15 +31,15 @@ export async function sendAuditReportEmail(
       <p>J'ai fait passer ${domain} dans notre outil de mesure de visibilité IA.</p>
       <p>Votre marque ressort dans ${mentionsCount} réponses sur ${totalRuns}. ${competitorText}</p>
       <p>Le rapport complet est ici : <a href="${process.env.NEXT_PUBLIC_APP_URL}/analyse/${domain}">Voir mon rapport détaillé</a></p>
-      <p>Si vous voulez corriger ça, l'outil génère le contenu à modifier, le JSON-LD à ajouter et le fichier llms.txt à mettre en place : <a href="${process.env.NEXT_PUBLIC_APP_URL}">Découvrir Cited</a></p>
+      <p>Si vous voulez corriger ça, l'outil génère le contenu à modifier, le JSON-LD à ajouter et le fichier llms.txt à mettre en place : <a href="${process.env.NEXT_PUBLIC_APP_URL}">Découvrir Decelio</a></p>
       <br />
-      <p>À bientôt,<br/>L'équipe Cited</p>
+      <p>À bientôt,<br/>L'équipe Decelio</p>
     </div>
   `;
 
   try {
     const response = await getResend().emails.send({
-      from: "Cited <bonjour@cited.app>", // Update with a verified domain
+      from: "Decelio <bonjour@decelio.app>", // Update with a verified domain
       to,
       subject: `Votre marque est citée ${mentionsCount} fois sur ${totalRuns} par ChatGPT`,
       html,
@@ -58,19 +58,19 @@ export async function sendPasswordResetEmail(to: string, token: string) {
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
       <p>Bonjour,</p>
-      <p>Vous avez demandé la réinitialisation du mot de passe de votre compte Cited.</p>
+      <p>Vous avez demandé la réinitialisation du mot de passe de votre compte Decelio.</p>
       <p><a href="${resetUrl}">Choisir un nouveau mot de passe</a></p>
       <p>Ce lien est valable 1 heure. Ignorez cet e-mail si vous n'êtes pas à l'origine de la demande.</p>
       <br />
-      <p>L'équipe Cited</p>
+      <p>L'équipe Decelio</p>
     </div>
   `;
 
   try {
     const response = await getResend().emails.send({
-      from: "Cited <bonjour@cited.app>", // Update with a verified domain
+      from: "Decelio <bonjour@decelio.app>", // Update with a verified domain
       to,
-      subject: "Réinitialisation de votre mot de passe Cited",
+      subject: "Réinitialisation de votre mot de passe Decelio",
       html,
     });
 
@@ -89,7 +89,7 @@ export async function sendDiscoveryEmail(to: string, name?: string | null) {
   const html = `
     <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;">
       <p>${greeting}</p>
-      <p>Pour régler Cited au plus près de votre usage, j'aurais besoin de 5 réponses courtes. Vous pouvez simplement répondre à cet e-mail.</p>
+      <p>Pour régler Decelio au plus près de votre usage, j'aurais besoin de 5 réponses courtes. Vous pouvez simplement répondre à cet e-mail.</p>
       <ol>
         <li>Combien de sites avez-vous sous contrat récurrent, et chez quels hébergeurs ?</li>
         <li>Que contient votre rapport mensuel aujourd'hui ? Combien de temps vous prend-il ?</li>
@@ -98,15 +98,15 @@ export async function sendDiscoveryEmail(to: string, name?: string | null) {
         <li>Que devrait contenir le rapport pour que vous l'envoyiez tel quel à vos clients ?</li>
       </ol>
       <br />
-      <p>À bientôt,<br/>L'équipe Cited</p>
+      <p>À bientôt,<br/>L'équipe Decelio</p>
     </div>
   `;
 
   try {
     const response = await getResend().emails.send({
-      from: "Cited <bonjour@cited.app>", // Update with a verified domain
+      from: "Decelio <bonjour@decelio.app>", // Update with a verified domain
       to,
-      subject: "5 questions pour régler Cited sur votre parc",
+      subject: "5 questions pour régler Decelio sur votre parc",
       html,
     });
 
@@ -175,7 +175,7 @@ export async function sendMonthlyReportReadyEmail({
     ? `Vos rapports mensuels sont disponibles — ${periodLabel}`
     : `Votre rapport mensuel est disponible — ${periodLabel}`;
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://cited.app";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://decelio.app";
   const targetUrl = reportUrl || `${appUrl}/reports`;
 
   const clientListHtml =
@@ -200,7 +200,7 @@ export async function sendMonthlyReportReadyEmail({
       <p style="margin: 24px 0;"><a href="${targetUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 500;">Accéder aux rapports</a></p>
       <p style="font-size: 13px; color: #64748b;">Ces rapports sont prêts à être partagés avec vos clients sous votre propre identité visuelle.</p>
       <br />
-      <p>À bientôt,<br/>L'équipe Cited</p>
+      <p>À bientôt,<br/>L'équipe Decelio</p>
     </div>
   `;
 
@@ -223,12 +223,12 @@ export async function sendMonthlyReportReadyEmail({
     "Ces rapports sont prêts à être partagés avec vos clients sous votre propre identité visuelle.",
     "",
     "À bientôt,",
-    "L'équipe Cited",
+    "L'équipe Decelio",
   ].join("\n");
 
   try {
     const response = await getResend().emails.send({
-      from: "Cited <bonjour@cited.app>", // Update with a verified domain
+      from: "Decelio <bonjour@decelio.app>", // Update with a verified domain
       to,
       subject,
       html,

@@ -1,6 +1,6 @@
 import { lookup } from "node:dns/promises";
 import ipaddr from "ipaddr.js";
-import { citedUserAgent } from "./agents";
+import { decelioUserAgent } from "./agents";
 
 export const MAX_REDIRECTS = 5;
 const DEFAULT_TIMEOUT_MS = 10_000;
@@ -104,7 +104,7 @@ async function readBody(response: Response, maxBytes: number): Promise<string> {
  * cible étant revalidée par `assertSafeUrl` avant d'être contactée.
  */
 export async function crawlUrl(url: string, options: CrawlOptions = {}): Promise<CrawlResult> {
-  const userAgent = options.userAgent ?? citedUserAgent();
+  const userAgent = options.userAgent ?? decelioUserAgent();
   const maxRedirects = options.maxRedirects ?? MAX_REDIRECTS;
   const startTime = Date.now();
   const redirects: RedirectHop[] = [];

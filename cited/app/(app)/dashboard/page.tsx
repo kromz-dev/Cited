@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { maxSitesFor } from "@/lib/billing/plans";
 
 export const metadata = {
-  title: "Portefeuille | Cited",
+  title: "Portefeuille | Decelio",
 };
 
 export default async function DashboardPage() {
