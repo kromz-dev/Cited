@@ -3,12 +3,12 @@ name: CI
 on:
   pull_request:
     paths:
-      - "cited/**"
+      - "decelio/**"
       - ".github/workflows/**"
   push:
     branches: [main]
     paths:
-      - "cited/**"
+      - "decelio/**"
       - ".github/workflows/**"
   workflow_dispatch:
 
@@ -22,7 +22,7 @@ concurrency:
 
 defaults:
   run:
-    working-directory: cited
+    working-directory: decelio
 
 # ─── Shared setup ────────────────────────────────────────────────────
 # Each job installs independently so they can run in parallel.
@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: cited/package-lock.json
+          cache-dependency-path: decelio/package-lock.json
 
       - run: npm ci
 
@@ -65,7 +65,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: cited/package-lock.json
+          cache-dependency-path: decelio/package-lock.json
 
       - run: npm ci
 
@@ -85,19 +85,19 @@ jobs:
       postgres:
         image: postgres:17-alpine
         env:
-          POSTGRES_USER: cited
-          POSTGRES_PASSWORD: cited
-          POSTGRES_DB: cited
+          POSTGRES_USER: decelio
+          POSTGRES_PASSWORD: decelio
+          POSTGRES_DB: decelio
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U cited -d cited"
+          --health-cmd "pg_isready -U decelio -d decelio"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql://cited:cited@127.0.0.1:5432/cited
-      DIRECT_URL: postgresql://cited:cited@127.0.0.1:5432/cited
+      DATABASE_URL: postgresql://decelio:decelio@127.0.0.1:5432/decelio
+      DIRECT_URL: postgresql://decelio:decelio@127.0.0.1:5432/decelio
       AUTH_SECRET: ci-placeholder-secret-value-32-chars
       AUTH_GOOGLE_ID: ci
       AUTH_GOOGLE_SECRET: ci
@@ -120,7 +120,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: cited/package-lock.json
+          cache-dependency-path: decelio/package-lock.json
 
       - run: npm ci
 
@@ -138,14 +138,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: cited/coverage/
+          path: decelio/coverage/
           retention-days: 14
 
       - name: Report coverage in PR comment
         if: github.event_name == 'pull_request'
         uses: davelosert/vitest-coverage-report-action@v2
         with:
-          working-directory: cited
+          working-directory: decelio
           json-summary-path: coverage/coverage-summary.json
           json-final-path: coverage/coverage-final.json
 
@@ -156,8 +156,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/cited
-      DIRECT_URL: postgresql://ci:ci@localhost:5432/cited
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/decelio
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/decelio
       AUTH_SECRET: ci-placeholder-secret-value-32-chars
       AUTH_GOOGLE_ID: ci
       AUTH_GOOGLE_SECRET: ci
@@ -180,7 +180,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: cited/package-lock.json
+          cache-dependency-path: decelio/package-lock.json
 
       - run: npm ci
 
@@ -216,7 +216,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: cited/package-lock.json
+          cache-dependency-path: decelio/package-lock.json
 
       - run: npm ci
 
@@ -271,19 +271,19 @@ jobs:
       postgres:
         image: postgres:17-alpine
         env:
-          POSTGRES_USER: cited
-          POSTGRES_PASSWORD: cited
-          POSTGRES_DB: cited
+          POSTGRES_USER: decelio
+          POSTGRES_PASSWORD: decelio
+          POSTGRES_DB: decelio
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U cited -d cited"
+          --health-cmd "pg_isready -U decelio -d decelio"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql://cited:cited@127.0.0.1:5432/cited
-      DIRECT_URL: postgresql://cited:cited@127.0.0.1:5432/cited
+      DATABASE_URL: postgresql://decelio:decelio@127.0.0.1:5432/decelio
+      DIRECT_URL: postgresql://decelio:decelio@127.0.0.1:5432/decelio
     steps:
       - uses: actions/checkout@v5
 
@@ -291,7 +291,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: cited/package-lock.json
+          cache-dependency-path: decelio/package-lock.json
 
       - run: npm ci
 
@@ -347,7 +347,7 @@ jobs:
             --exclude-dir=node_modules --exclude-dir=.next \
             --exclude="*.test.*" --exclude="*.spec.*" \
             --exclude="*.fixture.*" \
-            cited/app cited/components cited/lib cited/inngest 2>/dev/null || true)
+            decelio/app decelio/components decelio/lib decelio/inngest 2>/dev/null || true)
 
           if [ -n "$MOCK_HITS" ]; then
             echo "❌ Mock data found in production code:" >> $GITHUB_STEP_SUMMARY
@@ -408,7 +408,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: cited/package-lock.json
+          cache-dependency-path: decelio/package-lock.json
 
       - name: Verify lockfile integrity
         run: npm ci --ignore-scripts

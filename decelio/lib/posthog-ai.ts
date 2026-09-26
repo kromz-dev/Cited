@@ -54,7 +54,7 @@ export async function captureAiGeneration(generation: AiGeneration): Promise<voi
 
   try {
     client.capture({
-      distinctId: "cited-ai-service",
+      distinctId: "decelio-ai-service",
       event: "$ai_generation",
       properties: {
         $process_person_profile: false,

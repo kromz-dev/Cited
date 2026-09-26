@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: /cited
+    directory: /decelio
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
@@ -13,6 +13,6 @@ updates:
     schedule:
       interval: weekly
   - package-ecosystem: docker
-    directory: /cited
+    directory: /decelio
     schedule:
       interval: weekly
