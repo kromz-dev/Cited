@@ -1,7 +1,7 @@
 # Decelio — état du projet et reprise
 
 Source de vérité pour reprendre le travail, avec un humain ou un agent.
-**Dernière mise à jour :** 26 septembre 2026.
+**Dernière mise à jour :** 26 septembre 2026 (soir : ménage des dossiers de travail).
 
 **Stack :** Next.js 16 · React 19 · TypeScript strict · Prisma 5 · PostgreSQL · Tailwind 4 · NextAuth v5 · Stripe · Inngest · Resend · PostHog
 **Contrainte absolue :** budget 0 €, autofinancé. Uniquement des offres gratuites qui autorisent un usage commercial (voir `docs/09-prd-mvp.md` §14, ENF-016).
@@ -20,7 +20,7 @@ Source de vérité pour reprendre le travail, avec un humain ou un agent.
 
 Chaque tâche part de `main` sur sa propre branche `feat/t0XX-<sujet>` (ou `fix/`, `docs/`, `chore/`), une PR par tâche, fusion par l'humain une fois la CI verte.
 
-**Deux agents en parallèle** : Claude (dossier `Decelio-claude`, facturation, réglages, onboarding, infra, CI) et Grok (dossier `Decelio-grok`, cœur produit : T019-T036, T053, T055). Une branche et une PR par tâche vers `main`, jamais de PR empilées.
+**Un seul dossier de travail depuis le 26/09 au soir** : `saas/Cited`. Les checkouts parallèles par agent (`Cited-claude`, `Cited-grok`, `Cited-agent`, etc.) ont été supprimés, leur contenu étant intégralement présent dans `Cited` (voir « 26/09 au soir » ci-dessous). Chaque tâche reste une branche et une PR vers `main`, jamais de PR empilées.
 
 ### 25/09 : `main` remis au vert, historique de migrations reconstruit
 
@@ -99,6 +99,20 @@ La page d'accueil (HomePage.tsx) a été entièrement réécrite pour se concent
 Points non vérifiés (T001) : les CGU d'usage commercial de Render, Neon, Resend et PostHog ne sont pas confirmées par écrit — aucun outil MCP n'expose ce texte contractuel, à faire à la main.
 
 Cinq pull requests Dependabot restent ouvertes (#28 à #32), dont trois montées majeures (Prisma 7, TypeScript 7, `@types/node` 25) — reportées volontairement après la stabilisation.
+
+### 26/09 au soir : un seul dossier de travail, toutes les branches sauvegardées
+
+Le poste portait dix dossiers de travail en parallèle, hérités des sessions d'agents : des clones, des worktrees Git et de simples copies. Vérification faite avant tout ménage, aucun commit n'existait ailleurs que dans `Cited` : chaque tip de branche des clones `Cited-agent` et `Cited-grok` était déjà présent dans le dépôt principal.
+
+**Douze branches poussées sur GitHub.** Neuf branches locales n'étaient atteignables depuis aucune ref `origin` et auraient disparu avec le disque : `chore/t003-t004-infra`, `feat/t005-posthog`, `feat/t027-real-dashboard-stats`, `feat/t030-single-alert`, `feat/t051-mock-data-audit`, `fix/t032b-test-types`, `local/chore-t003-t004-infra`, `t026-scope-reduction`, `tmp-t053`. Toutes poussées en fast-forward, sans `--force`. Les trois branches `rename/decelio-*` ont suivi après commit (voir ci-dessous).
+
+**Renommage Cited vers Decelio : trois lots commités puis poussés.** Le travail existait en modifications non commitées dans trois worktrees d'agents, jamais enregistrées. Il s'agit uniquement de texte visible, sans changement de comportement : `rename/decelio-prospecting-kit` (`docs/06-kit-prospection.md`), `rename/decelio-foundation-docs` (`docs/08-constitution.md`), `rename/decelio-app-pages` (`cited/components/home/HomePage.tsx`). **Attention avant fusion** : `rename/decelio-app-pages` touche `HomePage.tsx`, que le travail en cours sur la landing page modifie aussi dans `main`. Un conflit est à prévoir.
+
+**Supprimé** : les clones `Cited-agent` (dont l'`origin` pointait vers le dépôt local, pas GitHub) et `Cited-grok`, les worktrees `Cited-claude` et `Cited-claude-2`, le worktree cassé `cited-antigravity` (son `gitdir` pointait vers un chemin WSL `/mnt/c/...` inutilisable), `Cited-fixci` (ne contenait qu'un `node_modules`) et le script jetable `resolve.py`. Les douze worktrees d'agents sous `Cited/.claude/worktrees/` ont été désenregistrés. Le compte de branches locales est inchangé, 22 : aucun `git branch -d` n'a été exécuté.
+
+**Conservé** : `Cited` (seul dossier vivant), `Cited-backups` (trois patches et deux sauvegardes) et `exemplesaasdesign` (références visuelles).
+
+**Reste à faire à la main** : dix répertoires vides ou périmés subsistent sous `Cited/.claude/worktrees/`, que Git n'a pas pu effacer (« Permission denied » sous Windows). Sept sont vides ; trois (`agent-a89329667ee6ca825`, `agent-acb318020bf7fca7a`, `agent-ae08ade55a8e93651`) sont des copies antérieures au 25/09, reconnaissables aux trois anciennes migrations Prisma qu'elles contiennent encore. Aucune n'a de dépôt Git propre, donc aucune ne peut porter de commit unique. À supprimer avec `Remove-Item -Recurse -Force` depuis PowerShell.
 
 ---
 
