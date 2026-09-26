@@ -107,8 +107,11 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
           <div className={styles.shell}>
             <div className={styles.heroGrid}>
               <div className={styles.heroText}>
+                <div style={{ display: "inline-block", padding: "6px 12px", background: "var(--cobalt-soft)", color: "var(--cobalt)", borderRadius: "20px", fontSize: "13px", fontWeight: "600", marginBottom: "20px", border: "1px solid var(--cobalt)" }}>
+                  Optimisation AEO (Answer Engine Optimization)
+                </div>
                 <h1 className={styles.h1}>Pourquoi l'IA ignore vos sites clients ?</h1>
-                <blockquote className={styles.aeoBlockquote} style={{ borderLeft: "4px solid var(--accent)", paddingLeft: "1rem", margin: "1.5rem 0", fontStyle: "italic", color: "var(--text-muted)" }}>
+                <blockquote className={styles.aeoBlockquote}>
                   Cited est un outil de surveillance automatisé pour agences web qui vérifie quotidiennement si les sites clients sont accessibles aux robots d'intelligence artificielle comme ChatGPT, Claude et Perplexity.
                 </blockquote>
                 <div className={styles.heroCtas}>
@@ -129,7 +132,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
         </section>
 
         {/* 2. Problem */}
-        <section className={styles.section}>
+        <section className={`${styles.section} ${styles.gradientBg}`}>
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
               <h2 className={styles.h2}>Vos clients perdent en visibilité, et vous n'en savez rien</h2>
@@ -141,7 +144,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
         </section>
 
         {/* 3. Solution */}
-        <section className={styles.section} style={{ backgroundColor: "var(--bg-muted)", padding: "4rem 0" }}>
+        <section className={styles.section} style={{ backgroundColor: "var(--surface)", padding: "4rem 0" }}>
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
               <h2 className={styles.h2}>La solution : Une surveillance proactive de l'accessibilité IA</h2>
@@ -152,37 +155,30 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
           </div>
         </section>
 
-        {/* 4. Features as Benefits (Table) */}
-        <section className={styles.section}>
+        {/* 4. Features as Benefits (Bento Grid) */}
+        <section className={styles.section} style={{ backgroundColor: "var(--paper)" }}>
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
               <h2 className={styles.h2}>Ce que nous surveillons pour vous</h2>
             </div>
-            <table className={styles.checksTable}>
-              <thead>
-                <tr>
-                  <th scope="col">Fonctionnalité</th>
-                  <th scope="col">Bénéfice pour l'agence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {checks.map((c) => (
-                  <tr key={c.feature}>
-                    <th scope="row" data-label="Fonctionnalité">{c.feature}</th>
-                    <td data-label="Bénéfice pour l'agence">{c.benefit}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            
+            <div className={styles.bentoGrid}>
+              {checks.map((c) => (
+                <div key={c.feature} className={styles.bentoCard}>
+                  <h3 className={styles.bentoTitle}>{c.feature}</h3>
+                  <p className={styles.bentoBody}>{c.benefit}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* 5. Social Proof */}
-        <section className={styles.section} style={{ textAlign: "center", backgroundColor: "var(--bg-muted)", padding: "3rem 1rem", borderRadius: "1rem" }}>
+        <section className={styles.section} style={{ textAlign: "center", padding: "4rem 1rem" }}>
           <div className={styles.shell}>
             <h2 className={styles.h2} style={{ marginBottom: "1rem" }}>Ils sécurisent déjà leur SEO</h2>
-            <p className={styles.sectionLead} style={{ marginBottom: "2rem" }}>Rejoignez les agences qui anticipent l'AEO et protègent leur portefeuille de clients.</p>
-            <div style={{ display: "flex", justifyContent: "center", gap: "2rem", flexWrap: "wrap", fontWeight: "bold", opacity: 0.6 }}>
+            <p className={styles.sectionLead} style={{ marginBottom: "2rem", marginInline: "auto" }}>Rejoignez les agences qui anticipent l'AEO et protègent leur portefeuille de clients.</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: "2rem", flexWrap: "wrap", fontWeight: "bold", opacity: 0.6, fontSize: "18px" }}>
               <span>4,000+ sites surveillés</span>
               <span>•</span>
               <span>100% automatisé</span>
@@ -193,9 +189,10 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
         </section>
 
         {/* 6. Mid-page CTA */}
-        <section className={styles.section} style={{ textAlign: "center", padding: "4rem 0" }}>
+        <section className={styles.section} style={{ textAlign: "center", backgroundColor: "var(--surface)", padding: "4rem 0", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>
           <div className={styles.shell}>
-            <Link href="/register" className={styles.btnPrimary} style={{ fontSize: "1.25rem", padding: "1rem 2rem" }}>
+            <h2 className={styles.h2} style={{ marginBottom: "2rem" }}>Prêt à protéger vos sites ?</h2>
+            <Link href="/register" className={styles.btnPrimary} style={{ fontSize: "1.1rem", padding: "12px 28px", borderRadius: "8px" }}>
               Essayer gratuitement pendant 14 jours
             </Link>
           </div>
@@ -222,31 +219,33 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
         </section>
 
         {/* 8. Comparison */}
-        <section className={styles.section}>
+        <section className={styles.section} style={{ backgroundColor: "var(--paper)" }}>
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
               <h2 className={styles.h2}>Comparaison : Cited vs Outils traditionnels</h2>
             </div>
-            <table className={styles.checksTable}>
-              <thead>
-                <tr>
-                  <th scope="col">Fonctionnalité</th>
-                  <th scope="col">Cited</th>
-                  <th scope="col">Semrush</th>
-                  <th scope="col">ManageWP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparison.map((c) => (
-                  <tr key={c.feature}>
-                    <th scope="row" data-label="Fonctionnalité">{c.feature}</th>
-                    <td data-label="Cited" style={{ fontWeight: c.cited === 'Oui' ? 'bold' : 'normal', color: c.cited === 'Oui' ? '#10b981' : 'inherit' }}>{c.cited}</td>
-                    <td data-label="Semrush">{c.semrush}</td>
-                    <td data-label="ManageWP">{c.managewp}</td>
+            <div style={{ overflowX: "auto" }}>
+              <table className={styles.checksTable}>
+                <thead>
+                  <tr>
+                    <th scope="col">Fonctionnalité</th>
+                    <th scope="col">Cited</th>
+                    <th scope="col">Semrush</th>
+                    <th scope="col">ManageWP</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {comparison.map((c) => (
+                    <tr key={c.feature}>
+                      <th scope="row" data-label="Fonctionnalité" style={{ fontWeight: 600 }}>{c.feature}</th>
+                      <td data-label="Cited" style={{ fontWeight: c.cited === 'Oui' ? 'bold' : 'normal', color: c.cited === 'Oui' ? 'var(--ok)' : 'inherit' }}>{c.cited}</td>
+                      <td data-label="Semrush" style={{ color: "var(--ink-3)" }}>{c.semrush}</td>
+                      <td data-label="ManageWP" style={{ color: "var(--ink-3)" }}>{c.managewp}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -268,21 +267,21 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
         </section>
 
         {/* 10. Trust Signals */}
-        <section className={styles.section} style={{ textAlign: "center", padding: "2rem 0", color: "var(--text-muted)", fontSize: "0.875rem" }}>
+        <section className={styles.section} style={{ textAlign: "center", padding: "2rem 0", color: "var(--ink-3)", fontSize: "0.875rem", background: "var(--surface)", borderTop: "1px solid var(--line)" }}>
           <div className={styles.shell}>
-            <p>🔒 Paiement sécurisé via Stripe · 🇪🇺 Hébergé en Europe · 🛡️ Conforme au RGPD</p>
+            <p>🔒 Paiement sécurisé via Stripe &nbsp;·&nbsp; 🇪🇺 Hébergé en Europe &nbsp;·&nbsp; 🛡️ Conforme au RGPD</p>
           </div>
         </section>
 
         {/* 11. Final CTA */}
-        <section className={styles.finalCta}>
+        <section className={styles.finalCta} style={{ background: "var(--cobalt)", color: "var(--surface)" }}>
           <div className={styles.shell}>
-            <h2 className={styles.finalCtaTitle}>Vérifiez un premier site en 15 secondes</h2>
-            <p className={styles.finalCtaLead}>Sans compte pour le scan. Sans carte bancaire pour l'essai.</p>
-            <div className={styles.heroCtas}>
-              <a href="#scan" className={styles.btnPrimary}>Scanner un site</a>
+            <h2 className={styles.finalCtaTitle} style={{ color: "var(--surface)" }}>Vérifiez un premier site en 15 secondes</h2>
+            <p className={styles.finalCtaLead} style={{ color: "var(--cobalt-soft)" }}>Sans compte pour le scan. Sans carte bancaire pour l'essai.</p>
+            <div className={styles.heroCtas} style={{ justifyContent: "center" }}>
+              <a href="#scan" className={styles.btnPrimary} style={{ background: "var(--surface)", color: "var(--cobalt)" }}>Scanner un site</a>
               {isLoggedIn ? null : (
-                <Link href="/register" className={styles.btnGhost}>Démarrer mon essai</Link>
+                <Link href="/register" className={styles.btnGhost} style={{ borderColor: "var(--cobalt-soft)", color: "var(--surface)" }}>Démarrer mon essai</Link>
               )}
             </div>
           </div>
