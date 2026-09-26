@@ -110,14 +110,14 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
                 <div style={{ display: "inline-block", padding: "6px 12px", background: "var(--cobalt-soft)", color: "var(--cobalt)", borderRadius: "20px", fontSize: "13px", fontWeight: "600", marginBottom: "20px", border: "1px solid var(--cobalt)" }}>
                   Optimisation AEO (Answer Engine Optimization)
                 </div>
-                <h1 className={styles.h1}>Pourquoi l'IA ignore vos sites clients ?</h1>
+                <h1 className={styles.h1}>Pourquoi l&apos;IA ignore vos sites clients ?</h1>
                 <blockquote className={styles.aeoBlockquote}>
-                  Decelio est un outil de surveillance automatisé pour agences web qui vérifie quotidiennement si les sites clients sont accessibles aux robots d'intelligence artificielle comme ChatGPT, Claude et Perplexity.
+                  Decelio est un outil de surveillance automatisé pour agences web qui vérifie quotidiennement si les sites clients sont accessibles aux robots d&apos;intelligence artificielle comme ChatGPT, Claude et Perplexity.
                 </blockquote>
                 <div className={styles.heroCtas}>
                   <a href="#scan" className={styles.btnPrimary}>Scanner un site</a>
                   {isLoggedIn ? null : (
-                    <Link href="/register" className={styles.btnGhost}>Démarrer l'essai</Link>
+                    <Link href="/register" className={styles.btnGhost}>Démarrer l&apos;essai</Link>
                   )}
                 </div>
                 <div id="scan" className={styles.scanFormWrap} style={{ marginTop: "2rem" }}>
@@ -135,9 +135,9 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
         <section className={`${styles.section} ${styles.gradientBg}`}>
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
-              <h2 className={styles.h2}>Vos clients perdent en visibilité, et vous n'en savez rien</h2>
+              <h2 className={styles.h2}>Vos clients perdent en visibilité, et vous n&apos;en savez rien</h2>
               <p className={styles.sectionLead} style={{ marginTop: "1rem" }}>
-                Vous passez des heures à optimiser le SEO de vos clients. Mais chaque jour, des sites disparaissent des résultats de l'IA à cause d'une simple case cochée dans Cloudflare, d'une mise à jour Wordfence ou d'un pare-feu mal configuré. Vous continuez à facturer la maintenance, mais les robots IA sont bloqués et personne ne vous avertit.
+                Vous passez des heures à optimiser le SEO de vos clients. Mais chaque jour, des sites disparaissent des résultats de l&apos;IA à cause d&apos;une simple case cochée dans Cloudflare, d&apos;une mise à jour Wordfence ou d&apos;un pare-feu mal configuré. Vous continuez à facturer la maintenance, mais les robots IA sont bloqués et personne ne vous avertit.
               </p>
             </div>
           </div>
@@ -147,9 +147,9 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
         <section className={styles.section} style={{ backgroundColor: "var(--surface)", padding: "4rem 0" }}>
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
-              <h2 className={styles.h2}>La solution : Une surveillance proactive de l'accessibilité IA</h2>
+              <h2 className={styles.h2}>La solution : Une surveillance proactive de l&apos;accessibilité IA</h2>
               <p className={styles.sectionLead} style={{ marginTop: "1rem" }}>
-                Decelio agit comme votre système d'alerte précoce. Nous simulons l'accès des robots IA à vos sites pour détecter le moindre blocage. Avant même que votre client ne s'aperçoive d'une baisse de trafic, vous recevez une notification précise de l'erreur et de sa solution. Prouvez votre valeur d'expert AEO.
+                Decelio agit comme votre système d&apos;alerte précoce. Nous simulons l&apos;accès des robots IA à vos sites pour détecter le moindre blocage. Avant même que votre client ne s&apos;aperçoive d&apos;une baisse de trafic, vous recevez une notification précise de l&apos;erreur et de sa solution. Prouvez votre valeur d&apos;expert AEO.
               </p>
             </div>
           </div>
@@ -177,7 +177,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
         <section className={styles.section} style={{ textAlign: "center", padding: "4rem 1rem" }}>
           <div className={styles.shell}>
             <h2 className={styles.h2} style={{ marginBottom: "1rem" }}>Ils sécurisent déjà leur SEO</h2>
-            <p className={styles.sectionLead} style={{ marginBottom: "2rem", marginInline: "auto" }}>Rejoignez les agences qui anticipent l'AEO et protègent leur portefeuille de clients.</p>
+            <p className={styles.sectionLead} style={{ marginBottom: "2rem", marginInline: "auto" }}>Rejoignez les agences qui anticipent l&apos;AEO et protègent leur portefeuille de clients.</p>
             <div style={{ display: "flex", justifyContent: "center", gap: "2rem", flexWrap: "wrap", fontWeight: "bold", opacity: 0.6, fontSize: "18px" }}>
               <span>4,000+ sites surveillés</span>
               <span>•</span>
@@ -277,7 +277,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
         <section className={styles.finalCta} style={{ background: "var(--cobalt)", color: "var(--surface)" }}>
           <div className={styles.shell}>
             <h2 className={styles.finalCtaTitle} style={{ color: "var(--surface)" }}>Vérifiez un premier site en 15 secondes</h2>
-            <p className={styles.finalCtaLead} style={{ color: "var(--cobalt-soft)" }}>Sans compte pour le scan. Sans carte bancaire pour l'essai.</p>
+            <p className={styles.finalCtaLead} style={{ color: "var(--cobalt-soft)" }}>Sans compte pour le scan. Sans carte bancaire pour l&apos;essai.</p>
             <div className={styles.heroCtas} style={{ justifyContent: "center" }}>
               <a href="#scan" className={styles.btnPrimary} style={{ background: "var(--surface)", color: "var(--cobalt)" }}>Scanner un site</a>
               {isLoggedIn ? null : (

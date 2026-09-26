@@ -21,7 +21,7 @@ export default async function SourcesPage() {
       <header className="mb-8">
         <h1 className="text-[28px] leading-[34px] font-semibold tracking-[-0.02em] text-ink">Sources</h1>
         <p className="mt-2 max-w-xl text-sm leading-6 text-ink-2">
-          Gérez vos sources d'information et les moteurs d'IA (LLMs) surveillés pour votre portefeuille.
+          Gérez vos sources d&apos;information et les moteurs d&apos;IA (LLMs) surveillés pour votre portefeuille.
         </p>
       </header>
 
@@ -31,7 +31,7 @@ export default async function SourcesPage() {
         </div>
         <h3 className="mt-4 text-sm font-semibold text-ink">Aucune source personnalisée</h3>
         <p className="mt-2 text-sm text-ink-2">
-          Les sources d'intelligence artificielle globales sont surveillées par défaut pour vos domaines.
+          Les sources d&apos;intelligence artificielle globales sont surveillées par défaut pour vos domaines.
           La configuration de sources personnalisées sera bientôt disponible.
         </p>
         <div className="mt-6">
