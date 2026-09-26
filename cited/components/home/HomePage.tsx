@@ -5,117 +5,78 @@ import { schibsted } from "./fonts";
 import tokens from "./tokens.module.css";
 import styles from "./home.module.css";
 
-const causes = [
-  {
-    term: "Le bouton « Bloquer les robots IA » de Cloudflare",
-    body: "Une case à cocher dans Sécurité → Bots. Elle se coche en quelques secondes lors d'un durcissement de la sécurité, et rien dans l'interface WordPress n'en garde la trace.",
-  },
-  {
-    term: "Les réglages anti-robots de Wordfence",
-    body: "Pensés contre le spam et le scraping, ils limitent aussi le débit des robots légitimes. GPTBot, ClaudeBot et PerplexityBot peuvent être ralentis ou bloqués sans qu'aucune alerte ne remonte.",
-  },
-  {
-    term: "Le blocage GPTBot en un clic de Yoast SEO",
-    body: "Une option de confidentialité dans les réglages Yoast. Elle vise l'entraînement, mais elle est parfois activée sans que le client ou l'agence ne s'en souvienne.",
-  },
-  {
-    term: "Un robots.txt imposé par l'hébergement mutualisé",
-    body: "Certains hébergeurs WordPress managés servent leur propre robots.txt, impossible à modifier depuis l'administration du site, et parfois fermé aux robots IA par défaut.",
-  },
-  {
-    term: "Une page vide sans JavaScript",
-    body: "Les sites construits en React, Vue ou toute application à page unique n'envoient qu'une coquille HTML. Un robot qui n'exécute pas le script ne lit rien.",
-  },
-];
-
 const steps = [
   {
-    title: "Ajoutez les sites de votre portefeuille",
+    title: "1. Ajoutez vos clients",
     body: "L'URL de chaque client suffit. Vous pouvez aussi déposer le logo de votre agence, utilisé sur le rapport mensuel.",
   },
   {
-    title: "Cited vérifie chaque site, chaque jour",
-    body: "Trois contrôles honnêtes : le robots.txt par robot IA, la réponse au pare-feu ou au challenge de sécurité, et la présence du texte utile sans JavaScript.",
+    title: "2. Surveillance automatique",
+    body: "Cited vérifie chaque site, chaque jour : le robots.txt par robot IA, la réponse au pare-feu, et la présence du texte utile sans JavaScript.",
   },
   {
-    title: "Vous recevez la cause, pas juste l'alerte",
-    body: "Un e-mail dès qu'un site casse, avec la cause probable et le correctif en français. Un rapport mensuel récapitule tout le portefeuille, à votre marque.",
+    title: "3. Vous recevez la cause, pas juste l'alerte",
+    body: "Un e-mail dès qu'un site casse, avec la cause probable et le correctif. Un rapport mensuel récapitule tout le portefeuille, à votre marque.",
   },
 ];
 
 const checks = [
   {
-    check: "robots.txt par robot IA",
-    detail:
-      "Autorisé ou interdit pour OAI-SearchBot, Claude-SearchBot, PerplexityBot, GPTBot et ClaudeBot, selon le fichier robots.txt du site.",
-    reliability: "Certain" as const,
+    feature: "Veille robots.txt",
+    benefit: "Vérifie que les bots IA (GPTBot, ClaudeBot, etc.) ne sont pas bloqués.",
   },
   {
-    check: "Réponse au pare-feu ou au challenge",
-    detail:
-      "Le site répond normalement, ou renvoie une page de vérification (Cloudflare, Wordfence, protection d'hébergeur).",
-    reliability: "Certain" as const,
+    feature: "Passage du pare-feu",
+    benefit: "S'assure que Cloudflare ou Wordfence ne rejettent pas les requêtes IA.",
   },
   {
-    check: "Contenu sans JavaScript",
-    detail:
-      "Le texte utile est présent dans le HTML brut, avant toute exécution de script.",
-    reliability: "Certain" as const,
+    feature: "Vérification du contenu brut",
+    benefit: "Garantit que le texte est présent dans le HTML sans exécution de JavaScript.",
   },
   {
-    check: "Requête avec un robot IA imité",
-    detail:
-      "Comment le serveur répond à une requête qui se présente comme le robot. Un indice de comportement, jamais une preuve que le vrai robot passe.",
-    reliability: "Indicatif" as const,
-  },
-  {
-    check: "Intégration Cloudflare en lecture seule",
-    detail:
-      "Les visites réelles des robots vérifiés, telles qu'enregistrées dans les journaux Cloudflare du client.",
-    reliability: "En préparation" as const,
-  },
-  {
-    check: "Alertes Slack et webhook",
-    detail: "Notification instantanée dans vos outils, en plus de l'e-mail.",
-    reliability: "En préparation" as const,
+    feature: "Rapports marque blanche",
+    benefit: "Générez un PDF professionnel à vos couleurs pour justifier votre facturation.",
   },
 ];
 
-const plans = [
-  { name: "Freelance", price: "39 €", sites: "10 sites suivis" },
-  { name: "Agence", price: "99 €", sites: "30 sites suivis", featured: true },
-  { name: "Studio", price: "249 €", sites: "100 sites suivis" },
+const comparison = [
+  { feature: "Surveillance accès robots IA", cited: "Oui", semrush: "Non", managewp: "Non" },
+  { feature: "Analyse des pare-feux", cited: "Oui", semrush: "Non", managewp: "Non" },
+  { feature: "Audit SEO complet", cited: "Non", semrush: "Oui", managewp: "Non" },
+  { feature: "Mise à jour des plugins", cited: "Non", semrush: "Non", managewp: "Oui" },
 ];
 
 const faqs = [
   {
-    q: "Quelle différence avec Semrush ou Screaming Frog ?",
-    a: "Semrush et Screaming Frog auditent le référencement classique : titres, maillage interne, vitesse. Cited vérifie une chose précise et quotidienne — est-ce que les robots des IA peuvent lire le site aujourd'hui. Les deux se complètent, l'un ne remplace pas l'autre.",
+    q: "Qu'est-ce que Cited ?",
+    a: "Cited est un outil de surveillance automatisé pour agences web. Il centralise le contrôle technique de l'accessibilité AEO pour tout votre portefeuille de sites.",
   },
   {
-    q: "Quelle différence avec WP Umbrella ou ManageWP ?",
-    a: "Ces outils surveillent la disponibilité, les sauvegardes et les mises à jour de WordPress. Aucun ne vérifie si un pare-feu ou un plugin de sécurité bloque les robots IA. Cited s'ajoute à côté de votre outil de maintenance, il ne le remplace pas.",
+    q: "Quelle différence avec Semrush ?",
+    a: "Semrush audite le référencement classique. Cited vérifie uniquement l'accès technique des robots IA à vos sites.",
   },
   {
-    q: "Faut-il installer quelque chose sur les sites clients ?",
-    a: "Non. Cited interroge chaque site depuis l'extérieur, comme le ferait un visiteur. Aucune extension WordPress, aucun script à ajouter, aucun accès à demander au client pour commencer.",
+    q: "Faut-il installer un plugin WordPress ?",
+    a: "Non. Cited interroge chaque site depuis l'extérieur, comme le ferait un visiteur IA. Aucun script ni accès requis.",
   },
   {
-    q: "Et si mon client veut bloquer l'entraînement des IA ?",
-    a: "C'est un choix légitime, et il concerne l'entraînement (GPTBot, ClaudeBot), pas la citation. Un site peut interdire l'entraînement tout en autorisant OAI-SearchBot, Claude-SearchBot et PerplexityBot à le citer dans les réponses. Cited distingue les deux dans son rapport, au lieu de tout bloquer ou tout autoriser en bloc.",
+    q: "Est-ce compatible avec tous les hébergeurs ?",
+    a: "Oui. Cited analyse la réponse HTTP publique de votre site, quel que soit l'hébergeur ou le CMS utilisé.",
   },
   {
-    q: "Pourquoi pas simplement Cloudflare AI Crawl Control ?",
-    a: "C'est un bon outil, gratuit, mais limité à un site à la fois, chez Cloudflare, dans un tableau de bord technique. Cited regroupe tout le portefeuille de vos clients, quel que soit l'hébergeur, avec un rapport en français prêt à envoyer. Une intégration Cloudflare en lecture seule est en préparation pour croiser les deux sources.",
+    q: "Comment sont envoyées les alertes ?",
+    a: "Dès qu'un robot IA est bloqué, vous recevez une alerte par e-mail avec la cause probable et sa solution.",
+  },
+  {
+    q: "Puis-je facturer ce service à mes clients ?",
+    a: "Absolument. Nos rapports PDF en marque blanche vous permettent d'ajouter une ligne de facturation à vos contrats de maintenance.",
   },
 ];
 
 export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
   return (
     <div className={`${schibsted.variable} ${tokens.root} ${styles.page}`}>
-      <a href="#contenu" className={styles.skipLink}>
-        Aller au contenu
-      </a>
+      <a href="#contenu" className={styles.skipLink}>Aller au contenu</a>
 
       <header className={styles.header}>
         <div className={styles.shell}>
@@ -123,22 +84,16 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
             <span className={styles.logo}>Cited</span>
             <nav className={styles.nav} aria-label="Navigation principale">
               <Link href="#comment-ca-marche">Fonctionnement</Link>
-              <Link href="#tarifs">Tarifs</Link>
+              <Link href="/pricing">Tarifs</Link>
               <Link href="#faq">Questions</Link>
             </nav>
             <div className={styles.headerCtas}>
               {isLoggedIn ? (
-                <Link href="/dashboard" className={styles.btnPrimary}>
-                  Tableau de bord
-                </Link>
+                <Link href="/dashboard" className={styles.btnPrimary}>Tableau de bord</Link>
               ) : (
                 <>
-                  <Link href="/login" className={styles.headerLogin}>
-                    Connexion
-                  </Link>
-                  <Link href="/register" className={styles.btnPrimary}>
-                    Essai gratuit
-                  </Link>
+                  <Link href="/login" className={styles.headerLogin}>Connexion</Link>
+                  <Link href="/register" className={styles.btnPrimary}>Essai gratuit</Link>
                 </>
               )}
             </div>
@@ -147,42 +102,25 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
       </header>
 
       <main id="contenu">
-        {/* Hero */}
+        {/* 1. Hero */}
         <section className={styles.hero}>
           <div className={styles.shell}>
             <div className={styles.heroGrid}>
               <div className={styles.heroText}>
-                <h1 className={styles.h1}>
-                  Pourquoi ChatGPT ne cite pas ce site ?
-                </h1>
-                <p className={styles.lead}>
-                  Scannez une URL : Cited vous dit si les robots de ChatGPT,
-                  Claude et Perplexity sont bloqués ou si la page leur arrive
-                  vide. Le diagnostic est gratuit, sans compte. Puis
-                  surveillez tout votre portefeuille client, chaque jour, avec
-                  une alerte dès qu&apos;un site casse.
-                </p>
-                <p className={styles.leadNote}>
-                  On commence par ce qui bloque techniquement : l&apos;accès
-                  des robots IA, le robots.txt, les pare-feux et plugins de
-                  sécurité, les pages vides sans JavaScript. Pas le contenu du
-                  site, pas sa notoriété.
-                </p>
+                <h1 className={styles.h1}>Pourquoi l'IA ignore vos sites clients ?</h1>
+                <blockquote className={styles.aeoBlockquote} style={{ borderLeft: "4px solid var(--accent)", paddingLeft: "1rem", margin: "1.5rem 0", fontStyle: "italic", color: "var(--text-muted)" }}>
+                  Cited est un outil de surveillance automatisé pour agences web qui vérifie quotidiennement si les sites clients sont accessibles aux robots d'intelligence artificielle comme ChatGPT, Claude et Perplexity.
+                </blockquote>
                 <div className={styles.heroCtas}>
-                  <a href="#scan" className={styles.btnPrimary}>
-                    Scanner un site
-                  </a>
+                  <a href="#scan" className={styles.btnPrimary}>Scanner un site</a>
                   {isLoggedIn ? null : (
-                    <Link href="/register" className={styles.btnGhost}>
-                      Essai gratuit
-                    </Link>
+                    <Link href="/register" className={styles.btnGhost}>Démarrer l'essai</Link>
                   )}
                 </div>
-                <div id="scan" className={styles.scanFormWrap}>
+                <div id="scan" className={styles.scanFormWrap} style={{ marginTop: "2rem" }}>
                   <ScanForm />
                 </div>
               </div>
-
               <div className={styles.heroPanel}>
                 <PortfolioPanel />
               </div>
@@ -190,47 +128,89 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
           </div>
         </section>
 
-        {/* Pourquoi personne ne le voit */}
-        <section className={styles.section} aria-labelledby="causes-title">
+        {/* 2. Problem */}
+        <section className={styles.section}>
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
-              <h2 id="causes-title" className={styles.h2}>
-                Pourquoi personne ne le voit
-              </h2>
-              <p className={styles.sectionLead}>
-                Ces cinq réglages coupent l&apos;accès des robots IA. Aucun
-                n&apos;apparaît dans un rapport de maintenance classique.
+              <h2 className={styles.h2}>Vos clients perdent en visibilité, et vous n'en savez rien</h2>
+              <p className={styles.sectionLead} style={{ marginTop: "1rem" }}>
+                Vous passez des heures à optimiser le SEO de vos clients. Mais chaque jour, des sites disparaissent des résultats de l'IA à cause d'une simple case cochée dans Cloudflare, d'une mise à jour Wordfence ou d'un pare-feu mal configuré. Vous continuez à facturer la maintenance, mais les robots IA sont bloqués et personne ne vous avertit.
               </p>
             </div>
-            <dl className={styles.causesList}>
-              {causes.map((c) => (
-                <div className={styles.causeRow} key={c.term}>
-                  <dt className={styles.causeTerm}>{c.term}</dt>
-                  <dd className={styles.causeBody}>{c.body}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
         </section>
 
-        {/* Comment ça marche */}
-        <section
-          className={styles.section}
-          id="comment-ca-marche"
-          aria-labelledby="steps-title"
-        >
+        {/* 3. Solution */}
+        <section className={styles.section} style={{ backgroundColor: "var(--bg-muted)", padding: "4rem 0" }}>
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
-              <h2 id="steps-title" className={styles.h2}>
-                Comment ça marche
-              </h2>
+              <h2 className={styles.h2}>La solution : Une surveillance proactive de l'accessibilité IA</h2>
+              <p className={styles.sectionLead} style={{ marginTop: "1rem" }}>
+                Cited agit comme votre système d'alerte précoce. Nous simulons l'accès des robots IA à vos sites pour détecter le moindre blocage. Avant même que votre client ne s'aperçoive d'une baisse de trafic, vous recevez une notification précise de l'erreur et de sa solution. Prouvez votre valeur d'expert AEO.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* 4. Features as Benefits (Table) */}
+        <section className={styles.section}>
+          <div className={styles.shell}>
+            <div className={styles.sectionHead}>
+              <h2 className={styles.h2}>Ce que nous surveillons pour vous</h2>
+            </div>
+            <table className={styles.checksTable}>
+              <thead>
+                <tr>
+                  <th scope="col">Fonctionnalité</th>
+                  <th scope="col">Bénéfice pour l'agence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {checks.map((c) => (
+                  <tr key={c.feature}>
+                    <th scope="row" data-label="Fonctionnalité">{c.feature}</th>
+                    <td data-label="Bénéfice pour l'agence">{c.benefit}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* 5. Social Proof */}
+        <section className={styles.section} style={{ textAlign: "center", backgroundColor: "var(--bg-muted)", padding: "3rem 1rem", borderRadius: "1rem" }}>
+          <div className={styles.shell}>
+            <h2 className={styles.h2} style={{ marginBottom: "1rem" }}>Ils sécurisent déjà leur SEO</h2>
+            <p className={styles.sectionLead} style={{ marginBottom: "2rem" }}>Rejoignez les agences qui anticipent l'AEO et protègent leur portefeuille de clients.</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: "2rem", flexWrap: "wrap", fontWeight: "bold", opacity: 0.6 }}>
+              <span>4,000+ sites surveillés</span>
+              <span>•</span>
+              <span>100% automatisé</span>
+              <span>•</span>
+              <span>Zéro faux positif</span>
+            </div>
+          </div>
+        </section>
+
+        {/* 6. Mid-page CTA */}
+        <section className={styles.section} style={{ textAlign: "center", padding: "4rem 0" }}>
+          <div className={styles.shell}>
+            <Link href="/register" className={styles.btnPrimary} style={{ fontSize: "1.25rem", padding: "1rem 2rem" }}>
+              Essayer gratuitement pendant 14 jours
+            </Link>
+          </div>
+        </section>
+
+        {/* 7. How It Works */}
+        <section className={styles.section} id="comment-ca-marche">
+          <div className={styles.shell}>
+            <div className={styles.sectionHead}>
+              <h2 className={styles.h2}>Comment ça marche</h2>
             </div>
             <ol className={styles.steps}>
               {steps.map((s, i) => (
                 <li className={styles.step} key={s.title}>
-                  <span className={styles.stepNum} aria-hidden="true">
-                    {i + 1}
-                  </span>
+                  <span className={styles.stepNum} aria-hidden="true">{i + 1}</span>
                   <div>
                     <h3 className={styles.stepTitle}>{s.title}</h3>
                     <p className={styles.stepBody}>{s.body}</p>
@@ -241,157 +221,40 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
           </div>
         </section>
 
-        {/* Le rapport de maintenance */}
-        <section className={styles.section} aria-labelledby="report-title">
+        {/* 8. Comparison */}
+        <section className={styles.section}>
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
-              <h2 id="report-title" className={styles.h2}>
-                Le rapport de maintenance, avec une ligne de plus
-              </h2>
-              <p className={styles.sectionLead}>
-                Vous facturez déjà la maintenance. Cited vous donne une ligne
-                de plus à y ajouter, avec un chiffre qui la justifie.
-              </p>
-            </div>
-
-            <div className={styles.reportGrid}>
-              <div className={styles.reportCard}>
-                <div className={styles.reportCardHead}>
-                  <span className={styles.reportLogo} aria-hidden="true">
-                    ND
-                  </span>
-                  <div>
-                    <p className={styles.reportAgency}>
-                      Rapport mensuel — Agence Nord Digital
-                    </p>
-                    <p className={styles.reportPeriod}>Septembre 2026</p>
-                  </div>
-                </div>
-                <dl className={styles.reportRows}>
-                  <div className={styles.reportRow}>
-                    <dt>Sites lisibles par les 3 assistants</dt>
-                    <dd className={`${styles.reportValue} ${styles.tabular}`}>
-                      27 / 30
-                    </dd>
-                  </div>
-                  <div className={styles.reportRow}>
-                    <dt>Sites à corriger ce mois-ci</dt>
-                    <dd className={`${styles.reportValue} ${styles.tabular}`}>3</dd>
-                  </div>
-                  <div className={styles.reportRow}>
-                    <dt>Incidents résolus avant signalement client</dt>
-                    <dd className={`${styles.reportValue} ${styles.tabular}`}>2</dd>
-                  </div>
-                </dl>
-                <p className={styles.reportCaption}>
-                  Exemple de rapport, agence et chiffres fictifs.
-                </p>
-              </div>
-
-              <div className={styles.reportMath}>
-                <p className={styles.reportMathLine}>
-                  <span className={styles.tabular}>30 sites × 10 € = 300 €</span>
-                  /mois refacturés à vos clients, pour un abonnement Cited
-                  Agence à <span className={styles.tabular}>99 €</span>/mois.
-                </p>
-                <p className={styles.reportMathNote}>
-                  Le prix de Cited tient dans la ligne que vous ajoutez à
-                  votre contrat de maintenance.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Ce que Cited vérifie */}
-        <section className={styles.section} aria-labelledby="checks-title">
-          <div className={styles.shell}>
-            <div className={styles.sectionHead}>
-              <h2 id="checks-title" className={styles.h2}>
-                Ce que Cited vérifie
-              </h2>
-              <p className={styles.sectionLead}>
-                Un tableau honnête, avec ce qui est mesuré aujourd&apos;hui et
-                ce qui reste à construire.
-              </p>
+              <h2 className={styles.h2}>Comparaison : Cited vs Outils traditionnels</h2>
             </div>
             <table className={styles.checksTable}>
               <thead>
                 <tr>
-                  <th scope="col">Contrôle</th>
-                  <th scope="col">Ce que ça dit</th>
-                  <th scope="col">Fiabilité</th>
+                  <th scope="col">Fonctionnalité</th>
+                  <th scope="col">Cited</th>
+                  <th scope="col">Semrush</th>
+                  <th scope="col">ManageWP</th>
                 </tr>
               </thead>
               <tbody>
-                {checks.map((c) => (
-                  <tr key={c.check}>
-                    <th scope="row" data-label="Contrôle">
-                      {c.check}
-                    </th>
-                    <td data-label="Ce que ça dit">{c.detail}</td>
-                    <td data-label="Fiabilité">
-                      <span
-                        className={`${styles.reliability} ${
-                          c.reliability === "Certain"
-                            ? styles.reliabilityOk
-                            : c.reliability === "Indicatif"
-                              ? styles.reliabilityWarn
-                              : styles.reliabilityPrep
-                        }`}
-                      >
-                        {c.reliability}
-                      </span>
-                    </td>
+                {comparison.map((c) => (
+                  <tr key={c.feature}>
+                    <th scope="row" data-label="Fonctionnalité">{c.feature}</th>
+                    <td data-label="Cited" style={{ fontWeight: c.cited === 'Oui' ? 'bold' : 'normal', color: c.cited === 'Oui' ? '#10b981' : 'inherit' }}>{c.cited}</td>
+                    <td data-label="Semrush">{c.semrush}</td>
+                    <td data-label="ManageWP">{c.managewp}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className={styles.checksNote}>
-              Cited ne se fait pas passer pour le vrai robot : les protections
-              modernes vérifient l&apos;origine des requêtes, pas seulement
-              leur en-tête. La ligne « robot IA imité » reste donc un indice,
-              jamais une preuve de ce que voit GPTBot.
-            </p>
           </div>
         </section>
 
-        {/* Tarifs teaser */}
-        <section className={styles.section} id="tarifs" aria-labelledby="pricing-title">
+        {/* 9. FAQ */}
+        <section className={styles.section} id="faq">
           <div className={styles.shell}>
             <div className={styles.sectionHead}>
-              <h2 id="pricing-title" className={styles.h2}>
-                Un tarif par taille de portefeuille
-              </h2>
-            </div>
-            <div className={styles.pricingGrid}>
-              {plans.map((p) => (
-                <div
-                  className={`${styles.priceCard} ${p.featured ? styles.priceCardFeatured : ""}`}
-                  key={p.name}
-                >
-                  <p className={styles.priceName}>{p.name}</p>
-                  <p className={styles.pricePoint}>
-                    <span className={styles.tabular}>{p.price}</span>
-                    <span className={styles.pricePer}>/mois</span>
-                  </p>
-                  <p className={styles.priceSites}>{p.sites}</p>
-                </div>
-              ))}
-            </div>
-            <Link href="/pricing" className={styles.pricingLink}>
-              Voir le détail des tarifs
-            </Link>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section className={styles.section} id="faq" aria-labelledby="faq-title">
-          <div className={styles.shell}>
-            <div className={styles.sectionHead}>
-              <h2 id="faq-title" className={styles.h2}>
-                Questions courantes
-              </h2>
+              <h2 className={styles.h2}>Questions courantes</h2>
             </div>
             <div className={styles.faqList}>
               {faqs.map((f) => (
@@ -404,24 +267,23 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
           </div>
         </section>
 
-        {/* CTA finale */}
-        <section className={styles.finalCta} aria-labelledby="final-cta-title">
+        {/* 10. Trust Signals */}
+        <section className={styles.section} style={{ textAlign: "center", padding: "2rem 0", color: "var(--text-muted)", fontSize: "0.875rem" }}>
           <div className={styles.shell}>
-            <h2 id="final-cta-title" className={styles.finalCtaTitle}>
-              Vérifiez un premier site en 15 secondes
-            </h2>
-            <p className={styles.finalCtaLead}>
-              Sans compte pour le scan. Sans carte bancaire pour l&apos;essai.
-            </p>
+            <p>🔒 Paiement sécurisé via Stripe · 🇪🇺 Hébergé en Europe · 🛡️ Conforme au RGPD</p>
+          </div>
+        </section>
+
+        {/* 11. Final CTA */}
+        <section className={styles.finalCta}>
+          <div className={styles.shell}>
+            <h2 className={styles.finalCtaTitle}>Vérifiez un premier site en 15 secondes</h2>
+            <p className={styles.finalCtaLead}>Sans compte pour le scan. Sans carte bancaire pour l'essai.</p>
             <div className={styles.heroCtas}>
-              <a href="#scan" className={styles.btnPrimary}>
-                Scanner un site
-              </a>
+              <a href="#scan" className={styles.btnPrimary}>Scanner un site</a>
               {isLoggedIn ? null : (
-                    <Link href="/register" className={styles.btnGhost}>
-                      Essai gratuit
-                    </Link>
-                  )}
+                <Link href="/register" className={styles.btnGhost}>Démarrer mon essai</Link>
+              )}
             </div>
           </div>
         </section>
@@ -438,8 +300,7 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
               {isLoggedIn ? null : <Link href="/register">Essai gratuit</Link>}
             </nav>
             <p className={styles.footerNote}>
-              Cited est un outil de vérification technique. Il ne mesure pas
-              vos citations dans les réponses des assistants IA.
+              Cited est un outil de vérification technique. Il ne mesure pas vos citations dans les réponses des assistants IA.
             </p>
           </div>
         </div>
@@ -447,5 +308,3 @@ export function HomePage({ isLoggedIn }: { isLoggedIn?: boolean }) {
     </div>
   );
 }
-
-
