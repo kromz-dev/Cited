@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { createCheckoutSession } from "@/lib/billing/actions";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { schibsted } from "@/components/home/fonts";
@@ -34,7 +35,7 @@ const getPlans = (isLoggedIn: boolean): PlanColumn[] => [
     name: "Freelance",
     price: "39 €",
     priceUnit: "/mois",
-    cta: { label: isLoggedIn ? "Gérer l'abonnement" : "Essayer Freelance", href: isLoggedIn ? "/settings#abonnement" : "/register?plan=SOLO" },
+    cta: { label: isLoggedIn ? "Souscrire" : "Essayer Freelance", href: isLoggedIn ? "/settings#abonnement" : "/register?plan=SOLO" },
   },
   {
     id: "PRO",
@@ -42,14 +43,14 @@ const getPlans = (isLoggedIn: boolean): PlanColumn[] => [
     price: "99 €",
     priceUnit: "/mois",
     recommended: true,
-    cta: { label: isLoggedIn ? "Gérer l'abonnement" : "Choisir Agence", href: isLoggedIn ? "/settings#abonnement" : "/register?plan=PRO", primary: true },
+    cta: { label: isLoggedIn ? "Souscrire" : "Choisir Agence", href: isLoggedIn ? "/settings#abonnement" : "/register?plan=PRO", primary: true },
   },
   {
     id: "SCALE",
     name: "Studio",
     price: "249 €",
     priceUnit: "/mois",
-    cta: { label: isLoggedIn ? "Gérer l'abonnement" : "Choisir Studio", href: isLoggedIn ? "/settings#abonnement" : "/register?plan=SCALE" },
+    cta: { label: isLoggedIn ? "Souscrire" : "Choisir Studio", href: isLoggedIn ? "/settings#abonnement" : "/register?plan=SCALE" },
   },
 ];
 
@@ -351,5 +352,11 @@ export default async function PricingPage() {
     </div>
   );
 }
+
+
+
+
+
+
 
 
