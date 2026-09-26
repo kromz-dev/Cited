@@ -57,6 +57,9 @@ export async function createCheckoutSession(plan: string, couponCode?: string) {
   const stripeSession = await stripe.checkout.sessions.create({
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?checkout=success`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
+    payment_method_types: ["card"],
+    // @ts-expect-error managed_payments bypass for testing without tax codes
+    managed_payments: { enabled: false },
     mode: "subscription",
     billing_address_collection: "auto",
     customer_email: user.stripeCustomerId ? undefined : user.email,
@@ -100,4 +103,5 @@ export async function createCustomerPortalSession() {
 
   redirect(portalSession.url);
 }
+
 
